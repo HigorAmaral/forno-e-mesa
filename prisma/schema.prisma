@@ -1,0 +1,230 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String
+  slug      String    @unique
+  sector    String    // PADARIA | CONFEITARIA | RESTAURANTE | BEBIDAS
+  sortOrder Int       @default(0)
+  products  Product[]
+
+  @@index([sector])
+}
+
+model Product {
+  id              Int          @id @default(autoincrement())
+  sku             String       @unique
+  name            String
+  description     String
+  price           Float
+  unit            String       @default("UN") // UN | KG | FATIA | PORCAO
+  prepStation     String       @default("BALCAO") // BALCAO | FORNO | CONFEITARIA | COZINHA | BAR
+  prepTimeMinutes Int          @default(5)
+  isAvailable     Boolean      @default(true)
+  isFeatured      Boolean      @default(false)
+  trackStock      Boolean      @default(true)
+  stockQty        Float        @default(0)
+  minStockQty     Float        @default(5)
+  categoryId      Int
+  category        Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  recipeItems     RecipeItem[]
+  orderItems      OrderItem[]
+  batches         BakeryBatch[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([categoryId])
+  @@index([prepStation])
+}
+
+model Ingredient {
+  id           Int          @id @default(autoincrement())
+  name         String       @unique
+  unit         String       // KG | L | UN | G | ML
+  currentQty   Float        @default(0)
+  minQty       Float        @default(1)
+  costPerUnit  Float        @default(0)
+  supplierName String?
+  recipeItems  RecipeItem[]
+  updatedAt    DateTime     @updatedAt
+}
+
+model RecipeItem {
+  id           Int        @id @default(autoincrement())
+  productId    Int
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  ingredientId Int
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  qtyRequired  Float
+
+  @@unique([productId, ingredientId])
+}
+
+model DiningTable {
+  id       Int     @id @default(autoincrement())
+  number   Int     @unique
+  name     String
+  area     String  @default("SALAO") // SALAO | VARANDA | BALCAO
+  capacity Int     @default(4)
+  status   String  @default("LIVRE") // LIVRE | OCUPADA | RESERVADA | CONTA
+  qrToken  String  @unique
+  orders   Order[]
+}
+
+model Order {
+  id            Int              @id @default(autoincrement())
+  code          String           @unique
+  channel       String           @default("PDV_BALCAO") // PDV_BALCAO | MESA | QR_MESA | ENCOMENDA
+  status        String           @default("ABERTO") // ABERTO | EM_PREPARO | PRONTO | ENTREGUE | PAGO | CANCELADO
+  tableId       Int?
+  table         DiningTable?     @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  customerId    Int?
+  customer      CustomerProfile? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerName  String?
+  customerPhone String?
+  paymentMethod String?      // DINHEIRO | PIX | CREDITO | DEBITO
+  subtotal      Float        @default(0)
+  discount      Float        @default(0)
+  serviceFee    Float        @default(0)
+  total         Float        @default(0)
+  notes         String?
+  paidAt        DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  items         OrderItem[]
+
+  @@index([status])
+  @@index([channel])
+  @@index([tableId])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id          Int      @id @default(autoincrement())
+  orderId     Int
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   Int?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productName String
+  prepStation String   @default("BALCAO")
+  qty         Float
+  unitPrice   Float
+  totalPrice  Float
+  itemStatus  String   @default("PENDENTE") // PENDENTE | PREPARANDO | PRONTO | ENTREGUE
+  notes       String?
+
+  @@index([orderId])
+  @@index([prepStation])
+  @@index([itemStatus])
+}
+
+model BakeryBatch {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productName String
+  plannedQty  Float
+  producedQty Float    @default(0)
+  status      String   @default("AGENDADA") // AGENDADA | NO_FORNO | PRONTA
+  bakeTime    String
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  @@index([status])
+}
+
+model CakeCustomOrder {
+  id           Int      @id @default(autoincrement())
+  code         String   @unique
+  customerName String
+  customerPhone String
+  title        String
+  weightKg     Float
+  flavor       String
+  filling      String
+  themeNotes   String?
+  deliveryDate String
+  deliverySlot String   @default("14:00")
+  totalPrice   Float
+  depositPaid  Float    @default(0)
+  status       String   @default("CONFIRMADA") // ORCAMENTO | CONFIRMADA | PRODUCAO | PRONTA | ENTREGUE
+  createdAt    DateTime @default(now())
+
+  @@index([status])
+}
+
+model CashRegisterSession {
+  id             Int            @id @default(autoincrement())
+  openedBy       String         @default("Operador Caixa")
+  openingAmount  Float          @default(200)
+  expectedAmount Float          @default(200)
+  closingAmount  Float?
+  status         String         @default("ABERTO") // ABERTO | FECHADO
+  openedAt       DateTime       @default(now())
+  closedAt       DateTime?
+  movements      CashMovement[]
+}
+
+model CashMovement {
+  id            Int                 @id @default(autoincrement())
+  sessionId     Int
+  session       CashRegisterSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  type          String              // VENDA | SANGRIA | SUPRIMENTO
+  paymentMethod String              @default("DINHEIRO")
+  amount        Float
+  description   String
+  createdAt     DateTime            @default(now())
+
+  @@index([sessionId])
+}
+
+model CustomerProfile {
+  id            Int      @id @default(autoincrement())
+  name          String
+  phone         String   @unique
+  email         String?
+  favoriteItem  String?
+  loyaltyPoints Int      @default(0)
+  totalSpent    Float    @default(0)
+  visitsCount   Int      @default(0)
+  notes         String?
+  orders        Order[]
+  createdAt     DateTime @default(now())
+}
+
+model ShiftNote {
+  id        Int      @id @default(autoincrement())
+  author    String
+  content   String
+  priority  String   @default("NORMAL") // NORMAL | IMPORTANTE
+  isDone    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model FinancialEntry {
+  id            Int       @id @default(autoincrement())
+  type          String    // RECEITA | DESPESA
+  category      String    // FORNECEDOR | ALUGUEL | FOLHA | ENERGIA | IMPOSTOS | VENDAS_EXTRA | OUTROS
+  description   String
+  counterparty  String?
+  amount        Float
+  dueDate       String
+  status        String    @default("PENDENTE") // PENDENTE | PAGO | ATRASADO
+  paymentMethod String?
+  paidAt        DateTime?
+  notes         String?
+  createdAt     DateTime  @default(now())
+
+  @@index([type])
+  @@index([status])
+  @@index([dueDate])
+}

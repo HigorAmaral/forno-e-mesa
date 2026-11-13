@@ -26,10 +26,12 @@ export async function POST(request: Request) {
       );
     }
 
+    const isHttps = request.headers.get("x-forwarded-proto") === "https";
     const res = NextResponse.json({ ok: true });
     res.cookies.set(OPERATOR_COOKIE_NAME, buildOperatorToken(expectedPin), {
       httpOnly: true,
       sameSite: "lax",
+      secure: isHttps,
       path: "/",
       maxAge: 60 * 60 * 12,
     });

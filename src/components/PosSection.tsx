@@ -328,9 +328,9 @@ export function PosSection({
   }
 
   return (
-    <div className="animate-fade-in grid gap-5 lg:grid-cols-12">
+    <div className="animate-fade-in grid gap-5 xl:grid-cols-12">
       {/* Left Catalog */}
-      <div className="min-w-0 space-y-4 lg:col-span-7 xl:col-span-8">
+      <div className="min-w-0 space-y-4 xl:col-span-8">
         <div className="card-bistro flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#5a5f67]" />
@@ -431,8 +431,8 @@ export function PosSection({
       </div>
 
       {/* Right Cart / Checkout */}
-      <div className="lg:col-span-5 xl:col-span-4">
-        <div className="card-bistro sticky top-4 p-5">
+      <div className="xl:col-span-4">
+        <div className="card-bistro p-5 xl:sticky xl:top-20">
           <div className="mb-4 flex items-center justify-between border-b border-[#eeeeea] pb-3">
             <div className="flex items-center gap-2">
               <ShoppingCart className="h-5 w-5 text-[#d95d24]" />

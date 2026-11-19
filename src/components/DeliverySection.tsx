@@ -425,7 +425,7 @@ export function DeliverySection({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
         {[
           { label: "Em andamento", value: String(active.length), tone: "text-[#d95d24]" },
           { label: "Atrasados", value: String(stats.late), tone: stats.late ? "text-red-700" : "text-[#15803d]" },

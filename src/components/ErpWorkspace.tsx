@@ -394,9 +394,9 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
   );
 
   return (
-    <div className="flex min-h-screen w-full overflow-x-hidden text-[#121417]">
+    <div className="min-h-screen w-full bg-[#f6f6f3] text-[#121417]">
       {/* Desktop Fixed Sidebar */}
-      <aside className="cafe-sidebar hidden w-64 shrink-0 border-r lg:sticky lg:top-0 lg:block lg:h-screen lg:overflow-y-auto">
+      <aside className="cafe-sidebar hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:block lg:w-64 lg:overflow-y-auto lg:border-r">
         {sidebarContent}
       </aside>
 
@@ -407,14 +407,14 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
             className="fixed inset-0 bg-black/50 backdrop-blur-xs"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <aside className="cafe-sidebar relative z-10 h-full w-72 overflow-y-auto shadow-2xl">
+          <aside className="cafe-sidebar relative z-10 h-full w-72 max-w-[85vw] overflow-y-auto shadow-2xl">
             {sidebarContent}
           </aside>
         </div>
       )}
 
       {/* Main Content Shell */}
-      <div className="flex min-w-0 flex-1 flex-col pb-20 lg:pb-0">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col pb-20 lg:pl-64 lg:pb-0">
         {/* Slim Sticky Topbar */}
         <header className="cafe-topbar sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
@@ -500,8 +500,8 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
           {activeTab === "overview" && (
             <div className="animate-fade-in space-y-6">
               {/* Hero + KPI Bento Grid */}
-              <div className="grid gap-4 lg:grid-cols-12">
-                <div className="flex flex-col justify-between rounded-2xl bg-[#121417] p-6 text-white shadow-lg lg:col-span-5">
+              <div className="grid gap-4 xl:grid-cols-12">
+                <div className="flex flex-col justify-between rounded-2xl bg-[#121417] p-5 text-white shadow-lg sm:p-6 xl:col-span-5">
                   <div>
                     <div className="flex items-center justify-between gap-2">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold text-[#f2b880]">
@@ -576,7 +576,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                 </div>
 
                 {/* 4 KPI Tiles */}
-                <div className="grid gap-4 sm:grid-cols-2 lg:col-span-7">
+                <div className="grid gap-4 sm:grid-cols-2 xl:col-span-7">
                   <div className="card-bistro flex flex-col justify-between p-5">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-semibold text-[#5a5f67]">Mesas & Salão</p>
@@ -640,7 +640,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
               </div>
 
               {/* Analytics + Hourly Chart */}
-              <div className="grid gap-4 lg:grid-cols-4">
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <div className="card-bistro p-5">
                   <h3 className="font-display text-base font-bold">Receita por Canal</h3>
                   <div className="mt-3 space-y-2.5 text-xs">
@@ -747,9 +747,9 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                 </div>
               </div>
 
-              <div className="grid gap-5 lg:grid-cols-12">
+              <div className="grid gap-5 xl:grid-cols-12">
                 {/* Recent Orders */}
-                <div className="card-bistro p-5 lg:col-span-5">
+                <div className="card-bistro p-5 xl:col-span-5">
                   <div className="mb-3 flex items-center justify-between">
                     <h3 className="font-display text-lg font-bold">Últimos Pedidos</h3>
                     <button
@@ -809,7 +809,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                 </div>
 
                 {/* Mural do Turno */}
-                <div className="card-bistro p-5 lg:col-span-4">
+                <div className="card-bistro p-5 xl:col-span-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h3 className="font-display flex items-center gap-2 text-lg font-bold">
                       <StickyNote className="h-4 w-4 text-[#d95d24]" />
@@ -911,7 +911,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                 </div>
 
                 {/* Fornadas + QR */}
-                <div className="space-y-4 lg:col-span-3">
+                <div className="space-y-4 xl:col-span-3">
                   <div className="card-bistro p-5">
                     <div className="mb-3 flex items-center justify-between">
                       <h3 className="font-display flex items-center gap-2 text-lg font-bold">

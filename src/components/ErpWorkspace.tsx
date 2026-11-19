@@ -75,7 +75,6 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
     null,
   );
   const [refreshing, setRefreshing] = useState(false);
-  const [autoPoll, setAutoPoll] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dailyGoal, setDailyGoal] = useState(2500);
   const [noteAuthor, setNoteAuthor] = useState("Barista");
@@ -101,13 +100,13 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
   }, []);
 
   useEffect(() => {
-    if (!autoPoll || dbError) return;
+    if (dbError) return;
     const timer = setInterval(() => {
       if (typeof document !== "undefined" && document.hidden) return;
       void refreshWorkspace();
     }, 15000);
     return () => clearInterval(timer);
-  }, [autoPoll, dbError, refreshWorkspace]);
+  }, [dbError, refreshWorkspace]);
 
   const analytics = useMemo(() => {
     const paid = data.orders.filter((o) => o.status === "PAGO");
@@ -291,22 +290,22 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
         {/* Brand */}
         <div className="flex items-center justify-between gap-2 px-1">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#e0682e] to-[#b84917] text-white shadow-md">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#ea1d2c] text-white">
               <Coffee className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="font-display text-lg font-bold leading-tight text-white">
+              <h1 className="text-base font-bold leading-tight text-white">
                 Forno & Mesa
               </h1>
-              <p className="text-[11px] font-medium text-[#8b9098]">
-                Bistrô & Padaria ERP
+              <p className="text-[11px] font-medium text-zinc-400">
+                Gestão & Delivery
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setMobileMenuOpen(false)}
-            className="rounded-lg p-1.5 text-[#8b9098] hover:bg-white/10 hover:text-white lg:hidden"
+            className="rounded-lg p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white lg:hidden"
             aria-label="Fechar menu"
           >
             <X className="h-5 w-5" />
@@ -317,7 +316,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
         <nav className="space-y-5">
           {navGroups.map((group) => (
             <div key={group.title} className="space-y-1">
-              <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#6e747d]">
+              <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                 {group.title}
               </p>
               <div className="space-y-0.5">
@@ -332,10 +331,10 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                         setActiveTab(item.id);
                         setMobileMenuOpen(false);
                       }}
-                      className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-xs font-semibold transition ${
+                      className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold transition ${
                         active
-                          ? "bg-[#d95d24] text-white shadow-md shadow-[#d95d24]/25"
-                          : "text-[#b6bac1] hover:bg-white/8 hover:text-white"
+                          ? "bg-[#ea1d2c] text-white"
+                          : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
                       }`}
                     >
                       <span className="flex items-center gap-2.5">
@@ -346,8 +345,8 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                         <span
                           className={`font-mono-num rounded-full px-2 py-0.5 text-[10px] font-bold ${
                             active
-                              ? "bg-white/25 text-white"
-                              : "bg-white/10 text-[#f2b880]"
+                              ? "bg-white/20 text-white"
+                              : "bg-zinc-800 text-zinc-200"
                           }`}
                         >
                           {item.badge}
@@ -363,22 +362,22 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
       </div>
 
       {/* Bottom Status & Storefront Link */}
-      <div className="space-y-2 border-t border-white/10 pt-4">
+      <div className="space-y-2 border-t border-zinc-800 pt-4">
         <a
           href="/delivery"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-semibold text-white transition hover:bg-white/10"
+          className="flex items-center justify-between rounded-lg border border-zinc-700 bg-zinc-800/80 px-3 py-2 text-xs font-semibold text-white transition hover:bg-zinc-800"
         >
           <span className="flex items-center gap-2">
-            <Truck className="h-4 w-4 text-[#e09132]" />
+            <Truck className="h-4 w-4 text-[#ea1d2c]" />
             Cardápio Delivery
           </span>
-          <ExternalLink className="h-3.5 w-3.5 text-[#8b9098]" />
+          <ExternalLink className="h-3.5 w-3.5 text-zinc-400" />
         </a>
 
-        <div className="rounded-xl bg-white/5 px-3 py-2.5 text-[11px]">
-          <p className="text-[#8b9098]">Status do Caixa</p>
+        <div className="rounded-lg bg-zinc-800/60 px-3 py-2 text-[11px]">
+          <p className="text-zinc-400">Status do Caixa</p>
           <p
             className={`font-mono-num mt-0.5 font-bold ${
               data.openCashSession ? "text-emerald-400" : "text-amber-300"
@@ -394,7 +393,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
   );
 
   return (
-    <div className="min-h-screen w-full bg-[#f6f6f3] text-[#121417]">
+    <div className="min-h-screen w-full bg-[#f4f4f5] text-zinc-900">
       {/* Desktop Fixed Sidebar */}
       <aside className="cafe-sidebar hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:block lg:w-64 lg:overflow-y-auto lg:border-r">
         {sidebarContent}
@@ -404,10 +403,10 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
           <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-xs"
+            className="fixed inset-0 bg-black/50"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <aside className="cafe-sidebar relative z-10 h-full w-72 max-w-[85vw] overflow-y-auto shadow-2xl">
+          <aside className="cafe-sidebar relative z-10 h-full w-72 max-w-[85vw] overflow-y-auto shadow-xl">
             {sidebarContent}
           </aside>
         </div>
@@ -427,46 +426,44 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
               <Menu className="h-5 w-5" />
             </button>
             <div>
-              <h2 className="font-display text-lg font-bold leading-tight text-[#121417] sm:text-xl">
+              <h2 className="text-base font-bold leading-tight text-zinc-900 sm:text-lg">
                 {currentTabLabel}
               </h2>
-              <p className="hidden text-[11px] text-[#5a5f67] sm:block">
-                Operação unificada · Salão, Balcão, Delivery & Produção
+              <p className="hidden text-xs text-zinc-500 sm:block">
+                Salão, Balcão, Delivery & Produção
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
+            <a
+              href="/delivery"
+              target="_blank"
+              rel="noreferrer"
+              className="hidden items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-[#ea1d2c] transition hover:bg-red-100 sm:inline-flex"
+            >
+              <Truck className="h-3.5 w-3.5" />
+              Abrir Delivery (Cliente)
+            </a>
             <button
               type="button"
               onClick={() => setQrTableNumber(data.tables[0]?.number ?? 1)}
-              className="hidden items-center gap-1.5 rounded-xl border border-[#e5e4df] bg-white px-3 py-1.5 text-xs font-semibold text-[#121417] transition hover:bg-[#eeeeea] sm:inline-flex"
+              className="hidden items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-50 md:inline-flex"
             >
-              <QrCode className="h-3.5 w-3.5 text-[#d95d24]" />
+              <QrCode className="h-3.5 w-3.5 text-zinc-600" />
               QR Mesas
             </button>
             <a
               href="/api/reports/export"
-              className="hidden items-center gap-1.5 rounded-xl border border-[#e5e4df] bg-white px-3 py-1.5 text-xs font-semibold text-[#121417] transition hover:bg-[#eeeeea] md:inline-flex"
+              className="hidden items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-50 md:inline-flex"
             >
               <Download className="h-3.5 w-3.5 text-emerald-700" />
               CSV
             </a>
             <button
               type="button"
-              onClick={() => setAutoPoll((v) => !v)}
-              className={`hidden rounded-xl border px-3 py-1.5 text-xs font-semibold sm:inline-flex ${
-                autoPoll
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                  : "border-[#e5e4df] bg-white text-[#5a5f67]"
-              }`}
-            >
-              {autoPoll ? "● Sync 15s" : "Sync pausado"}
-            </button>
-            <button
-              type="button"
               onClick={refreshWorkspace}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-[#e5e4df] bg-white px-3 py-1.5 text-xs font-semibold text-[#121417] transition hover:bg-[#eeeeea]"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">Atualizar</span>

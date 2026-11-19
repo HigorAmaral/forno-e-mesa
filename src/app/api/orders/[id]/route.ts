@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { OrderManageSchema } from "@/lib/schemas";
+import { forbiddenIfNotErpOperator } from "@/lib/access-guard";
 
 export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   try {
+    const forbidden = await forbiddenIfNotErpOperator();
+    if (forbidden) return forbidden;
     const { id } = await context.params;
     const orderId = Number(id);
     if (!Number.isInteger(orderId) || orderId <= 0) {
@@ -34,7 +37,10 @@ export async function PATCH(
     if (parsed.data.action === "CANCEL") {
       const updated = await prisma.order.update({
         where: { id: orderId },
-        data: { status: "CANCELADO" },
+        data: {
+          status: "CANCELADO",
+          ...(order.deliveryStatus ? { deliveryStatus: "CANCELADO" } : {}),
+        },
         include: { table: true, items: true },
       });
 

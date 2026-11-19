@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, CheckCheck, ChefHat, Clock, Flame, Volume2, VolumeX } from "lucide-react";
+import { channelLabel } from "@/lib/domain";
 import type { OrderDto } from "@/types/erp";
 
 interface KdsSectionProps {
@@ -234,12 +235,17 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
                         <span className="font-mono-num text-sm font-bold text-[#211611]">
                           {ticket.code}
                         </span>
-                        <span className="rounded-full bg-[#19110d] px-2 py-0.5 text-[10px] font-bold text-white">
-                          {ticket.table ? ticket.table.name : ticket.channel}
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold text-white ${
+                          ticket.channel === "DELIVERY" || ticket.channel === "RETIRADA"
+                            ? "bg-[#b5652a]"
+                            : "bg-[#19110d]"
+                        }`}>
+                          {ticket.table ? ticket.table.name : channelLabel(ticket.channel)}
                         </span>
                       </div>
                       <p className="text-xs text-[#6e594b]">
                         {ticket.customerName ?? "Cliente"}
+                        {ticket.deliveryNeighborhood ? ` · ${ticket.deliveryNeighborhood}` : ""}
                       </p>
                     </div>
                     <span

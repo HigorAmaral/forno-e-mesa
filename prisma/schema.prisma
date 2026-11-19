@@ -101,10 +101,37 @@ model Order {
   updatedAt     DateTime     @updatedAt
   items         OrderItem[]
 
+  // Delivery / Retirada
+  deliveryFee          Float     @default(0)
+  deliveryStatus       String?   // RECEBIDO | EM_PREPARO | PRONTO | SAIU_ENTREGA | ENTREGUE | CANCELADO
+  deliveryAddress      String?
+  deliveryNeighborhood String?
+  deliveryReference    String?
+  deliveryZoneId       Int?
+  deliveryZone         DeliveryZone? @relation(fields: [deliveryZoneId], references: [id], onDelete: SetNull)
+  courierName          String?
+  changeFor            Float?
+  estimatedMinutes     Int?
+  trackingToken        String?   @unique
+  dispatchedAt         DateTime?
+  deliveredAt          DateTime?
+
   @@index([status])
   @@index([channel])
   @@index([tableId])
   @@index([createdAt])
+  @@index([deliveryStatus])
+}
+
+model DeliveryZone {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  fee         Float    @default(6)
+  etaMinutes  Int      @default(35)
+  minOrder    Float    @default(25)
+  isActive    Boolean  @default(true)
+  orders      Order[]
+  createdAt   DateTime @default(now())
 }
 
 model OrderItem {

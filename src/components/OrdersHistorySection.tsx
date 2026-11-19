@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Ban, Download, Receipt, Search } from "lucide-react";
-import { formatBRL } from "@/lib/domain";
+import { channelLabel, formatBRL } from "@/lib/domain";
 import type { OrderDto } from "@/types/erp";
 
 interface OrdersHistorySectionProps {
@@ -28,13 +28,17 @@ export function OrdersHistorySection({
       if (statusFilter === "OPEN" && ["PAGO", "CANCELADO"].includes(o.status)) {
         return false;
       }
+      if (statusFilter === "DELIVERY" && o.channel !== "DELIVERY" && o.channel !== "RETIRADA") {
+        return false;
+      }
       if (statusFilter === "PAGO" && o.status !== "PAGO") return false;
       if (statusFilter === "CANCELADO" && o.status !== "CANCELADO") return false;
       if (
         q &&
         !o.code.toLowerCase().includes(q) &&
         !(o.customerName ?? "").toLowerCase().includes(q) &&
-        !(o.table?.name ?? "").toLowerCase().includes(q)
+        !(o.table?.name ?? "").toLowerCase().includes(q) &&
+        !(o.deliveryNeighborhood ?? "").toLowerCase().includes(q)
       ) {
         return false;
       }
@@ -76,10 +80,11 @@ export function OrdersHistorySection({
             />
           </div>
 
-          <div className="flex gap-1 rounded-xl bg-[#f2ebe1] p-1">
+          <div className="flex flex-wrap gap-1 rounded-xl bg-[#f2ebe1] p-1">
             {[
               { id: "ALL", label: "Todos" },
               { id: "OPEN", label: "Em Aberto" },
+              { id: "DELIVERY", label: "Delivery" },
               { id: "PAGO", label: "Pagos" },
               { id: "CANCELADO", label: "Cancelados" },
             ].map((st) => (
@@ -136,7 +141,7 @@ export function OrdersHistorySection({
                   </td>
                   <td className="px-4 py-3">
                     <span className="rounded-md bg-[#f2ebe1] px-2 py-0.5 text-[10px] font-bold">
-                      {order.table ? order.table.name : order.channel}
+                      {order.table ? order.table.name : channelLabel(order.channel)}
                     </span>
                   </td>
                   <td className="px-4 py-3 font-medium">

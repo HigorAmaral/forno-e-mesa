@@ -78,6 +78,8 @@ export async function GET(request: Request) {
       "Subtotal",
       "Desconto",
       "Taxa_Servico",
+      "Taxa_Entrega",
+      "Bairro_Entrega",
       "Total",
     ].join(";");
 
@@ -94,6 +96,8 @@ export async function GET(request: Request) {
         csvCell(o.subtotal.toFixed(2).replace(".", ",")),
         csvCell(o.discount.toFixed(2).replace(".", ",")),
         csvCell(o.serviceFee.toFixed(2).replace(".", ",")),
+        csvCell(o.deliveryFee.toFixed(2).replace(".", ",")),
+        csvCell(o.deliveryNeighborhood ?? "-"),
         csvCell(o.total.toFixed(2).replace(".", ",")),
       ].join(";"),
     );

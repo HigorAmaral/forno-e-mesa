@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
-import { forbiddenIfNotErpOperator } from "@/lib/access-guard";
+import { isServerErpAuthorized } from "@/lib/access-guard";
 import { CreateOrderSchema } from "@/lib/schemas";
 import { createOrAppendOrder } from "@/lib/workspace-service";
+
+const PUBLIC_CHANNELS = new Set(["QR_MESA", "DELIVERY", "RETIRADA"]);
 
 export async function POST(request: Request) {
   try {
@@ -14,13 +16,19 @@ export async function POST(request: Request) {
       );
     }
 
-    if (parsed.data.channel !== "QR_MESA") {
-      const forbidden = await forbiddenIfNotErpOperator();
-      if (forbidden) return forbidden;
+    const isOperator = await isServerErpAuthorized();
+    if (!isOperator && !PUBLIC_CHANNELS.has(parsed.data.channel)) {
+      return NextResponse.json(
+        { error: "Acesso restrito ao painel interno." },
+        { status: 403 },
+      );
     }
 
-    const order = await createOrAppendOrder(parsed.data);
-    return NextResponse.json({ order }, { status: 201 });
+    const order = await createOrAppendOrder(parsed.data, { isPublic: !isOperator });
+    return NextResponse.json(
+      { order, trackingUrl: order.trackingToken ? `/delivery/acompanhar/${order.code}?t=${order.trackingToken}` : null },
+      { status: 201 },
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erro ao registrar pedido.";
     return NextResponse.json({ error: message }, { status: 400 });

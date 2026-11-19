@@ -24,10 +24,11 @@ import {
   StickyNote,
   Target,
   Trash2,
+  Truck,
   UtensilsCrossed,
   X,
 } from "lucide-react";
-import { formatBRL } from "@/lib/domain";
+import { channelLabel, computeSalesByHour, formatBRL } from "@/lib/domain";
 import type { OrderDto, WorkspaceSnapshotDto } from "@/types/erp";
 import { PosSection } from "./PosSection";
 import { TablesSection } from "./TablesSection";
@@ -37,12 +38,14 @@ import { CustomersSection } from "./CustomersSection";
 import { FinanceSection } from "./FinanceSection";
 import { InventoryCashSection } from "./InventoryCashSection";
 import { OrdersHistorySection } from "./OrdersHistorySection";
+import { DeliverySection } from "./DeliverySection";
 import { ReceiptModal } from "./ReceiptModal";
 import { QrModal } from "./QrModal";
 
 type TabId =
   | "overview"
   | "pdv"
+  | "delivery"
   | "tables"
   | "kds"
   | "bakery"
@@ -61,6 +64,9 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [preselectedTable, setPreselectedTable] = useState<number | null>(null);
   const [preselectedCustomerId, setPreselectedCustomerId] = useState<number | null>(null);
+  const [preselectedPosMode, setPreselectedPosMode] = useState<
+    "BALCAO" | "MESA" | "DELIVERY" | "RETIRADA" | null
+  >(null);
   const [receiptOrder, setReceiptOrder] = useState<OrderDto | null>(null);
   const [qrTableNumber, setQrTableNumber] = useState<number | null>(null);
   const [toast, setToast] = useState<{ type: "ok" | "err"; text: string } | null>(
@@ -133,11 +139,14 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 5);
 
+    const salesByHour = computeSalesByHour(data.orders);
+
     return {
       totalPaid,
       channels: [...byChannel.entries()],
       payments: [...byPayment.entries()],
       topProducts,
+      salesByHour,
     };
   }, [data.orders]);
 
@@ -149,6 +158,12 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
   }> = [
     { id: "overview", label: "Painel Geral", icon: LayoutDashboard },
     { id: "pdv", label: "PDV Balcão", icon: ShoppingCart },
+    {
+      id: "delivery",
+      label: "Delivery",
+      icon: Truck,
+      badge: data.metrics.activeDeliveries || undefined,
+    },
     {
       id: "tables",
       label: "Mesas & QR",
@@ -278,10 +293,19 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                 ? `Caixa Aberto · ${formatBRL(data.openCashSession.expectedAmount)}`
                 : "Caixa Fechado"}
             </span>
+            <a
+              href="/delivery"
+              target="_blank"
+              rel="noreferrer"
+              className="hidden items-center gap-1.5 rounded-xl border border-orange-300/30 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/20 md:inline-flex"
+            >
+              <Truck className="h-3.5 w-3.5 text-[#d4943a]" />
+              Cardápio Delivery
+            </a>
             <button
               type="button"
               onClick={() => setQrTableNumber(data.tables[0]?.number ?? 1)}
-              className="hidden items-center gap-1.5 rounded-xl border border-amber-300/30 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/20 md:inline-flex"
+              className="hidden items-center gap-1.5 rounded-xl border border-amber-300/30 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/20 lg:inline-flex"
             >
               <QrCode className="h-3.5 w-3.5 text-[#d4943a]" />
               QR Cardápio
@@ -491,13 +515,20 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                         {formatBRL(data.metrics.avgTicket)}
                       </strong>
                     </span>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
                         onClick={() => setActiveTab("pdv")}
                         className="rounded-xl bg-[#b5652a] px-3 py-1.5 font-semibold text-white hover:bg-[#9c511d]"
                       >
                         + Novo Pedido PDV
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("delivery")}
+                        className="rounded-xl border border-orange-300/30 bg-orange-500/20 px-3 py-1.5 font-semibold text-orange-200 hover:bg-orange-500/30"
+                      >
+                        Delivery ({data.metrics.activeDeliveries})
                       </button>
                       <button
                         type="button"
@@ -607,7 +638,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                         return (
                           <div key={ch} className="space-y-1">
                             <div className="flex justify-between font-semibold">
-                              <span>{ch}</span>
+                              <span>{channelLabel(ch)}</span>
                               <span className="font-mono-num">
                                 {formatBRL(val)} ({pct}%)
                               </span>
@@ -927,16 +958,35 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
               products={data.products}
               tables={data.tables}
               customers={data.customers}
+              deliveryZones={data.deliveryZones}
               preselectedTableNumber={preselectedTable}
               preselectedCustomerId={preselectedCustomerId}
+              preselectedMode={preselectedPosMode}
               onClearPreselectedTable={() => setPreselectedTable(null)}
               onClearPreselectedCustomer={() => setPreselectedCustomerId(null)}
+              onClearPreselectedMode={() => setPreselectedPosMode(null)}
               onOrderCreated={async (order, openReceipt) => {
                 await refreshWorkspace();
                 showToast("ok", `Pedido ${order.code} registrado com sucesso!`);
                 if (openReceipt) setReceiptOrder(order);
               }}
               onError={(msg) => showToast("err", msg)}
+            />
+          )}
+
+          {activeTab === "delivery" && (
+            <DeliverySection
+              orders={data.orders}
+              zones={data.deliveryZones}
+              onOpenReceipt={(order) => setReceiptOrder(order)}
+              onNewDeliveryOrder={() => {
+                setPreselectedTable(null);
+                setPreselectedPosMode("DELIVERY");
+                setActiveTab("pdv");
+              }}
+              onRefresh={refreshWorkspace}
+              onError={(msg) => showToast("err", msg)}
+              onSuccess={(msg) => showToast("ok", msg)}
             />
           )}
 

@@ -14,6 +14,20 @@ export async function ensureSeeded() {
     await seedPromise;
   }
 
+  const zoneCount = await prisma.deliveryZone.count();
+  if (zoneCount === 0) {
+    await prisma.deliveryZone.createMany({
+      data: [
+        { name: "Centro", fee: 5, etaMinutes: 25, minOrder: 20 },
+        { name: "Jardim América", fee: 7, etaMinutes: 35, minOrder: 25 },
+        { name: "Vila Nova", fee: 8, etaMinutes: 40, minOrder: 30 },
+        { name: "Bela Vista", fee: 10, etaMinutes: 45, minOrder: 35 },
+        { name: "Zona Rural / Chácaras", fee: 18, etaMinutes: 60, minOrder: 60 },
+      ],
+      skipDuplicates: true,
+    });
+  }
+
   const customerCount = await prisma.customerProfile.count();
   if (customerCount === 0) {
     await prisma.customerProfile.createMany({

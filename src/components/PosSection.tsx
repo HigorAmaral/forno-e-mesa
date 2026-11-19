@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import {
+  Bike,
   Award,
   Banknote,
   CheckCircle2,
@@ -13,16 +14,22 @@ import {
   Send,
   ShoppingCart,
   Sparkles,
+  Store,
   Trash2,
+  UtensilsCrossed,
 } from "lucide-react";
 import {
   calculateCashChange,
   calculateOrderTotals,
   formatBRL,
+  FREE_DELIVERY_ABOVE,
   getLoyaltyTier,
+  missingForMinimumOrder,
+  resolveDeliveryFee,
 } from "@/lib/domain";
 import type {
   CustomerProfileDto,
+  DeliveryZoneDto,
   OrderDto,
   ProductDto,
   TableWithOrdersDto,
@@ -32,10 +39,13 @@ interface PosSectionProps {
   products: ProductDto[];
   tables: TableWithOrdersDto[];
   customers: CustomerProfileDto[];
+  deliveryZones: DeliveryZoneDto[];
   preselectedTableNumber: number | null;
   preselectedCustomerId: number | null;
+  preselectedMode?: "BALCAO" | "MESA" | "DELIVERY" | "RETIRADA" | null;
   onClearPreselectedTable: () => void;
   onClearPreselectedCustomer: () => void;
+  onClearPreselectedMode?: () => void;
   onOrderCreated: (order: OrderDto, openReceipt?: boolean) => Promise<void>;
   onError: (message: string) => void;
 }
@@ -58,16 +68,28 @@ export function PosSection({
   products,
   tables,
   customers,
+  deliveryZones,
   preselectedTableNumber,
   preselectedCustomerId,
+  preselectedMode,
   onClearPreselectedTable,
   onClearPreselectedCustomer,
+  onClearPreselectedMode,
   onOrderCreated,
   onError,
 }: PosSectionProps) {
+  const activeZones = useMemo(
+    () => deliveryZones.filter((z) => z.isActive),
+    [deliveryZones],
+  );
   const [sector, setSector] = useState("ALL");
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [orderMode, setOrderMode] = useState<"BALCAO" | "MESA" | "DELIVERY" | "RETIRADA">(
+    preselectedTableNumber !== null
+      ? "MESA"
+      : preselectedMode ?? "BALCAO",
+  );
   const [targetTableNumber, setTargetTableNumber] = useState<number | "">(
     preselectedTableNumber ?? "",
   );
@@ -76,6 +98,11 @@ export function PosSection({
   );
   const [redeemLoyaltyPoints, setRedeemLoyaltyPoints] = useState(false);
   const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [deliveryZoneId, setDeliveryZoneId] = useState<number>(activeZones[0]?.id ?? 0);
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [deliveryReference, setDeliveryReference] = useState("");
+  const [changeFor, setChangeFor] = useState("");
   const [discount, setDiscount] = useState("0");
   const [orderNotes, setOrderNotes] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<
@@ -84,9 +111,24 @@ export function PosSection({
   const [cashReceived, setCashReceived] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const effectiveMode =
+    preselectedTableNumber !== null
+      ? "MESA"
+      : preselectedMode ?? orderMode;
+
   const effectiveTableNumber =
-    preselectedTableNumber ??
-    (targetTableNumber === "" ? null : targetTableNumber);
+    effectiveMode === "MESA"
+      ? preselectedTableNumber ?? (targetTableNumber === "" ? null : targetTableNumber)
+      : null;
+
+  const isDelivery = effectiveMode === "DELIVERY";
+  const isPickup = effectiveMode === "RETIRADA";
+  const isDeliveryChannel = isDelivery || isPickup;
+
+  const selectedZone = useMemo(
+    () => activeZones.find((z) => z.id === deliveryZoneId) ?? activeZones[0] ?? null,
+    [activeZones, deliveryZoneId],
+  );
 
   const effectiveCustomerId =
     preselectedCustomerId ??
@@ -118,15 +160,39 @@ export function PosSection({
     });
   }, [products, sector, search]);
 
+  const preTotals = useMemo(
+    () =>
+      calculateOrderTotals({
+        items: cart.map((c) => ({ qty: c.qty, unitPrice: c.product.price })),
+        discount: (Number(discount) || 0) + (effectiveRedeem ? 15 : 0),
+      }),
+    [cart, discount, effectiveRedeem],
+  );
+
+  const deliveryFee = useMemo(() => {
+    if (!isDelivery || !selectedZone || cart.length === 0) return 0;
+    return resolveDeliveryFee({
+      zoneFee: selectedZone.fee,
+      subtotal: Math.max(0, preTotals.subtotal - preTotals.discount),
+      freeAbove: FREE_DELIVERY_ABOVE,
+    });
+  }, [isDelivery, selectedZone, cart.length, preTotals.subtotal, preTotals.discount]);
+
   const totals = useMemo(
     () =>
       calculateOrderTotals({
         items: cart.map((c) => ({ qty: c.qty, unitPrice: c.product.price })),
         discount: (Number(discount) || 0) + (effectiveRedeem ? 15 : 0),
         applyServiceFee: effectiveTableNumber !== null,
+        deliveryFee,
       }),
-    [cart, discount, effectiveRedeem, effectiveTableNumber],
+    [cart, discount, effectiveRedeem, effectiveTableNumber, deliveryFee],
   );
+
+  const minMissing = useMemo(() => {
+    if (!isDelivery || !selectedZone || cart.length === 0) return 0;
+    return missingForMinimumOrder(totals.subtotal, selectedZone.minOrder);
+  }, [isDelivery, selectedZone, cart.length, totals.subtotal]);
 
   const cashChange = useMemo(() => {
     const rec = Number(cashReceived) || 0;
@@ -187,25 +253,47 @@ export function PosSection({
   }
 
   async function handleSubmit(payNow: boolean) {
-    if (cart.length === 0 || submitting) return;
+    if (cart.length === 0 || submitting || minMissing > 0) return;
     setSubmitting(true);
     try {
       const isTable = effectiveTableNumber !== null;
+      const channel = isTable
+        ? "MESA"
+        : isDelivery
+          ? "DELIVERY"
+          : isPickup
+            ? "RETIRADA"
+            : "PDV_BALCAO";
+
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          channel: isTable ? "MESA" : "PDV_BALCAO",
+          channel,
           tableNumber: isTable ? effectiveTableNumber : undefined,
           customerId: effectiveCustomerId ?? undefined,
           customerName:
             customerName.trim() || selectedCustomer?.name || undefined,
+          customerPhone:
+            customerPhone.trim() || selectedCustomer?.phone || undefined,
           redeemLoyaltyPoints: effectiveRedeem,
           discount: Number(discount) || 0,
           applyServiceFee: isTable,
           notes: orderNotes.trim() || undefined,
           payNow: !isTable && payNow,
-          paymentMethod: !isTable && payNow ? paymentMethod : undefined,
+          paymentMethod: !isTable && (payNow || isDeliveryChannel) ? paymentMethod : undefined,
+          delivery: isDelivery
+            ? {
+                zoneId: selectedZone?.id,
+                address: deliveryAddress.trim(),
+                neighborhood: selectedZone?.name,
+                reference: deliveryReference.trim() || undefined,
+                changeFor:
+                  paymentMethod === "DINHEIRO" && Number(changeFor) > 0
+                    ? Number(changeFor)
+                    : undefined,
+              }
+            : undefined,
           items: cart.map((line) => ({
             productId: line.product.id,
             qty: line.qty,
@@ -221,6 +309,10 @@ export function PosSection({
       setCart([]);
       setDiscount("0");
       setCustomerName("");
+      setCustomerPhone("");
+      setDeliveryAddress("");
+      setDeliveryReference("");
+      setChangeFor("");
       setOrderNotes("");
       setCashReceived("");
       setTargetTableNumber("");
@@ -228,7 +320,8 @@ export function PosSection({
       setRedeemLoyaltyPoints(false);
       onClearPreselectedTable();
       onClearPreselectedCustomer();
-      await onOrderCreated(json.order, payNow);
+      onClearPreselectedMode?.();
+      await onOrderCreated(json.order, payNow || isDeliveryChannel);
     } finally {
       setSubmitting(false);
     }
@@ -358,32 +451,67 @@ export function PosSection({
             )}
           </div>
 
-          <div className="mb-4 grid gap-2.5 sm:grid-cols-2">
-            <div>
+          {/* Channel Mode Switcher */}
+          <div className="mb-3 grid grid-cols-4 gap-1 rounded-xl bg-[#f2ebe1] p-1">
+            {(
+              [
+                { id: "BALCAO", label: "Balcão", icon: ShoppingCart },
+                { id: "MESA", label: "Mesa", icon: UtensilsCrossed },
+                { id: "DELIVERY", label: "Delivery", icon: Bike },
+                { id: "RETIRADA", label: "Retirada", icon: Store },
+              ] as const
+            ).map((m) => {
+              const Icon = m.icon;
+              const active = effectiveMode === m.id;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => {
+                    onClearPreselectedTable();
+                    onClearPreselectedMode?.();
+                    setOrderMode(m.id);
+                    if (m.id !== "MESA") setTargetTableNumber("");
+                  }}
+                  className={`flex flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 text-[10px] font-bold transition ${
+                    active ? "bg-[#19110d] text-white shadow" : "text-[#6e594b] hover:text-[#211611]"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {m.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mb-3 grid gap-2.5 sm:grid-cols-2">
+            {effectiveMode === "MESA" && (
+              <div>
+                <label className="mb-1 block text-[11px] font-semibold uppercase text-[#6e594b]">
+                  Mesa
+                </label>
+                <select
+                  value={effectiveTableNumber ?? ""}
+                  onChange={(e) => {
+                    onClearPreselectedTable();
+                    setTargetTableNumber(
+                      e.target.value ? Number(e.target.value) : "",
+                    );
+                  }}
+                  className="w-full rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-2 text-xs font-medium outline-none focus:border-[#b5652a]"
+                >
+                  <option value="">Selecione a mesa...</option>
+                  {tables.map((t) => (
+                    <option key={t.id} value={t.number}>
+                      {t.name} ({t.status})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className={effectiveMode === "MESA" ? "" : isDeliveryChannel ? "" : "sm:col-span-2"}>
               <label className="mb-1 block text-[11px] font-semibold uppercase text-[#6e594b]">
-                Destino
-              </label>
-              <select
-                value={effectiveTableNumber ?? ""}
-                onChange={(e) => {
-                  onClearPreselectedTable();
-                  setTargetTableNumber(
-                    e.target.value ? Number(e.target.value) : "",
-                  );
-                }}
-                className="w-full rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-2 text-xs font-medium outline-none focus:border-[#b5652a]"
-              >
-                <option value="">Balcão (Venda Rápida)</option>
-                {tables.map((t) => (
-                  <option key={t.id} value={t.number}>
-                    {t.name} ({t.status})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-[11px] font-semibold uppercase text-[#6e594b]">
-                Cliente / Identificação
+                {isDeliveryChannel ? "Nome do Cliente *" : "Cliente / Identificação"}
               </label>
               <input
                 type="text"
@@ -393,7 +521,69 @@ export function PosSection({
                 className="w-full rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-2 text-xs outline-none focus:border-[#b5652a]"
               />
             </div>
+            {isDeliveryChannel && (
+              <div>
+                <label className="mb-1 block text-[11px] font-semibold uppercase text-[#6e594b]">
+                  Telefone / WhatsApp
+                </label>
+                <input
+                  type="text"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder={selectedCustomer?.phone ?? "(11) 99999-9999"}
+                  className="w-full rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-2 text-xs outline-none focus:border-[#b5652a]"
+                />
+              </div>
+            )}
           </div>
+
+          {isDelivery && (
+            <div className="mb-3 space-y-2 rounded-xl border border-orange-200 bg-orange-50/50 p-3 text-xs">
+              <div>
+                <label className="mb-1 block text-[10px] font-bold uppercase text-[#6e594b]">
+                  Bairro / Região de Entrega
+                </label>
+                <select
+                  value={selectedZone?.id ?? ""}
+                  onChange={(e) => setDeliveryZoneId(Number(e.target.value))}
+                  className="w-full rounded-lg border border-[#e8ddd0] bg-white px-2.5 py-1.5 text-xs font-medium"
+                >
+                  {activeZones.map((z) => (
+                    <option key={z.id} value={z.id}>
+                      {z.name} · {formatBRL(z.fee)} (~{z.etaMinutes} min · mín {formatBRL(z.minOrder)})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <input
+                type="text"
+                value={deliveryAddress}
+                onChange={(e) => setDeliveryAddress(e.target.value)}
+                placeholder="Rua, número e complemento *"
+                className="w-full rounded-lg border border-[#e8ddd0] bg-white px-2.5 py-1.5 text-xs"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  value={deliveryReference}
+                  onChange={(e) => setDeliveryReference(e.target.value)}
+                  placeholder="Ponto de referência"
+                  className="w-full rounded-lg border border-[#e8ddd0] bg-white px-2.5 py-1.5 text-xs"
+                />
+                {paymentMethod === "DINHEIRO" && (
+                  <input
+                    type="number"
+                    min="0"
+                    step="5"
+                    value={changeFor}
+                    onChange={(e) => setChangeFor(e.target.value)}
+                    placeholder="Troco p/ (R$)"
+                    className="w-full rounded-lg border border-[#e8ddd0] bg-white px-2.5 py-1.5 text-xs"
+                  />
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="mb-4 rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] p-2.5 text-xs">
             <div className="flex items-center justify-between gap-2">
@@ -597,19 +787,34 @@ export function PosSection({
                 </span>
               </div>
             )}
+            {isDelivery && (
+              <div className="flex items-center justify-between">
+                <span className="text-[#6e594b]">
+                  Taxa de Entrega ({selectedZone?.name ?? "—"})
+                </span>
+                <span className="font-mono-num font-semibold text-[#2d6a4f]">
+                  {totals.deliveryFee === 0 ? "Grátis" : formatBRL(totals.deliveryFee)}
+                </span>
+              </div>
+            )}
             <div className="flex items-center justify-between border-t border-[#f2ebe1] pt-2 text-base font-bold text-[#211611]">
               <span>Total</span>
               <span className="font-mono-num text-[#b5652a]">
                 {formatBRL(totals.total)}
               </span>
             </div>
+            {minMissing > 0 && (
+              <p className="rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] font-semibold text-amber-900">
+                Mínimo para {selectedZone?.name}: {formatBRL(selectedZone?.minOrder ?? 0)} (faltam {formatBRL(minMissing)}).
+              </p>
+            )}
           </div>
 
-          {effectiveTableNumber === null && (
+          {effectiveMode !== "MESA" && (
             <div className="mt-3 space-y-2.5">
               <div>
                 <label className="mb-1.5 block text-[11px] font-semibold uppercase text-[#6e594b]">
-                  Forma de Pagamento (Balcão)
+                  {isDeliveryChannel ? "Pagamento na Entrega / Retirada" : "Forma de Pagamento (Balcão)"}
                 </label>
                 <div className="grid grid-cols-4 gap-1.5">
                   {(["PIX", "CREDITO", "DEBITO", "DINHEIRO"] as const).map(
@@ -631,7 +836,7 @@ export function PosSection({
                 </div>
               </div>
 
-              {paymentMethod === "DINHEIRO" && totals.total > 0 && (
+              {!isDeliveryChannel && paymentMethod === "DINHEIRO" && totals.total > 0 && (
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-2.5 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <span className="inline-flex items-center gap-1 font-semibold text-emerald-900">
@@ -657,7 +862,40 @@ export function PosSection({
           )}
 
           <div className="mt-4 flex flex-col gap-2">
-            {effectiveTableNumber === null ? (
+            {effectiveMode === "MESA" ? (
+              <button
+                type="button"
+                disabled={cart.length === 0 || submitting || effectiveTableNumber === null}
+                onClick={() => handleSubmit(false)}
+                className="btn-primary flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-50"
+              >
+                <Receipt className="h-4 w-4" />
+                Lançar na{" "}
+                {tables.find((t) => t.number === effectiveTableNumber)?.name} &
+                KDS
+              </button>
+            ) : isDeliveryChannel ? (
+              <>
+                <button
+                  type="button"
+                  disabled={cart.length === 0 || submitting || minMissing > 0}
+                  onClick={() => handleSubmit(false)}
+                  className="btn-primary flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-50"
+                >
+                  <Bike className="h-4 w-4" />
+                  {isDelivery ? "Registrar Delivery & Enviar p/ KDS" : "Registrar Retirada & KDS"}
+                </button>
+                <button
+                  type="button"
+                  disabled={cart.length === 0 || submitting || minMissing > 0}
+                  onClick={() => handleSubmit(true)}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-4 py-2.5 text-xs font-semibold text-[#211611] hover:bg-[#f2ebe1] disabled:opacity-50"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" />
+                  Já Pago (PIX/Cartão antecipado)
+                </button>
+              </>
+            ) : (
               <>
                 <button
                   type="button"
@@ -678,18 +916,6 @@ export function PosSection({
                   Enviar apenas para KDS (Pagar depois)
                 </button>
               </>
-            ) : (
-              <button
-                type="button"
-                disabled={cart.length === 0 || submitting}
-                onClick={() => handleSubmit(false)}
-                className="btn-primary flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-50"
-              >
-                <Receipt className="h-4 w-4" />
-                Lançar na{" "}
-                {tables.find((t) => t.number === effectiveTableNumber)?.name} &
-                KDS
-              </button>
             )}
           </div>
         </div>

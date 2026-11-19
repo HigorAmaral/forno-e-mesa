@@ -84,6 +84,28 @@ export interface OrderDto {
   paidAt: string | null;
   createdAt: string;
   items: OrderItemDto[];
+  deliveryFee: number;
+  deliveryStatus: string | null;
+  deliveryAddress: string | null;
+  deliveryNeighborhood: string | null;
+  deliveryReference: string | null;
+  deliveryZoneId: number | null;
+  courierName: string | null;
+  changeFor: number | null;
+  estimatedMinutes: number | null;
+  trackingToken: string | null;
+  dispatchedAt: string | null;
+  deliveredAt: string | null;
+}
+
+export interface DeliveryZoneDto {
+  id: number;
+  name: string;
+  fee: number;
+  etaMinutes: number;
+  minOrder: number;
+  isActive: boolean;
+  createdAt: string;
 }
 
 export interface TableWithOrdersDto extends DiningTableSummary {
@@ -204,6 +226,7 @@ export interface WorkspaceSnapshotDto {
   customers: CustomerProfileDto[];
   shiftNotes: ShiftNoteDto[];
   financialEntries: FinancialEntryDto[];
+  deliveryZones: DeliveryZoneDto[];
   metrics: {
     revenueToday: number;
     paidCount: number;
@@ -214,5 +237,7 @@ export interface WorkspaceSnapshotDto {
     lowStockAlerts: number;
     activeCakeOrders: number;
     kdsPendingCount: number;
+    activeDeliveries: number;
+    deliveryRevenue: number;
   };
 }

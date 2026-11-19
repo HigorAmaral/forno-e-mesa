@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const CreateOrderSchema = z.object({
-  channel: z.enum(["PDV_BALCAO", "MESA", "QR_MESA", "ENCOMENDA"]),
+  channel: z.enum(["PDV_BALCAO", "MESA", "QR_MESA", "ENCOMENDA", "DELIVERY", "RETIRADA"]),
   tableNumber: z.number().int().positive().optional(),
   qrToken: z.string().min(4).optional(),
   customerId: z.number().int().positive().optional(),
@@ -13,6 +13,15 @@ export const CreateOrderSchema = z.object({
   notes: z.string().max(500).optional(),
   payNow: z.boolean().optional(),
   paymentMethod: z.enum(["DINHEIRO", "PIX", "CREDITO", "DEBITO"]).optional(),
+  delivery: z
+    .object({
+      zoneId: z.number().int().positive().optional(),
+      address: z.string().max(240).optional(),
+      neighborhood: z.string().max(120).optional(),
+      reference: z.string().max(240).optional(),
+      changeFor: z.number().min(0).max(10000).optional(),
+    })
+    .optional(),
   items: z
     .array(
       z.object({
@@ -24,6 +33,8 @@ export const CreateOrderSchema = z.object({
     .min(1),
 });
 
+export type CreateOrderInput = z.infer<typeof CreateOrderSchema>;
+
 export const CheckoutOrderSchema = z.object({
   paymentMethod: z.enum(["DINHEIRO", "PIX", "CREDITO", "DEBITO"]),
   discount: z.number().min(0).max(50000).optional(),
@@ -32,6 +43,26 @@ export const CheckoutOrderSchema = z.object({
 
 export const UpdateOrderItemStatusSchema = z.object({
   itemStatus: z.enum(["PENDENTE", "PREPARANDO", "PRONTO", "ENTREGUE"]),
+});
+
+export const UpdateDeliverySchema = z.object({
+  deliveryStatus: z
+    .enum(["RECEBIDO", "EM_PREPARO", "PRONTO", "SAIU_ENTREGA", "ENTREGUE", "CANCELADO"])
+    .optional(),
+  courierName: z.string().max(80).optional(),
+  advance: z.boolean().optional(),
+});
+
+export const DeliveryZoneSchema = z.object({
+  name: z.string().min(2).max(80),
+  fee: z.number().min(0).max(500),
+  etaMinutes: z.number().int().min(5).max(240),
+  minOrder: z.number().min(0).max(5000),
+});
+
+export const UpdateDeliveryZoneSchema = DeliveryZoneSchema.partial().extend({
+  id: z.number().int().positive(),
+  isActive: z.boolean().optional(),
 });
 
 export const CreateCakeOrderSchema = z.object({

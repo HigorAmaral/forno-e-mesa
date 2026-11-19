@@ -28,17 +28,20 @@ export interface OrderTotalsResult {
   subtotal: number;
   discount: number;
   serviceFee: number;
+  deliveryFee: number;
   total: number;
 }
 
 /**
- * Computes subtotal, clamped discount, optional 10% service fee, and final total.
+ * Computes subtotal, clamped discount, optional 10% service fee, optional
+ * delivery fee and final total.
  */
 export function calculateOrderTotals(params: {
   items: OrderLineInput[];
   discount?: number;
   applyServiceFee?: boolean;
   serviceFeeRate?: number;
+  deliveryFee?: number;
 }): OrderTotalsResult {
   const subtotal = roundMoney(
     params.items.reduce((acc, item) => acc + Math.max(0, item.qty) * Math.max(0, item.unitPrice), 0),
@@ -48,9 +51,107 @@ export function calculateOrderTotals(params: {
   const netAfterDiscount = roundMoney(subtotal - discount);
   const rate = params.serviceFeeRate ?? 0.1;
   const serviceFee = params.applyServiceFee ? roundMoney(netAfterDiscount * rate) : 0;
-  const total = roundMoney(netAfterDiscount + serviceFee);
+  const deliveryFee = roundMoney(Math.max(0, params.deliveryFee ?? 0));
+  const total = roundMoney(netAfterDiscount + serviceFee + deliveryFee);
 
-  return { subtotal, discount, serviceFee, total };
+  return { subtotal, discount, serviceFee, deliveryFee, total };
+}
+
+/* ───────────────────────────── Delivery ───────────────────────────── */
+
+export type DeliveryStatus =
+  | "RECEBIDO"
+  | "EM_PREPARO"
+  | "PRONTO"
+  | "SAIU_ENTREGA"
+  | "ENTREGUE"
+  | "CANCELADO";
+
+export const DELIVERY_FLOW: DeliveryStatus[] = [
+  "RECEBIDO",
+  "EM_PREPARO",
+  "PRONTO",
+  "SAIU_ENTREGA",
+  "ENTREGUE",
+];
+
+export const DELIVERY_STATUS_LABELS: Record<DeliveryStatus, string> = {
+  RECEBIDO: "Recebido",
+  EM_PREPARO: "Em preparo",
+  PRONTO: "Pronto p/ envio",
+  SAIU_ENTREGA: "Saiu para entrega",
+  ENTREGUE: "Entregue",
+  CANCELADO: "Cancelado",
+};
+
+/** Pickup orders skip the courier step. */
+export function getDeliveryFlow(isPickup: boolean): DeliveryStatus[] {
+  return isPickup ? DELIVERY_FLOW.filter((s) => s !== "SAIU_ENTREGA") : DELIVERY_FLOW;
+}
+
+export function nextDeliveryStatus(
+  current: string | null | undefined,
+  isPickup = false,
+): DeliveryStatus | null {
+  const flow = getDeliveryFlow(isPickup);
+  const idx = flow.indexOf((current ?? "RECEBIDO") as DeliveryStatus);
+  if (idx < 0 || idx >= flow.length - 1) return null;
+  return flow[idx + 1];
+}
+
+/** Delivery is free above the threshold; otherwise the zone fee applies. */
+export function resolveDeliveryFee(params: {
+  zoneFee: number;
+  subtotal: number;
+  freeAbove?: number | null;
+}): number {
+  if (params.freeAbove && params.freeAbove > 0 && params.subtotal >= params.freeAbove) {
+    return 0;
+  }
+  return roundMoney(Math.max(0, params.zoneFee));
+}
+
+/** ETA = longest product preparation + zone travel time (pickup: prep only). */
+export function estimateDeliveryMinutes(params: {
+  prepMinutes: number[];
+  zoneEtaMinutes?: number;
+  isPickup?: boolean;
+}): number {
+  const prep = params.prepMinutes.length ? Math.max(...params.prepMinutes) : 10;
+  const travel = params.isPickup ? 0 : Math.max(0, params.zoneEtaMinutes ?? 30);
+  return Math.max(10, Math.round(prep + travel));
+}
+
+/** Returns the missing amount to reach the zone minimum order (0 when ok). */
+export function missingForMinimumOrder(subtotal: number, minOrder: number): number {
+  return roundMoney(Math.max(0, minOrder - subtotal));
+}
+
+/** Normalizes a Brazilian phone and builds a WhatsApp deep link. */
+export function buildWhatsAppLink(phone: string | null | undefined, message: string): string | null {
+  const digits = (phone ?? "").replace(/\D/g, "");
+  if (digits.length < 10) return null;
+  const full = digits.startsWith("55") && digits.length >= 12 ? digits : `55${digits}`;
+  return `https://wa.me/${full}?text=${encodeURIComponent(message)}`;
+}
+
+export const CHANNEL_LABELS: Record<string, string> = {
+  PDV_BALCAO: "Balcão",
+  MESA: "Mesa",
+  QR_MESA: "QR Mesa",
+  ENCOMENDA: "Encomenda",
+  DELIVERY: "Delivery",
+  RETIRADA: "Retirada",
+};
+
+export function channelLabel(channel: string): string {
+  return CHANNEL_LABELS[channel] ?? channel;
+}
+
+/** Minutes elapsed since an ISO date (never negative). */
+export function minutesSince(iso: string | Date, now: Date = new Date()): number {
+  const t = typeof iso === "string" ? new Date(iso).getTime() : iso.getTime();
+  return Math.max(0, Math.floor((now.getTime() - t) / 60000));
 }
 
 /**
@@ -338,4 +439,21 @@ export function computeFinancialDre(params: {
     netProfit,
     netMarginPct,
   };
+}
+
+/** Delivery is free for orders (subtotal after discount) at or above this value. */
+export const FREE_DELIVERY_ABOVE = 150;
+
+/** Groups paid orders revenue by hour of day (0-23). */
+export function computeSalesByHour(
+  orders: Array<{ status: string; total: number; paidAt: string | Date | null; createdAt: string | Date }>,
+): number[] {
+  const buckets = Array.from({ length: 24 }, () => 0);
+  for (const o of orders) {
+    if (o.status !== "PAGO") continue;
+    const d = new Date(o.paidAt ?? o.createdAt);
+    if (Number.isNaN(d.getTime())) continue;
+    buckets[d.getHours()] = roundMoney(buckets[d.getHours()] + o.total);
+  }
+  return buckets;
 }

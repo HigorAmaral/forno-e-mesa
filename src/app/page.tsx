@@ -19,6 +19,7 @@ const EMPTY_SNAPSHOT: WorkspaceSnapshotDto = {
   customers: [],
   shiftNotes: [],
   financialEntries: [],
+  deliveryZones: [],
   metrics: {
     revenueToday: 0,
     paidCount: 0,
@@ -29,6 +30,8 @@ const EMPTY_SNAPSHOT: WorkspaceSnapshotDto = {
     lowStockAlerts: 0,
     activeCakeOrders: 0,
     kdsPendingCount: 0,
+    activeDeliveries: 0,
+    deliveryRevenue: 0,
   },
 };
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { deriveOrderStatusFromItems, type ItemStatus } from "@/lib/domain";
+import { syncDeliveryFromKitchen } from "@/lib/workspace-service";
 
 export async function POST(
   request: Request,
@@ -35,11 +36,15 @@ export async function POST(
       refreshedItems.map((i) => i.itemStatus as ItemStatus),
     );
 
+    const current = await prisma.order.findUnique({ where: { id: orderId } });
+    const keepFinal = current?.status === "PAGO" || current?.status === "CANCELADO";
+
     const updatedOrder = await prisma.order.update({
       where: { id: orderId },
-      data: { status: nextOrderStatus },
+      data: keepFinal ? {} : { status: nextOrderStatus },
       include: { items: true, table: true },
     });
+    await syncDeliveryFromKitchen(orderId);
 
     return NextResponse.json({ order: updatedOrder });
   } catch (err) {

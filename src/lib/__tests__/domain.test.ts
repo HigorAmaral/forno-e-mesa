@@ -215,3 +215,59 @@ test("isErpAllowedContext bloqueia celular/LAN sem PIN e libera desktop local ou
     true,
   );
 });
+
+import {
+  buildWhatsAppLink,
+  computeSalesByHour,
+  estimateDeliveryMinutes,
+  getDeliveryFlow,
+  missingForMinimumOrder,
+  nextDeliveryStatus,
+  resolveDeliveryFee,
+} from "../domain.ts";
+
+test("calculateOrderTotals inclui taxa de entrega sem taxa de servico", () => {
+  const res = calculateOrderTotals({
+    items: [{ qty: 2, unitPrice: 25 }],
+    deliveryFee: 8,
+  });
+  assert.equal(res.subtotal, 50);
+  assert.equal(res.deliveryFee, 8);
+  assert.equal(res.serviceFee, 0);
+  assert.equal(res.total, 58);
+});
+
+test("resolveDeliveryFee aplica frete gratis acima do limite", () => {
+  assert.equal(resolveDeliveryFee({ zoneFee: 7, subtotal: 100, freeAbove: 150 }), 7);
+  assert.equal(resolveDeliveryFee({ zoneFee: 7, subtotal: 150, freeAbove: 150 }), 0);
+});
+
+test("nextDeliveryStatus e getDeliveryFlow pulam SAIU_ENTREGA na retirada", () => {
+  assert.deepEqual(getDeliveryFlow(true), ["RECEBIDO", "EM_PREPARO", "PRONTO", "ENTREGUE"]);
+  assert.equal(nextDeliveryStatus("PRONTO", false), "SAIU_ENTREGA");
+  assert.equal(nextDeliveryStatus("PRONTO", true), "ENTREGUE");
+  assert.equal(nextDeliveryStatus("ENTREGUE", false), null);
+});
+
+test("estimateDeliveryMinutes e missingForMinimumOrder", () => {
+  assert.equal(estimateDeliveryMinutes({ prepMinutes: [5, 18], zoneEtaMinutes: 25, isPickup: false }), 43);
+  assert.equal(estimateDeliveryMinutes({ prepMinutes: [5, 18], zoneEtaMinutes: 25, isPickup: true }), 18);
+  assert.equal(missingForMinimumOrder(20, 35), 15);
+  assert.equal(missingForMinimumOrder(40, 35), 0);
+});
+
+test("buildWhatsAppLink normaliza telefone brasileiro", () => {
+  const url = buildWhatsAppLink("(11) 98765-4321", "Olá!");
+  assert.ok(url?.startsWith("https://wa.me/5511987654321?text="));
+  assert.equal(buildWhatsAppLink("123", "Oi"), null);
+});
+
+test("computeSalesByHour agrupa faturamento pago por hora", () => {
+  const buckets = computeSalesByHour([
+    { status: "PAGO", total: 50, paidAt: "2026-11-19T10:15:00", createdAt: "2026-11-19T10:00:00" },
+    { status: "PAGO", total: 30, paidAt: "2026-11-19T10:45:00", createdAt: "2026-11-19T10:30:00" },
+    { status: "ABERTO", total: 99, paidAt: null, createdAt: "2026-11-19T10:30:00" },
+  ]);
+  assert.equal(buckets[10], 80);
+  assert.equal(buckets[11], 0);
+});

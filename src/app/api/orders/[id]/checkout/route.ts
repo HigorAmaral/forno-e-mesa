@@ -3,12 +3,15 @@ import { prisma } from "@/lib/prisma";
 import { CheckoutOrderSchema } from "@/lib/schemas";
 import { calculateLoyaltyPointsEarned, calculateOrderTotals, roundMoney } from "@/lib/domain";
 import { registerCashSale } from "@/lib/workspace-service";
+import { forbiddenIfNotErpOperator } from "@/lib/access-guard";
 
 export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   try {
+    const forbidden = await forbiddenIfNotErpOperator();
+    if (forbidden) return forbidden;
     const { id } = await context.params;
     const orderId = Number(id);
     if (!Number.isInteger(orderId) || orderId <= 0) {
@@ -31,13 +34,19 @@ export async function POST(
     if (order.status === "PAGO") {
       return NextResponse.json({ error: "Pedido já foi pago." }, { status: 400 });
     }
+    if (order.status === "CANCELADO") {
+      return NextResponse.json({ error: "Pedido cancelado não pode ser cobrado." }, { status: 400 });
+    }
 
+    const isDeliveryChannel = order.channel === "DELIVERY" || order.channel === "RETIRADA";
     const totals = calculateOrderTotals({
       items: order.items.map((i) => ({ qty: i.qty, unitPrice: i.unitPrice })),
       discount: parsed.data.discount ?? order.discount,
       applyServiceFee:
-        parsed.data.applyServiceFee ??
-        (order.channel === "MESA" || order.channel === "QR_MESA"),
+        !isDeliveryChannel &&
+        (parsed.data.applyServiceFee ??
+          (order.channel === "MESA" || order.channel === "QR_MESA")),
+      deliveryFee: order.deliveryFee,
     });
 
     const updated = await prisma.order.update({
@@ -54,10 +63,15 @@ export async function POST(
       include: { items: true, table: true },
     });
 
-    await prisma.orderItem.updateMany({
-      where: { orderId },
-      data: { itemStatus: "ENTREGUE" },
-    });
+    // Prepaid delivery/pickup orders must keep flowing through kitchen & courier.
+    const deliveryStillRunning =
+      isDeliveryChannel && order.deliveryStatus !== "ENTREGUE" && order.deliveryStatus !== "CANCELADO";
+    if (!deliveryStillRunning) {
+      await prisma.orderItem.updateMany({
+        where: { orderId },
+        data: { itemStatus: "ENTREGUE" },
+      });
+    }
 
     if (order.tableId) {
       await prisma.diningTable.update({

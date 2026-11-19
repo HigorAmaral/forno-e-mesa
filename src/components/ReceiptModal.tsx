@@ -1,7 +1,7 @@
 "use client";
 
 import { Printer, X } from "lucide-react";
-import { formatBRL } from "@/lib/domain";
+import { channelLabel, formatBRL } from "@/lib/domain";
 import type { OrderDto } from "@/types/erp";
 
 interface ReceiptModalProps {
@@ -49,13 +49,37 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
             <div className="flex justify-between">
               <span>Canal:</span>
               <span>
-                {order.table ? `${order.table.name} (${order.channel})` : order.channel}
+                {order.table ? `${order.table.name} (${order.channel})` : channelLabel(order.channel)}
               </span>
             </div>
             {order.customerName && (
               <div className="flex justify-between">
                 <span>Cliente:</span>
                 <span>{order.customerName}</span>
+              </div>
+            )}
+            {order.customerPhone && (
+              <div className="flex justify-between">
+                <span>Telefone:</span>
+                <span>{order.customerPhone}</span>
+              </div>
+            )}
+            {order.deliveryAddress && (
+              <div className="pt-1 text-[10px]">
+                <span className="font-bold">Entrega: </span>
+                <span>
+                  {order.deliveryAddress}
+                  {order.deliveryNeighborhood ? ` · ${order.deliveryNeighborhood}` : ""}
+                </span>
+                {order.deliveryReference && (
+                  <p className="text-[#6e594b]">Ref: {order.deliveryReference}</p>
+                )}
+              </div>
+            )}
+            {order.courierName && (
+              <div className="flex justify-between">
+                <span>Entregador:</span>
+                <span>{order.courierName}</span>
               </div>
             )}
             <div className="flex justify-between">
@@ -100,6 +124,12 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
                 <span>{formatBRL(order.serviceFee)}</span>
               </div>
             )}
+            {order.deliveryFee > 0 && (
+              <div className="flex justify-between">
+                <span>Taxa de Entrega</span>
+                <span>{formatBRL(order.deliveryFee)}</span>
+              </div>
+            )}
             <div className="flex justify-between border-t border-dashed border-[#cbbba7] pt-1.5 text-sm font-bold">
               <span>TOTAL</span>
               <span>{formatBRL(order.total)}</span>
@@ -108,6 +138,12 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
               <span>Pagamento:</span>
               <span>{order.paymentMethod ?? order.status}</span>
             </div>
+            {order.changeFor && (
+              <div className="flex justify-between text-[11px] text-[#6e594b]">
+                <span>Troco para:</span>
+                <span>{formatBRL(order.changeFor)}</span>
+              </div>
+            )}
           </div>
 
           <p className="mt-3 border-t border-dashed border-[#cbbba7] pt-2 text-center text-[10px] text-[#6e594b]">

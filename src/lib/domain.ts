@@ -457,3 +457,76 @@ export function computeSalesByHour(
   }
   return buckets;
 }
+
+export interface CouponBenefitResult {
+  valid: boolean;
+  code: string;
+  discount: number;
+  freeDelivery: boolean;
+  label: string;
+  error?: string;
+}
+
+export const PROMO_COUPONS = [
+  { code: "FORNO10", label: "10% OFF (até R$ 30)" },
+  { code: "BEMVINDO", label: "R$ 10 OFF acima de R$ 40" },
+  { code: "FRETEZERO", label: "Frete Grátis" },
+] as const;
+
+export function resolveCouponBenefit(params: {
+  code?: string | null;
+  subtotal: number;
+}): CouponBenefitResult {
+  const normalized = (params.code ?? "").trim().toUpperCase();
+  if (!normalized) {
+    return { valid: false, code: "", discount: 0, freeDelivery: false, label: "" };
+  }
+  const sub = Math.max(0, roundMoney(params.subtotal));
+  if (normalized === "FORNO10") {
+    const discount = Math.min(30, roundMoney(sub * 0.1));
+    return {
+      valid: true,
+      code: "FORNO10",
+      discount,
+      freeDelivery: false,
+      label: "10% OFF (até R$ 30)",
+    };
+  }
+  if (normalized === "BEMVINDO") {
+    if (sub < 40) {
+      return {
+        valid: false,
+        code: "BEMVINDO",
+        discount: 0,
+        freeDelivery: false,
+        label: "R$ 10 OFF acima de R$ 40",
+        error: "Cupom BEMVINDO exige pedido mínimo de R$ 40,00.",
+      };
+    }
+    return {
+      valid: true,
+      code: "BEMVINDO",
+      discount: 10,
+      freeDelivery: false,
+      label: "R$ 10 OFF",
+    };
+  }
+  if (normalized === "FRETEZERO") {
+    return {
+      valid: true,
+      code: "FRETEZERO",
+      discount: 0,
+      freeDelivery: true,
+      label: "Frete Grátis",
+    };
+  }
+  return {
+    valid: false,
+    code: normalized,
+    discount: 0,
+    freeDelivery: false,
+    label: "",
+    error: "Cupom inválido ou expirado.",
+  };
+}
+

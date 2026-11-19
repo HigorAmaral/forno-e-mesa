@@ -11,6 +11,7 @@ import {
   FREE_DELIVERY_ABOVE,
   missingForMinimumOrder,
   nextDeliveryStatus,
+  resolveCouponBenefit,
   resolveDeliveryFee,
   roundMoney,
   type DeliveryStatus,
@@ -338,21 +339,32 @@ export async function createOrAppendOrder(input: CreateOrderInput, opts: { isPub
     });
   }
 
+  const rawSubtotal = roundMoney(
+    newOrderItems.reduce((s, i) => s + i.qty * i.unitPrice, 0),
+  );
+  const couponBenefit = resolveCouponBenefit({
+    code: input.couponCode,
+    subtotal: rawSubtotal,
+  });
+  const totalDiscount = (input.discount ?? 0) + loyaltyDiscount + (couponBenefit.valid ? couponBenefit.discount : 0);
+
   const preTotals = calculateOrderTotals({
     items: newOrderItems.map((i) => ({ qty: i.qty, unitPrice: i.unitPrice })),
-    discount: (input.discount ?? 0) + loyaltyDiscount,
+    discount: totalDiscount,
   });
   const deliveryFee = deliveryZone
-    ? resolveDeliveryFee({
-        zoneFee: deliveryZone.fee,
-        subtotal: roundMoney(preTotals.subtotal - preTotals.discount),
-        freeAbove: FREE_DELIVERY_ABOVE,
-      })
+    ? couponBenefit.valid && couponBenefit.freeDelivery
+      ? 0
+      : resolveDeliveryFee({
+          zoneFee: deliveryZone.fee,
+          subtotal: roundMoney(preTotals.subtotal - preTotals.discount),
+          freeAbove: FREE_DELIVERY_ABOVE,
+        })
     : 0;
 
   const totals = calculateOrderTotals({
     items: newOrderItems.map((i) => ({ qty: i.qty, unitPrice: i.unitPrice })),
-    discount: (input.discount ?? 0) + loyaltyDiscount,
+    discount: totalDiscount,
     applyServiceFee: useServiceFee,
     deliveryFee,
   });

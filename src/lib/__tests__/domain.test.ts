@@ -13,6 +13,7 @@ import {
   computeIngredientDeductions,
   deriveOrderStatusFromItems,
   getLoyaltyTier,
+  resolveCouponBenefit,
   resolveQrOrigin,
   splitBillAmount,
 } from "../domain.ts";
@@ -271,3 +272,22 @@ test("computeSalesByHour agrupa faturamento pago por hora", () => {
   assert.equal(buckets[10], 80);
   assert.equal(buckets[11], 0);
 });
+
+test("resolveCouponBenefit valida cupons FORNO10, BEMVINDO e FRETEZERO", () => {
+  const c10 = resolveCouponBenefit({ code: "forno10", subtotal: 100 });
+  assert.equal(c10.valid, true);
+  assert.equal(c10.discount, 10);
+  assert.equal(c10.freeDelivery, false);
+
+  const bemInvalid = resolveCouponBenefit({ code: "BEMVINDO", subtotal: 35 });
+  assert.equal(bemInvalid.valid, false);
+
+  const bemValid = resolveCouponBenefit({ code: "BEMVINDO", subtotal: 50 });
+  assert.equal(bemValid.valid, true);
+  assert.equal(bemValid.discount, 10);
+
+  const frete = resolveCouponBenefit({ code: "FRETEZERO", subtotal: 25 });
+  assert.equal(frete.valid, true);
+  assert.equal(frete.freeDelivery, true);
+});
+

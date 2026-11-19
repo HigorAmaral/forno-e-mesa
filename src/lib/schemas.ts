@@ -9,6 +9,7 @@ export const CreateOrderSchema = z.object({
   customerPhone: z.string().max(40).optional(),
   redeemLoyaltyPoints: z.boolean().optional(),
   discount: z.number().min(0).max(50000).optional(),
+  couponCode: z.string().max(32).optional(),
   applyServiceFee: z.boolean().optional(),
   notes: z.string().max(500).optional(),
   payNow: z.boolean().optional(),

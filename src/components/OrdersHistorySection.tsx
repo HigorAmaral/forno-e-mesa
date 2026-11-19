@@ -70,17 +70,17 @@ export function OrdersHistorySection({
       <div className="card-bistro flex flex-wrap items-center justify-between gap-3 p-4">
         <div className="flex flex-1 flex-wrap items-center gap-3">
           <div className="relative min-w-56 flex-1">
-            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#475569]" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#8C5A3C]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar por código (PED-0001), cliente ou mesa..."
-              className="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] py-2 pr-3 pl-9 text-xs outline-none focus:border-[#2563eb]"
+              className="w-full rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] py-2 pr-3 pl-9 text-xs outline-none focus:border-[#C07F5A]"
             />
           </div>
 
-          <div className="flex flex-wrap gap-1 rounded-xl bg-[#f1f5f9] p-1">
+          <div className="flex flex-wrap gap-1 rounded-xl bg-[#E6CCB2] p-1">
             {[
               { id: "ALL", label: "Todos" },
               { id: "OPEN", label: "Em Aberto" },
@@ -94,8 +94,8 @@ export function OrdersHistorySection({
                 onClick={() => setStatusFilter(st.id)}
                 className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${
                   statusFilter === st.id
-                    ? "bg-[#0f172a] text-white"
-                    : "text-[#475569]"
+                    ? "bg-[#3E2723] text-white"
+                    : "text-[#8C5A3C]"
                 }`}
               >
                 {st.label}
@@ -116,7 +116,7 @@ export function OrdersHistorySection({
       <div className="card-bistro overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-[#f1f5f9] bg-[#f8fafc] text-[11px] font-bold uppercase text-[#475569]">
+            <thead className="border-b border-[#E6CCB2] bg-[#FAF3E8] text-[11px] font-bold uppercase text-[#8C5A3C]">
               <tr>
                 <th className="px-4 py-3">Pedido</th>
                 <th className="px-4 py-3">Canal / Origem</th>
@@ -128,26 +128,26 @@ export function OrdersHistorySection({
                 <th className="px-4 py-3 text-right">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f1f5f9]">
+            <tbody className="divide-y divide-[#E6CCB2]">
               {filtered.map((order) => (
-                <tr key={order.id} className="hover:bg-[#f8fafc]/60">
+                <tr key={order.id} className="hover:bg-[#FAF3E8]/60">
                   <td className="px-4 py-3">
-                    <span className="font-mono-num font-bold text-[#0f172a]">
+                    <span className="font-mono-num font-bold text-[#3E2723]">
                       {order.code}
                     </span>
-                    <p className="text-[10px] text-[#475569]">
+                    <p className="text-[10px] text-[#8C5A3C]">
                       {new Date(order.createdAt).toLocaleString("pt-BR")}
                     </p>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="rounded-md bg-[#f1f5f9] px-2 py-0.5 text-[10px] font-bold">
+                    <span className="rounded-md bg-[#E6CCB2] px-2 py-0.5 text-[10px] font-bold">
                       {order.table ? order.table.name : channelLabel(order.channel)}
                     </span>
                   </td>
                   <td className="px-4 py-3 font-medium">
                     {order.customerName ?? "-"}
                   </td>
-                  <td className="max-w-56 truncate px-4 py-3 text-[#475569]">
+                  <td className="max-w-56 truncate px-4 py-3 text-[#8C5A3C]">
                     {order.items
                       .map((i) => `${i.qty}× ${i.productName}`)
                       .join(", ")}
@@ -165,10 +165,10 @@ export function OrdersHistorySection({
                       {order.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-[#475569]">
+                  <td className="px-4 py-3 text-[#8C5A3C]">
                     {order.paymentMethod ?? "Em aberto"}
                   </td>
-                  <td className="font-mono-num px-4 py-3 text-right font-bold text-[#0f172a]">
+                  <td className="font-mono-num px-4 py-3 text-right font-bold text-[#3E2723]">
                     {formatBRL(order.total)}
                   </td>
                   <td className="px-4 py-3">
@@ -176,7 +176,7 @@ export function OrdersHistorySection({
                       <button
                         type="button"
                         onClick={() => onOpenReceipt(order)}
-                        className="rounded-lg border border-[#e2e8f0] bg-white p-1.5 hover:bg-[#f1f5f9]"
+                        className="rounded-lg border border-[#E6CCB2] bg-white p-1.5 hover:bg-[#E6CCB2]"
                         title="Imprimir cupom"
                       >
                         <Receipt className="h-3.5 w-3.5" />

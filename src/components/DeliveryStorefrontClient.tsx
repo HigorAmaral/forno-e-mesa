@@ -63,9 +63,9 @@ function SectorThumb({ sector }: { sector: string }) {
   const s = sector.toUpperCase();
   if (s.includes("PADARIA") || s.includes("PAO")) {
     return (
-      <div className="flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700">
-        <Croissant className="h-7 w-7 text-[#ea1d2c]" />
-        <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-zinc-500">
+      <div className="flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-700">
+        <Croissant className="h-7 w-7 text-[#2563eb]" />
+        <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-slate-500">
           Padaria
         </span>
       </div>
@@ -73,9 +73,9 @@ function SectorThumb({ sector }: { sector: string }) {
   }
   if (s.includes("CONFEITARIA") || s.includes("BOLO") || s.includes("DOCE")) {
     return (
-      <div className="flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700">
-        <CakeSlice className="h-7 w-7 text-[#ea1d2c]" />
-        <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-zinc-500">
+      <div className="flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-700">
+        <CakeSlice className="h-7 w-7 text-[#2563eb]" />
+        <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-slate-500">
           Doces
         </span>
       </div>
@@ -83,18 +83,18 @@ function SectorThumb({ sector }: { sector: string }) {
   }
   if (s.includes("CAFE") || s.includes("BEBIDA")) {
     return (
-      <div className="flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700">
-        <Coffee className="h-7 w-7 text-[#ea1d2c]" />
-        <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-zinc-500">
+      <div className="flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-700">
+        <Coffee className="h-7 w-7 text-[#2563eb]" />
+        <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-slate-500">
           Cafeteria
         </span>
       </div>
     );
   }
   return (
-    <div className="flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700">
-      <UtensilsCrossed className="h-7 w-7 text-[#ea1d2c]" />
-      <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-zinc-500">
+    <div className="flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-700">
+      <UtensilsCrossed className="h-7 w-7 text-[#2563eb]" />
+      <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-slate-500">
         Bistrô
       </span>
     </div>
@@ -307,49 +307,49 @@ export function DeliveryStorefrontClient({
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f7f7] text-zinc-900 pb-24 lg:pb-12">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-24 lg:pb-12">
       {/* iFood-Style Top Header */}
-      <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white">
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           {/* Brand & Location Pill */}
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ea1d2c] text-white">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#2563eb] text-white">
               <Coffee className="h-5 w-5" />
             </div>
             <div className="hidden sm:block">
-              <p className="text-sm font-bold leading-tight text-zinc-900">
+              <p className="text-sm font-bold leading-tight text-slate-900">
                 Forno & Mesa
               </p>
-              <p className="text-[11px] text-zinc-500">Padaria & Bistrô</p>
+              <p className="text-[11px] text-slate-500">Padaria & Bistrô</p>
             </div>
 
             <button
               type="button"
               onClick={() => setLocationModalOpen(true)}
-              className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-left text-xs transition hover:border-zinc-300 hover:bg-zinc-100"
+              className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-left text-xs transition hover:border-slate-300 hover:bg-slate-100"
             >
-              <MapPin className="h-3.5 w-3.5 shrink-0 text-[#ea1d2c]" />
-              <span className="max-w-[160px] truncate font-semibold text-zinc-800 sm:max-w-[220px]">
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-[#2563eb]" />
+              <span className="max-w-[160px] truncate font-semibold text-slate-800 sm:max-w-[220px]">
                 {mode === "RETIRADA"
                   ? "Retirar no balcão"
                   : selectedZone
                     ? `Entregar em: ${selectedZone.name}`
                     : "Escolher bairro"}
               </span>
-              <ChevronDown className="h-3.5 w-3.5 text-zinc-400" />
+              <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
             </button>
           </div>
 
           {/* Search Input */}
           <div className="order-3 w-full sm:order-2 sm:max-w-sm sm:flex-1">
             <div className="relative">
-              <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+              <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Busque por item no cardápio..."
-                className="w-full rounded-lg border border-zinc-200 bg-zinc-100 py-2 pr-3 pl-9 text-sm text-zinc-900 placeholder:text-zinc-500 focus:border-zinc-400 focus:bg-white focus:outline-none"
+                className="w-full rounded-lg border border-slate-200 bg-slate-100 py-2 pr-3 pl-9 text-sm text-slate-900 placeholder:text-slate-500 focus:border-slate-400 focus:bg-white focus:outline-none"
               />
             </div>
           </div>
@@ -358,7 +358,7 @@ export function DeliveryStorefrontClient({
           <button
             type="button"
             onClick={() => setBagOpen(true)}
-            className="order-2 inline-flex items-center gap-2 rounded-lg bg-[#ea1d2c] px-3.5 py-2 text-xs font-bold text-white transition hover:bg-[#c81623] sm:order-3"
+            className="order-2 inline-flex items-center gap-2 rounded-lg bg-[#2563eb] px-3.5 py-2 text-xs font-bold text-white transition hover:bg-[#1d4ed8] sm:order-3"
           >
             <ShoppingBag className="h-4 w-4" />
             <span className="hidden sm:inline">Sacola</span>
@@ -372,15 +372,15 @@ export function DeliveryStorefrontClient({
 
       <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 sm:px-6">
         {/* Store Info Banner */}
-        <section className="rounded-xl border border-zinc-200 bg-white p-4 sm:p-6">
+        <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div className="flex items-start gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 bg-[#ea1d2c] text-white sm:h-20 sm:w-20">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-[#2563eb] text-white sm:h-20 sm:w-20">
                 <Coffee className="h-8 w-8 sm:h-10 sm:w-10" />
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl">
+                  <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
                     Forno & Mesa — Padaria & Bistrô
                   </h1>
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
@@ -388,22 +388,22 @@ export function DeliveryStorefrontClient({
                     Aberto agora
                   </span>
                 </div>
-                <p className="mt-1 text-xs text-zinc-500 sm:text-sm">
+                <p className="mt-1 text-xs text-slate-500 sm:text-sm">
                   Pães de fermentação natural, doces artesanais, cafés especiais e pratos do bistrô.
                 </p>
-                <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-zinc-600">
+                <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-600">
                   <span className="inline-flex items-center gap-1 font-semibold text-amber-600">
                     <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
                     4.9
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5 text-zinc-400" />
+                    <Clock className="h-3.5 w-3.5 text-slate-400" />
                     {mode === "RETIRADA"
                       ? "~15-20 min (Retirada)"
                       : `${selectedZone?.etaMinutes ?? 35} min`}
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <Bike className="h-3.5 w-3.5 text-zinc-400" />
+                    <Bike className="h-3.5 w-3.5 text-slate-400" />
                     {mode === "RETIRADA"
                       ? "Retirada grátis"
                       : deliveryFee === 0
@@ -411,7 +411,7 @@ export function DeliveryStorefrontClient({
                         : `Entrega ${formatBRL(deliveryFee)}`}
                   </span>
                   {mode === "DELIVERY" && selectedZone && (
-                    <span className="text-zinc-500">
+                    <span className="text-slate-500">
                       Pedido mínimo {formatBRL(selectedZone.minOrder)}
                     </span>
                   )}
@@ -420,28 +420,28 @@ export function DeliveryStorefrontClient({
             </div>
 
             <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
-              <div className="inline-flex rounded-lg border border-zinc-200 bg-zinc-100 p-1">
+              <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-1">
                 <button
                   type="button"
                   onClick={() => setMode("DELIVERY")}
                   className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
                     mode === "DELIVERY"
-                      ? "bg-white text-zinc-900 shadow-xs"
-                      : "text-zinc-600 hover:text-zinc-900"
+                      ? "bg-white text-slate-900 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
-                  <Bike className="h-3.5 w-3.5 text-[#ea1d2c]" /> Entrega
+                  <Bike className="h-3.5 w-3.5 text-[#2563eb]" /> Entrega
                 </button>
                 <button
                   type="button"
                   onClick={() => setMode("RETIRADA")}
                   className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
                     mode === "RETIRADA"
-                      ? "bg-white text-zinc-900 shadow-xs"
-                      : "text-zinc-600 hover:text-zinc-900"
+                      ? "bg-white text-slate-900 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
-                  <Store className="h-3.5 w-3.5 text-[#ea1d2c]" /> Retirada
+                  <Store className="h-3.5 w-3.5 text-[#2563eb]" /> Retirada
                 </button>
               </div>
               <p className="text-[11px] font-medium text-emerald-700">
@@ -454,7 +454,7 @@ export function DeliveryStorefrontClient({
         {/* Destaques Section (when not filtering) */}
         {activeCategory === "ALL" && !search.trim() && featuredProducts.length > 0 && (
           <section className="space-y-3">
-            <h2 className="text-lg font-bold text-zinc-900">Destaques</h2>
+            <h2 className="text-lg font-bold text-slate-900">Destaques</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {featuredProducts.slice(0, 4).map(({ product, sector }) => {
                 const inCart = cart.find((c) => c.product.id === product.id);
@@ -462,26 +462,26 @@ export function DeliveryStorefrontClient({
                   <div
                     key={product.id}
                     onClick={() => openProductModal(product, sector)}
-                    className="group flex cursor-pointer flex-col justify-between rounded-xl border border-zinc-200 bg-white p-4 transition hover:border-zinc-300 hover:shadow-sm"
+                    className="group flex cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <span className="inline-block rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-bold uppercase text-[#ea1d2c]">
+                        <span className="inline-block rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold uppercase text-[#2563eb]">
                           Mais pedido
                         </span>
-                        <h3 className="mt-1.5 line-clamp-1 text-sm font-bold text-zinc-900">
+                        <h3 className="mt-1.5 line-clamp-1 text-sm font-bold text-slate-900">
                           {product.name}
                         </h3>
-                        <p className="mt-1 line-clamp-2 text-xs text-zinc-500">
+                        <p className="mt-1 line-clamp-2 text-xs text-slate-500">
                           {product.description}
                         </p>
                       </div>
                       <SectorThumb sector={sector} />
                     </div>
-                    <div className="mt-3 flex items-center justify-between border-t border-zinc-100 pt-2.5">
-                      <span className="font-mono-num text-sm font-bold text-zinc-900">
+                    <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5">
+                      <span className="font-mono-num text-sm font-bold text-slate-900">
                         {formatBRL(product.price)}
-                        <span className="text-[11px] font-normal text-zinc-500">
+                        <span className="text-[11px] font-normal text-slate-500">
                           /{product.unit}
                         </span>
                       </span>
@@ -491,7 +491,7 @@ export function DeliveryStorefrontClient({
                           e.stopPropagation();
                           addProductDirect(product);
                         }}
-                        className="inline-flex items-center gap-1 rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-xs font-bold text-[#ea1d2c] transition hover:border-[#ea1d2c] hover:bg-red-50"
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-[#2563eb] transition hover:border-[#2563eb] hover:bg-blue-50"
                       >
                         <Plus className="h-3.5 w-3.5" />
                         {inCart ? inCart.qty : "Adicionar"}
@@ -505,15 +505,15 @@ export function DeliveryStorefrontClient({
         )}
 
         {/* Sticky Category Tabs */}
-        <div className="sticky top-[65px] z-20 -mx-4 border-b border-zinc-200 bg-[#f7f7f7]/95 px-4 backdrop-blur-xs sm:-mx-6 sm:px-6">
+        <div className="sticky top-[65px] z-20 -mx-4 border-b border-slate-200 bg-[#f8fafc]/95 px-4 backdrop-blur-xs sm:-mx-6 sm:px-6">
           <div className="no-scrollbar flex gap-2 overflow-x-auto py-2.5">
             <button
               type="button"
               onClick={() => setActiveCategory("ALL")}
               className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition ${
                 activeCategory === "ALL"
-                  ? "bg-[#ea1d2c] text-white"
-                  : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100"
+                  ? "bg-[#2563eb] text-white"
+                  : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
               }`}
             >
               Todos
@@ -525,8 +525,8 @@ export function DeliveryStorefrontClient({
                 onClick={() => setActiveCategory(cat.id)}
                 className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition ${
                   activeCategory === cat.id
-                    ? "bg-[#ea1d2c] text-white"
-                    : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100"
+                    ? "bg-[#2563eb] text-white"
+                    : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
                 }`}
               >
                 {cat.name}
@@ -538,15 +538,15 @@ export function DeliveryStorefrontClient({
         {/* Category Product Lists (iFood 2-column horizontal cards) */}
         <div className="space-y-8">
           {visibleCategories.length === 0 ? (
-            <div className="rounded-xl border border-zinc-200 bg-white p-10 text-center text-sm text-zinc-500">
+            <div className="rounded-xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">
               Nenhum item encontrado para &ldquo;{search}&rdquo;.
             </div>
           ) : (
             visibleCategories.map((cat) => (
               <section key={cat.id} className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-bold text-zinc-900">{cat.name}</h2>
-                  <span className="text-xs font-medium text-zinc-500">
+                  <h2 className="text-lg font-bold text-slate-900">{cat.name}</h2>
+                  <span className="text-xs font-medium text-slate-500">
                     {cat.products.length}{" "}
                     {cat.products.length === 1 ? "item" : "itens"}
                   </span>
@@ -559,25 +559,25 @@ export function DeliveryStorefrontClient({
                       <div
                         key={prod.id}
                         onClick={() => openProductModal(prod, cat.sector)}
-                        className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-zinc-200 bg-white p-4 transition hover:border-zinc-300 hover:shadow-sm"
+                        className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm"
                       >
                         <div className="flex min-w-0 flex-1 flex-col justify-between">
                           <div>
-                            <h3 className="text-sm font-bold text-zinc-900">
+                            <h3 className="text-sm font-bold text-slate-900">
                               {prod.name}
                             </h3>
-                            <p className="mt-1 line-clamp-2 text-xs text-zinc-500">
+                            <p className="mt-1 line-clamp-2 text-xs text-slate-500">
                               {prod.description}
                             </p>
                           </div>
                           <div className="mt-3 flex items-center gap-3">
-                            <span className="font-mono-num text-sm font-bold text-zinc-900">
+                            <span className="font-mono-num text-sm font-bold text-slate-900">
                               {formatBRL(prod.price)}
-                              <span className="text-[11px] font-normal text-zinc-500">
+                              <span className="text-[11px] font-normal text-slate-500">
                                 /{prod.unit}
                               </span>
                             </span>
-                            <span className="text-[11px] text-zinc-400">
+                            <span className="text-[11px] text-slate-400">
                               ~{prod.prepTimeMinutes} min
                             </span>
                           </div>
@@ -592,8 +592,8 @@ export function DeliveryStorefrontClient({
                               addProductDirect(prod);
                             }}
                             aria-label={`Adicionar ${prod.name}`}
-                            className={`absolute -right-1.5 -bottom-1.5 flex h-7 items-center justify-center rounded-full border border-zinc-200 bg-white px-2 text-xs font-bold shadow-xs transition hover:border-[#ea1d2c] ${
-                              inCart ? "bg-[#ea1d2c] text-white border-[#ea1d2c]" : "text-[#ea1d2c]"
+                            className={`absolute -right-1.5 -bottom-1.5 flex h-7 items-center justify-center rounded-full border border-slate-200 bg-white px-2 text-xs font-bold shadow-xs transition hover:border-[#2563eb] ${
+                              inCart ? "bg-[#2563eb] text-white border-[#2563eb]" : "text-[#2563eb]"
                             }`}
                           >
                             {inCart ? (
@@ -615,11 +615,11 @@ export function DeliveryStorefrontClient({
 
       {/* Mobile Floating Sacola Bar */}
       {cart.length > 0 && !bagOpen && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200 bg-white p-3 shadow-lg lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white p-3 shadow-lg lg:hidden">
           <button
             type="button"
             onClick={() => setBagOpen(true)}
-            className="flex w-full items-center justify-between rounded-lg bg-[#ea1d2c] px-4 py-3 text-sm font-bold text-white"
+            className="flex w-full items-center justify-between rounded-lg bg-[#2563eb] px-4 py-3 text-sm font-bold text-white"
           >
             <span className="inline-flex items-center gap-2">
               <ShoppingBag className="h-4 w-4" />
@@ -634,8 +634,8 @@ export function DeliveryStorefrontClient({
       {locationModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl">
-            <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
-              <h3 className="text-base font-bold text-zinc-900">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <h3 className="text-base font-bold text-slate-900">
                 Como você quer receber?
               </h3>
               <button
@@ -648,17 +648,17 @@ export function DeliveryStorefrontClient({
             </div>
 
             <div className="mt-4 space-y-4">
-              <div className="grid grid-cols-2 gap-2 rounded-lg bg-zinc-100 p-1">
+              <div className="grid grid-cols-2 gap-2 rounded-lg bg-slate-100 p-1">
                 <button
                   type="button"
                   onClick={() => setMode("DELIVERY")}
                   className={`flex items-center justify-center gap-1.5 rounded-md py-2 text-xs font-bold transition ${
                     mode === "DELIVERY"
-                      ? "bg-white text-zinc-900 shadow-xs"
-                      : "text-zinc-600"
+                      ? "bg-white text-slate-900 shadow-xs"
+                      : "text-slate-600"
                   }`}
                 >
-                  <Bike className="h-4 w-4 text-[#ea1d2c]" /> Delivery
+                  <Bike className="h-4 w-4 text-[#2563eb]" /> Delivery
                 </button>
                 <button
                   type="button"
@@ -668,17 +668,17 @@ export function DeliveryStorefrontClient({
                   }}
                   className={`flex items-center justify-center gap-1.5 rounded-md py-2 text-xs font-bold transition ${
                     mode === "RETIRADA"
-                      ? "bg-white text-zinc-900 shadow-xs"
-                      : "text-zinc-600"
+                      ? "bg-white text-slate-900 shadow-xs"
+                      : "text-slate-600"
                   }`}
                 >
-                  <Store className="h-4 w-4 text-[#ea1d2c]" /> Retirar no Balcão
+                  <Store className="h-4 w-4 text-[#2563eb]" /> Retirar no Balcão
                 </button>
               </div>
 
               {mode === "DELIVERY" && (
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold text-zinc-600">
+                  <p className="text-xs font-semibold text-slate-600">
                     Selecione seu bairro:
                   </p>
                   <div className="max-h-60 space-y-1.5 overflow-y-auto">
@@ -692,17 +692,17 @@ export function DeliveryStorefrontClient({
                         }}
                         className={`flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left text-xs transition ${
                           zoneId === z.id
-                            ? "border-[#ea1d2c] bg-red-50/60"
-                            : "border-zinc-200 hover:bg-zinc-50"
+                            ? "border-[#2563eb] bg-blue-50/60"
+                            : "border-slate-200 hover:bg-slate-50"
                         }`}
                       >
                         <div>
-                          <p className="font-bold text-zinc-900">{z.name}</p>
-                          <p className="text-[11px] text-zinc-500">
+                          <p className="font-bold text-slate-900">{z.name}</p>
+                          <p className="text-[11px] text-slate-500">
                             ~{z.etaMinutes} min · Mín. {formatBRL(z.minOrder)}
                           </p>
                         </div>
-                        <span className="font-mono-num font-bold text-zinc-800">
+                        <span className="font-mono-num font-bold text-slate-800">
                           {formatBRL(z.fee)}
                         </span>
                       </button>
@@ -725,19 +725,19 @@ export function DeliveryStorefrontClient({
             className="w-full max-w-lg rounded-t-2xl bg-white p-5 shadow-xl sm:rounded-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start justify-between gap-3 border-b border-zinc-100 pb-4">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-4">
               <div className="flex items-start gap-3">
                 <SectorThumb sector={selectedProduct.sector} />
                 <div>
-                  <h3 className="text-base font-bold text-zinc-900">
+                  <h3 className="text-base font-bold text-slate-900">
                     {selectedProduct.product.name}
                   </h3>
-                  <p className="mt-1 text-xs text-zinc-500">
+                  <p className="mt-1 text-xs text-slate-500">
                     {selectedProduct.product.description}
                   </p>
-                  <p className="font-mono-num mt-2 text-sm font-bold text-zinc-900">
+                  <p className="font-mono-num mt-2 text-sm font-bold text-slate-900">
                     {formatBRL(selectedProduct.product.price)}
-                    <span className="text-xs font-normal text-zinc-500">
+                    <span className="text-xs font-normal text-slate-500">
                       /{selectedProduct.product.unit}
                     </span>
                   </p>
@@ -765,14 +765,14 @@ export function DeliveryStorefrontClient({
               </label>
 
               <div className="flex items-center justify-between gap-3 pt-2">
-                <div className="flex items-center gap-2 rounded-lg border border-zinc-200 px-2 py-1">
+                <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-2 py-1">
                   <button
                     type="button"
                     onClick={() => {
                       const step = selectedProduct.product.unit === "KG" ? 0.1 : 1;
                       setModalQty((q) => Math.max(step, Number((q - step).toFixed(3))));
                     }}
-                    className="p-1 text-zinc-600 hover:text-[#ea1d2c]"
+                    className="p-1 text-slate-600 hover:text-[#2563eb]"
                   >
                     <Minus className="h-4 w-4" />
                   </button>
@@ -785,7 +785,7 @@ export function DeliveryStorefrontClient({
                       const step = selectedProduct.product.unit === "KG" ? 0.1 : 1;
                       setModalQty((q) => Number((q + step).toFixed(3)));
                     }}
-                    className="p-1 text-[#ea1d2c]"
+                    className="p-1 text-[#2563eb]"
                   >
                     <Plus className="h-4 w-4" />
                   </button>
@@ -797,7 +797,7 @@ export function DeliveryStorefrontClient({
                     addProductDirect(selectedProduct.product, modalQty, modalNotes);
                     setSelectedProduct(null);
                   }}
-                  className="flex flex-1 items-center justify-between rounded-lg bg-[#ea1d2c] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#c81623]"
+                  className="flex flex-1 items-center justify-between rounded-lg bg-[#2563eb] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#1d4ed8]"
                 >
                   <span>Adicionar</span>
                   <span className="font-mono-num">
@@ -821,12 +821,12 @@ export function DeliveryStorefrontClient({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drawer Header */}
-            <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4">
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
               <div className="flex items-center gap-2">
-                <ShoppingBag className="h-5 w-5 text-[#ea1d2c]" />
-                <h2 className="text-base font-bold text-zinc-900">Sua sacola</h2>
+                <ShoppingBag className="h-5 w-5 text-[#2563eb]" />
+                <h2 className="text-base font-bold text-slate-900">Sua sacola</h2>
                 {cart.length > 0 && (
-                  <span className="font-mono-num rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-700">
+                  <span className="font-mono-num rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700">
                     ~{etaMinutes} min
                   </span>
                 )}
@@ -848,45 +848,45 @@ export function DeliveryStorefrontClient({
             >
               <div className="space-y-4 p-5">
                 {/* Mode Switcher */}
-                <div className="grid grid-cols-2 gap-1.5 rounded-lg bg-zinc-100 p-1">
+                <div className="grid grid-cols-2 gap-1.5 rounded-lg bg-slate-100 p-1">
                   <button
                     type="button"
                     onClick={() => setMode("DELIVERY")}
                     className={`flex items-center justify-center gap-1.5 rounded-md py-2 text-xs font-bold transition ${
                       mode === "DELIVERY"
-                        ? "bg-white text-zinc-900 shadow-xs"
-                        : "text-zinc-600"
+                        ? "bg-white text-slate-900 shadow-xs"
+                        : "text-slate-600"
                     }`}
                   >
-                    <Bike className="h-4 w-4 text-[#ea1d2c]" /> Entrega
+                    <Bike className="h-4 w-4 text-[#2563eb]" /> Entrega
                   </button>
                   <button
                     type="button"
                     onClick={() => setMode("RETIRADA")}
                     className={`flex items-center justify-center gap-1.5 rounded-md py-2 text-xs font-bold transition ${
                       mode === "RETIRADA"
-                        ? "bg-white text-zinc-900 shadow-xs"
-                        : "text-zinc-600"
+                        ? "bg-white text-slate-900 shadow-xs"
+                        : "text-slate-600"
                     }`}
                   >
-                    <Store className="h-4 w-4 text-[#ea1d2c]" /> Retirada
+                    <Store className="h-4 w-4 text-[#2563eb]" /> Retirada
                   </button>
                 </div>
 
                 {/* Free Shipping Bar */}
                 {mode === "DELIVERY" && (
-                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-[11px]">
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[11px]">
                     <div className="flex items-center justify-between font-semibold">
-                      <span className="text-zinc-700">
+                      <span className="text-slate-700">
                         {freeShippingRemaining === 0
                           ? "Frete grátis desbloqueado!"
                           : `Faltam ${formatBRL(freeShippingRemaining)} para frete grátis`}
                       </span>
-                      <span className="font-mono-num text-zinc-500">
+                      <span className="font-mono-num text-slate-500">
                         {freeShippingPct}%
                       </span>
                     </div>
-                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-200">
+                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-200">
                       <div
                         className="h-full rounded-full bg-[#16a34a] transition-all"
                         style={{ width: `${freeShippingPct}%` }}
@@ -897,12 +897,12 @@ export function DeliveryStorefrontClient({
 
                 {/* Cart Items */}
                 {cart.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center">
-                    <ShoppingBag className="mx-auto h-8 w-8 text-zinc-400" />
-                    <p className="mt-2 text-xs font-semibold text-zinc-700">
+                  <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+                    <ShoppingBag className="mx-auto h-8 w-8 text-slate-400" />
+                    <p className="mt-2 text-xs font-semibold text-slate-700">
                       Sua sacola está vazia
                     </p>
-                    <p className="mt-1 text-[11px] text-zinc-500">
+                    <p className="mt-1 text-[11px] text-slate-500">
                       Adicione itens do cardápio para fazer seu pedido.
                     </p>
                   </div>
@@ -911,21 +911,21 @@ export function DeliveryStorefrontClient({
                     {cart.map((line) => (
                       <div
                         key={line.product.id}
-                        className="rounded-lg border border-zinc-200 bg-white p-3 text-xs"
+                        className="rounded-lg border border-slate-200 bg-white p-3 text-xs"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
-                            <p className="truncate font-bold text-zinc-900">
+                            <p className="truncate font-bold text-slate-900">
                               {line.product.name}
                             </p>
-                            <p className="font-mono-num text-[11px] text-zinc-500">
+                            <p className="font-mono-num text-[11px] text-slate-500">
                               {formatBRL(line.product.price)}/{line.product.unit}
                             </p>
                           </div>
                           <button
                             type="button"
                             onClick={() => updateQty(line.product.id, 0)}
-                            className="text-zinc-400 hover:text-[#ea1d2c]"
+                            className="text-slate-400 hover:text-[#2563eb]"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
@@ -971,7 +971,7 @@ export function DeliveryStorefrontClient({
                               <Plus className="h-3 w-3" />
                             </button>
                           </div>
-                          <span className="font-mono-num font-bold text-zinc-900">
+                          <span className="font-mono-num font-bold text-slate-900">
                             {formatBRL(line.qty * line.product.price)}
                           </span>
                         </div>
@@ -992,7 +992,7 @@ export function DeliveryStorefrontClient({
 
                 {/* Customer & Address Fields */}
                 {cart.length > 0 && (
-                  <div className="space-y-3 border-t border-zinc-200 pt-4">
+                  <div className="space-y-3 border-t border-slate-200 pt-4">
                     <div className="grid gap-2.5 sm:grid-cols-2">
                       <label className="field-label">
                         Seu nome *
@@ -1069,8 +1069,8 @@ export function DeliveryStorefrontClient({
                               onClick={() => setPaymentMethod(pm)}
                               className={`rounded-lg py-1.5 text-[11px] font-bold transition ${
                                 paymentMethod === pm
-                                  ? "bg-zinc-900 text-white"
-                                  : "border border-zinc-200 bg-zinc-50 text-zinc-600 hover:bg-zinc-100"
+                                  ? "bg-slate-900 text-white"
+                                  : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
                               }`}
                             >
                               {pm}
@@ -1109,16 +1109,16 @@ export function DeliveryStorefrontClient({
 
               {/* Drawer Footer */}
               {cart.length > 0 && (
-                <div className="space-y-3 border-t border-zinc-200 bg-zinc-50 p-5">
+                <div className="space-y-3 border-t border-slate-200 bg-slate-50 p-5">
                   <div className="space-y-1 text-xs">
-                    <div className="flex justify-between text-zinc-600">
+                    <div className="flex justify-between text-slate-600">
                       <span>Subtotal</span>
                       <span className="font-mono-num font-semibold">
                         {formatBRL(totals.subtotal)}
                       </span>
                     </div>
                     {mode === "DELIVERY" && (
-                      <div className="flex justify-between text-zinc-600">
+                      <div className="flex justify-between text-slate-600">
                         <span>Taxa de entrega ({selectedZone?.name ?? "—"})</span>
                         <span className="font-mono-num font-semibold">
                           {totals.deliveryFee === 0
@@ -1127,9 +1127,9 @@ export function DeliveryStorefrontClient({
                         </span>
                       </div>
                     )}
-                    <div className="flex justify-between border-t border-zinc-200 pt-2 text-sm font-bold text-zinc-900">
+                    <div className="flex justify-between border-t border-slate-200 pt-2 text-sm font-bold text-slate-900">
                       <span>Total</span>
-                      <span className="font-mono-num text-[#ea1d2c]">
+                      <span className="font-mono-num text-[#2563eb]">
                         {formatBRL(totals.total)}
                       </span>
                     </div>

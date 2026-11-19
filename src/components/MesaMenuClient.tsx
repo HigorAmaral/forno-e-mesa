@@ -180,22 +180,22 @@ export function MesaMenuClient({
   }
 
   return (
-    <div className="min-h-screen bg-[#f6f6f3] pb-28">
-      <header className="sticky top-0 z-20 border-b border-[#e5e4df] bg-white/95 backdrop-blur-md">
+    <div className="min-h-screen bg-[#f8fafc] pb-28">
+      <header className="sticky top-0 z-20 border-b border-[#e2e8f0] bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3.5">
           <div>
             <div className="flex items-center gap-2">
-              <UtensilsCrossed className="h-5 w-5 text-[#d95d24]" />
-              <h1 className="font-display text-lg font-bold text-[#121417]">
+              <UtensilsCrossed className="h-5 w-5 text-[#2563eb]" />
+              <h1 className="font-display text-lg font-bold text-[#0f172a]">
                 Forno & Mesa
               </h1>
             </div>
-            <p className="text-xs text-[#5a5f67]">
+            <p className="text-xs text-[#475569]">
               {tableName} · {area} · Cardápio Digital
             </p>
           </div>
 
-          <span className="rounded-full border border-[#e5e4df] bg-[#f6f6f3] px-3 py-1.5 text-xs font-semibold text-[#5a5f67]">
+          <span className="rounded-full border border-[#e2e8f0] bg-[#f8fafc] px-3 py-1.5 text-xs font-semibold text-[#475569]">
             Cardápio da Mesa
           </span>
         </div>
@@ -206,8 +206,8 @@ export function MesaMenuClient({
             onClick={() => setSelectedCategoryId("ALL")}
             className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
               selectedCategoryId === "ALL"
-                ? "bg-[#121417] text-white"
-                : "bg-[#eeeeea] text-[#5a5f67]"
+                ? "bg-[#0f172a] text-white"
+                : "bg-[#f1f5f9] text-[#475569]"
             }`}
           >
             Tudo
@@ -219,8 +219,8 @@ export function MesaMenuClient({
               onClick={() => setSelectedCategoryId(cat.id)}
               className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
                 selectedCategoryId === cat.id
-                  ? "bg-[#d95d24] text-white"
-                  : "bg-[#eeeeea] text-[#5a5f67]"
+                  ? "bg-[#2563eb] text-white"
+                  : "bg-[#f1f5f9] text-[#475569]"
               }`}
             >
               {cat.name}
@@ -241,13 +241,13 @@ export function MesaMenuClient({
           <section className="card-bistro animate-fade-in p-4">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <ChefHat className="h-4 w-4 text-[#d95d24]" />
-                <h2 className="text-sm font-bold text-[#121417]">
+                <ChefHat className="h-4 w-4 text-[#2563eb]" />
+                <h2 className="text-sm font-bold text-[#0f172a]">
                   Comanda Aberta · {activeCommand.code}
                 </h2>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-mono-num text-sm font-bold text-[#d95d24]">
+                <span className="font-mono-num text-sm font-bold text-[#2563eb]">
                   {formatBRL(activeCommand.total)}
                 </span>
                 <button
@@ -266,14 +266,14 @@ export function MesaMenuClient({
                 return (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between rounded-xl bg-[#f6f6f3] px-3 py-2 text-xs"
+                    className="flex items-center justify-between rounded-xl bg-[#f8fafc] px-3 py-2 text-xs"
                   >
                     <div>
-                      <p className="font-semibold text-[#121417]">
+                      <p className="font-semibold text-[#0f172a]">
                         {item.qty}× {item.productName}
                       </p>
                       {item.notes && (
-                        <p className="text-[11px] text-[#5a5f67]">Obs: {item.notes}</p>
+                        <p className="text-[11px] text-[#475569]">Obs: {item.notes}</p>
                       )}
                     </div>
                     <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${st.badge}`}>
@@ -289,10 +289,10 @@ export function MesaMenuClient({
         {visibleCategories.map((category) => (
           <section key={category.id} className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-xl font-bold text-[#121417]">
+              <h2 className="font-display text-xl font-bold text-[#0f172a]">
                 {category.name}
               </h2>
-              <span className="text-xs font-medium text-[#5a5f67]">
+              <span className="text-xs font-medium text-[#475569]">
                 {category.products.length} opções
               </span>
             </div>
@@ -303,25 +303,25 @@ export function MesaMenuClient({
                 return (
                   <div
                     key={product.id}
-                    className="rounded-2xl border border-[#e5e4df] bg-white p-4 shadow-xs"
+                    className="rounded-2xl border border-[#e2e8f0] bg-white p-4 shadow-xs"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-[#121417]">{product.name}</h3>
+                          <h3 className="font-semibold text-[#0f172a]">{product.name}</h3>
                           {product.isFeatured && (
                             <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
                               <Sparkles className="h-3 w-3" /> Destaque
                             </span>
                           )}
                         </div>
-                        <p className="text-xs leading-relaxed text-[#5a5f67]">
+                        <p className="text-xs leading-relaxed text-[#475569]">
                           {product.description}
                         </p>
-                        <div className="flex items-center gap-3 pt-1 text-xs text-[#5a5f67]">
-                          <span className="font-mono-num text-sm font-bold text-[#121417]">
+                        <div className="flex items-center gap-3 pt-1 text-xs text-[#475569]">
+                          <span className="font-mono-num text-sm font-bold text-[#0f172a]">
                             {formatBRL(product.price)}{" "}
-                            <span className="text-[11px] font-normal text-[#5a5f67]">
+                            <span className="text-[11px] font-normal text-[#475569]">
                               / {product.unit}
                             </span>
                           </span>
@@ -335,16 +335,16 @@ export function MesaMenuClient({
                         <button
                           type="button"
                           onClick={() => addToCart(product)}
-                          className="shrink-0 rounded-xl bg-[#d95d24] px-3.5 py-2 text-xs font-semibold text-white hover:bg-[#b84917]"
+                          className="shrink-0 rounded-xl bg-[#2563eb] px-3.5 py-2 text-xs font-semibold text-white hover:bg-[#1d4ed8]"
                         >
                           + Adicionar
                         </button>
                       ) : (
-                        <div className="flex shrink-0 items-center gap-2 rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-2 py-1">
+                        <div className="flex shrink-0 items-center gap-2 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-2 py-1">
                           <button
                             type="button"
                             onClick={() => updateQty(product.id, -1)}
-                            className="rounded-lg p-1 text-[#121417] hover:bg-white"
+                            className="rounded-lg p-1 text-[#0f172a] hover:bg-white"
                           >
                             <Minus className="h-3.5 w-3.5" />
                           </button>
@@ -354,7 +354,7 @@ export function MesaMenuClient({
                           <button
                             type="button"
                             onClick={() => updateQty(product.id, 1)}
-                            className="rounded-lg p-1 text-[#121417] hover:bg-white"
+                            className="rounded-lg p-1 text-[#0f172a] hover:bg-white"
                           >
                             <Plus className="h-3.5 w-3.5" />
                           </button>
@@ -368,7 +368,7 @@ export function MesaMenuClient({
                         value={inCart.notes}
                         onChange={(e) => updateNotes(product.id, e.target.value)}
                         placeholder="Observação para cozinha/confeitaria (ex: sem cebola, ponto da carne)..."
-                        className="mt-3 w-full rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs text-[#121417] outline-none focus:border-[#d95d24]"
+                        className="mt-3 w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-xs text-[#0f172a] outline-none focus:border-[#2563eb]"
                       />
                     )}
                   </div>
@@ -380,20 +380,20 @@ export function MesaMenuClient({
       </main>
 
       {cart.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[#e5e4df] bg-white p-4 shadow-2xl">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[#e2e8f0] bg-white p-4 shadow-2xl">
           <div className="mx-auto flex max-w-2xl flex-col gap-2.5 sm:flex-row sm:items-center">
             <input
               type="text"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder="Seu nome (opcional)"
-              className="rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs outline-none focus:border-[#d95d24] sm:w-44"
+              className="rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-xs outline-none focus:border-[#2563eb] sm:w-44"
             />
             <button
               type="button"
               onClick={submitQrOrder}
               disabled={submitting}
-              className="flex flex-1 items-center justify-between rounded-xl bg-[#d95d24] px-4 py-3 text-sm font-semibold text-white hover:bg-[#b84917] disabled:opacity-60"
+              className="flex flex-1 items-center justify-between rounded-xl bg-[#2563eb] px-4 py-3 text-sm font-semibold text-white hover:bg-[#1d4ed8] disabled:opacity-60"
             >
               <span className="flex items-center gap-2">
                 <ShoppingBag className="h-4 w-4" />

@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --bg-canvas: #f4f4f5;
+  --bg-canvas: #f8fafc;
   --bg-surface: #ffffff;
-  --bg-subtle: #f4f4f5;
-  --bg-shell: #18181b;
-  --text-primary: #18181b;
-  --text-secondary: #52525b;
-  --text-muted: #71717a;
-  --border-warm: #e4e4e7;
-  --border-strong: #d4d4d8;
-  --accent-primary: #ea1d2c;
-  --accent-primary-dark: #c81623;
-  --accent-success: #16a34a;
+  --bg-subtle: #f1f5f9;
+  --bg-shell: #0f172a;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-warm: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --accent-primary: #2563eb;
+  --accent-primary-dark: #1d4ed8;
+  --accent-success: #059669;
 }
 
 @layer base {
@@ -37,8 +37,8 @@
   select:focus,
   textarea:focus {
     outline: none;
-    border-color: #18181b;
-    box-shadow: 0 0 0 2px rgba(24, 24, 27, 0.1);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
   }
 
   button,
@@ -59,8 +59,8 @@
   }
 
   .cafe-sidebar {
-    background-color: #18181b;
-    border-color: #27272a;
+    background-color: #0f172a;
+    border-color: #1e293b;
   }
 
   .cafe-topbar {
@@ -72,23 +72,23 @@
     background-color: var(--bg-surface);
     border: 1px solid var(--border-warm);
     border-radius: 0.75rem;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     transition: border-color 140ms ease, box-shadow 140ms ease;
   }
 
   .card-bistro-interactive:hover {
-    border-color: #a1a1aa;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    border-color: #94a3b8;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
   }
 
   .btn-primary {
-    background-color: #ea1d2c;
+    background-color: var(--accent-primary);
     color: #ffffff;
     transition: background-color 140ms ease, transform 100ms ease;
   }
 
   .btn-primary:hover:not(:disabled) {
-    background-color: #c81623;
+    background-color: var(--accent-primary-dark);
   }
 
   .btn-primary:active:not(:disabled) {
@@ -146,7 +146,7 @@
   }
 
   .icon-btn:hover {
-    background-color: #f4f4f5;
+    background-color: var(--bg-subtle);
     color: var(--text-primary);
   }
 
@@ -156,7 +156,7 @@
     gap: 0.25rem;
     border-radius: 0.625rem;
     border: 1px solid var(--border-warm);
-    background-color: #f4f4f5;
+    background-color: var(--bg-subtle);
     padding: 0.2rem;
   }
 
@@ -170,7 +170,7 @@
   }
 
   .segmented > button[data-active="true"] {
-    background-color: #18181b;
+    background-color: #0f172a;
     color: #ffffff;
   }
 
@@ -197,7 +197,7 @@
     flex-direction: column;
     border-radius: 0.75rem;
     border: 1px solid var(--border-warm);
-    background-color: #f4f4f5;
+    background-color: var(--bg-subtle);
     padding: 0.75rem;
     min-height: 18rem;
   }
@@ -210,7 +210,7 @@
 
   .data-table thead th {
     border-bottom: 1px solid var(--border-warm);
-    background-color: #fafafa;
+    background-color: #f8fafc;
     padding: 0.7rem 1rem;
     text-align: left;
     font-size: 0.6875rem;
@@ -222,7 +222,7 @@
   }
 
   .data-table tbody td {
-    border-bottom: 1px solid #f4f4f5;
+    border-bottom: 1px solid #f1f5f9;
     padding: 0.7rem 1rem;
     vertical-align: middle;
   }
@@ -232,7 +232,7 @@
   }
 
   .data-table tbody tr:hover {
-    background-color: #fafafa;
+    background-color: #f8fafc;
   }
 }
 
@@ -270,12 +270,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d4d4d8;
+  background: #cbd5e1;
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a1a1aa;
+  background: #94a3b8;
 }
 
 @media print {

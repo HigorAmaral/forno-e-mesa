@@ -290,14 +290,14 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
         {/* Brand */}
         <div className="flex items-center justify-between gap-2 px-1">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#ea1d2c] text-white">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#2563eb] text-white">
               <Coffee className="h-5 w-5" />
             </div>
             <div>
               <h1 className="text-base font-bold leading-tight text-white">
                 Forno & Mesa
               </h1>
-              <p className="text-[11px] font-medium text-zinc-400">
+              <p className="text-[11px] font-medium text-slate-400">
                 Gestão & Delivery
               </p>
             </div>
@@ -305,7 +305,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(false)}
-            className="rounded-lg p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white lg:hidden"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white lg:hidden"
             aria-label="Fechar menu"
           >
             <X className="h-5 w-5" />
@@ -316,7 +316,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
         <nav className="space-y-5">
           {navGroups.map((group) => (
             <div key={group.title} className="space-y-1">
-              <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+              <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                 {group.title}
               </p>
               <div className="space-y-0.5">
@@ -333,8 +333,8 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                       }}
                       className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold transition ${
                         active
-                          ? "bg-[#ea1d2c] text-white"
-                          : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                          ? "bg-[#2563eb] text-white"
+                          : "text-slate-300 hover:bg-slate-800 hover:text-white"
                       }`}
                     >
                       <span className="flex items-center gap-2.5">
@@ -346,7 +346,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                           className={`font-mono-num rounded-full px-2 py-0.5 text-[10px] font-bold ${
                             active
                               ? "bg-white/20 text-white"
-                              : "bg-zinc-800 text-zinc-200"
+                              : "bg-slate-800 text-slate-200"
                           }`}
                         >
                           {item.badge}
@@ -362,22 +362,22 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
       </div>
 
       {/* Bottom Status & Storefront Link */}
-      <div className="space-y-2 border-t border-zinc-800 pt-4">
+      <div className="space-y-2 border-t border-slate-800 pt-4">
         <a
           href="/delivery"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center justify-between rounded-lg border border-zinc-700 bg-zinc-800/80 px-3 py-2 text-xs font-semibold text-white transition hover:bg-zinc-800"
+          className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
         >
           <span className="flex items-center gap-2">
-            <Truck className="h-4 w-4 text-[#ea1d2c]" />
+            <Truck className="h-4 w-4 text-[#2563eb]" />
             Cardápio Delivery
           </span>
-          <ExternalLink className="h-3.5 w-3.5 text-zinc-400" />
+          <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
         </a>
 
-        <div className="rounded-lg bg-zinc-800/60 px-3 py-2 text-[11px]">
-          <p className="text-zinc-400">Status do Caixa</p>
+        <div className="rounded-lg bg-slate-800/60 px-3 py-2 text-[11px]">
+          <p className="text-slate-400">Status do Caixa</p>
           <p
             className={`font-mono-num mt-0.5 font-bold ${
               data.openCashSession ? "text-emerald-400" : "text-amber-300"
@@ -393,7 +393,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
   );
 
   return (
-    <div className="min-h-screen w-full bg-[#f4f4f5] text-zinc-900">
+    <div className="min-h-screen w-full bg-[#f8fafc] text-slate-900">
       {/* Desktop Fixed Sidebar */}
       <aside className="cafe-sidebar hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:block lg:w-64 lg:overflow-y-auto lg:border-r">
         {sidebarContent}
@@ -426,10 +426,10 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
               <Menu className="h-5 w-5" />
             </button>
             <div>
-              <h2 className="text-base font-bold leading-tight text-zinc-900 sm:text-lg">
+              <h2 className="text-base font-bold leading-tight text-slate-900 sm:text-lg">
                 {currentTabLabel}
               </h2>
-              <p className="hidden text-xs text-zinc-500 sm:block">
+              <p className="hidden text-xs text-slate-500 sm:block">
                 Salão, Balcão, Delivery & Produção
               </p>
             </div>
@@ -440,7 +440,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
               href="/delivery"
               target="_blank"
               rel="noreferrer"
-              className="hidden items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-[#ea1d2c] transition hover:bg-red-100 sm:inline-flex"
+              className="hidden items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-[#2563eb] transition hover:bg-blue-100 sm:inline-flex"
             >
               <Truck className="h-3.5 w-3.5" />
               Abrir Delivery (Cliente)
@@ -448,14 +448,14 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
             <button
               type="button"
               onClick={() => setQrTableNumber(data.tables[0]?.number ?? 1)}
-              className="hidden items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-50 md:inline-flex"
+              className="hidden items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 transition hover:bg-slate-50 md:inline-flex"
             >
-              <QrCode className="h-3.5 w-3.5 text-zinc-600" />
+              <QrCode className="h-3.5 w-3.5 text-slate-600" />
               QR Mesas
             </button>
             <a
               href="/api/reports/export"
-              className="hidden items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-50 md:inline-flex"
+              className="hidden items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 transition hover:bg-slate-50 md:inline-flex"
             >
               <Download className="h-3.5 w-3.5 text-emerald-700" />
               CSV
@@ -463,7 +463,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
             <button
               type="button"
               onClick={refreshWorkspace}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 transition hover:bg-slate-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">Atualizar</span>
@@ -498,11 +498,11 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
             <div className="animate-fade-in space-y-6">
               {/* Hero + KPI Bento Grid */}
               <div className="grid gap-4 xl:grid-cols-12">
-                <div className="flex flex-col justify-between rounded-2xl bg-[#121417] p-5 text-white shadow-lg sm:p-6 xl:col-span-5">
+                <div className="flex flex-col justify-between rounded-2xl bg-[#0f172a] p-5 text-white shadow-lg sm:p-6 xl:col-span-5">
                   <div>
                     <div className="flex items-center justify-between gap-2">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold text-[#f2b880]">
-                        <Target className="h-3.5 w-3.5 text-[#d95d24]" />
+                        <Target className="h-3.5 w-3.5 text-[#2563eb]" />
                         Meta Diária
                       </span>
                       <div className="flex items-center gap-1 text-[11px]">
@@ -540,7 +540,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
 
                     <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-[#d95d24] to-[#22c55e] transition-all duration-500"
+                        className="h-full rounded-full bg-gradient-to-r from-[#2563eb] to-[#22c55e] transition-all duration-500"
                         style={{ width: `${goalPct}%` }}
                       />
                     </div>
@@ -576,37 +576,37 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                 <div className="grid gap-4 sm:grid-cols-2 xl:col-span-7">
                   <div className="card-bistro flex flex-col justify-between p-5">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-[#5a5f67]">Mesas & Salão</p>
+                      <p className="text-xs font-semibold text-[#475569]">Mesas & Salão</p>
                       <span className="rounded-xl bg-amber-50 p-2 text-amber-700">
                         <UtensilsCrossed className="h-4 w-4" />
                       </span>
                     </div>
-                    <p className="font-mono-num mt-2 text-2xl font-bold text-[#121417]">
+                    <p className="font-mono-num mt-2 text-2xl font-bold text-[#0f172a]">
                       {data.metrics.occupiedTables} / {data.metrics.totalTables}
                     </p>
-                    <p className="mt-1 text-[11px] text-[#5a5f67]">
+                    <p className="mt-1 text-[11px] text-[#475569]">
                       {data.metrics.activeOrdersCount} pedidos em aberto no salão
                     </p>
                   </div>
 
                   <div className="card-bistro flex flex-col justify-between p-5">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-[#5a5f67]">Delivery & KDS</p>
-                      <span className="rounded-xl bg-orange-50 p-2 text-[#d95d24]">
+                      <p className="text-xs font-semibold text-[#475569]">Delivery & KDS</p>
+                      <span className="rounded-xl bg-orange-50 p-2 text-[#2563eb]">
                         <Truck className="h-4 w-4" />
                       </span>
                     </div>
-                    <p className="font-mono-num mt-2 text-2xl font-bold text-[#d95d24]">
+                    <p className="font-mono-num mt-2 text-2xl font-bold text-[#2563eb]">
                       {data.metrics.activeDeliveries} entregas · {data.metrics.kdsPendingCount} KDS
                     </p>
-                    <p className="mt-1 text-[11px] text-[#5a5f67]">
+                    <p className="mt-1 text-[11px] text-[#475569]">
                       Receita delivery hoje: {formatBRL(data.metrics.deliveryRevenue)}
                     </p>
                   </div>
 
                   <div className="card-bistro flex flex-col justify-between p-5">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-[#5a5f67]">Clube Fidelidade</p>
+                      <p className="text-xs font-semibold text-[#475569]">Clube Fidelidade</p>
                       <span className="rounded-xl bg-emerald-50 p-2 text-emerald-700">
                         <Award className="h-4 w-4" />
                       </span>
@@ -614,14 +614,14 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                     <p className="font-mono-num mt-2 text-2xl font-bold text-emerald-700">
                       {data.customers.length} clientes
                     </p>
-                    <p className="mt-1 text-[11px] text-[#5a5f67]">
+                    <p className="mt-1 text-[11px] text-[#475569]">
                       {activePointsTotal} pontos acumulados · {data.metrics.activeCakeOrders} encomendas
                     </p>
                   </div>
 
                   <div className="card-bistro flex flex-col justify-between p-5">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-[#5a5f67]">Alertas de Estoque</p>
+                      <p className="text-xs font-semibold text-[#475569]">Alertas de Estoque</p>
                       <span className="rounded-xl bg-red-50 p-2 text-red-700">
                         <AlertTriangle className="h-4 w-4" />
                       </span>
@@ -629,7 +629,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                     <p className="font-mono-num mt-2 text-2xl font-bold text-amber-700">
                       {data.metrics.lowStockAlerts}
                     </p>
-                    <p className="mt-1 text-[11px] text-[#5a5f67]">
+                    <p className="mt-1 text-[11px] text-[#475569]">
                       Insumos ou produtos abaixo do mínimo
                     </p>
                   </div>
@@ -642,7 +642,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                   <h3 className="font-display text-base font-bold">Receita por Canal</h3>
                   <div className="mt-3 space-y-2.5 text-xs">
                     {analytics.channels.length === 0 ? (
-                      <p className="text-[#5a5f67]">Sem vendas pagas ainda.</p>
+                      <p className="text-[#475569]">Sem vendas pagas ainda.</p>
                     ) : (
                       analytics.channels.map(([ch, val]) => {
                         const pct = Math.round((val / Math.max(1, analytics.totalPaid)) * 100);
@@ -654,9 +654,9 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                                 {formatBRL(val)} ({pct}%)
                               </span>
                             </div>
-                            <div className="h-2 overflow-hidden rounded-full bg-[#eeeeea]">
+                            <div className="h-2 overflow-hidden rounded-full bg-[#f1f5f9]">
                               <div
-                                className="h-full rounded-full bg-[#d95d24]"
+                                className="h-full rounded-full bg-[#2563eb]"
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
@@ -671,7 +671,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                   <h3 className="font-display text-base font-bold">Meios de Pagamento</h3>
                   <div className="mt-3 space-y-2.5 text-xs">
                     {analytics.payments.length === 0 ? (
-                      <p className="text-[#5a5f67]">Sem recebimentos ainda.</p>
+                      <p className="text-[#475569]">Sem recebimentos ainda.</p>
                     ) : (
                       analytics.payments.map(([pm, val]) => {
                         const pct = Math.round((val / Math.max(1, analytics.totalPaid)) * 100);
@@ -683,7 +683,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                                 {formatBRL(val)} ({pct}%)
                               </span>
                             </div>
-                            <div className="h-2 overflow-hidden rounded-full bg-[#eeeeea]">
+                            <div className="h-2 overflow-hidden rounded-full bg-[#f1f5f9]">
                               <div
                                 className="h-full rounded-full bg-[#15803d]"
                                 style={{ width: `${pct}%` }}
@@ -698,7 +698,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
 
                 <div className="card-bistro p-5">
                   <h3 className="font-display flex items-center gap-1.5 text-base font-bold">
-                    <BarChart3 className="h-4 w-4 text-[#d95d24]" /> Vendas por Hora
+                    <BarChart3 className="h-4 w-4 text-[#2563eb]" /> Vendas por Hora
                   </h3>
                   <div className="mt-4 flex h-28 items-end gap-1">
                     {analytics.salesByHour.slice(7, 23).map((val, idx) => {
@@ -710,7 +710,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                             <div
                               title={`${hour}h: ${formatBRL(val)}`}
                               className={`w-full rounded-t-sm transition-all ${
-                                val > 0 ? "bg-[#d95d24] group-hover:bg-[#b84917]" : "bg-[#eeeeea]"
+                                val > 0 ? "bg-[#2563eb] group-hover:bg-[#1d4ed8]" : "bg-[#f1f5f9]"
                               }`}
                               style={{ height: `${heightPct}%` }}
                             />
@@ -730,12 +730,12 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                     {analytics.topProducts.map((p, idx) => (
                       <div
                         key={p.name}
-                        className="flex items-center justify-between rounded-lg bg-[#f6f6f3] px-2.5 py-1.5"
+                        className="flex items-center justify-between rounded-lg bg-[#f8fafc] px-2.5 py-1.5"
                       >
                         <span className="truncate font-semibold">
                           {idx + 1}. {p.name}
                         </span>
-                        <span className="font-mono-num shrink-0 font-bold text-[#d95d24]">
+                        <span className="font-mono-num shrink-0 font-bold text-[#2563eb]">
                           {formatBRL(p.revenue)}
                         </span>
                       </div>
@@ -752,7 +752,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                     <button
                       type="button"
                       onClick={() => setActiveTab("pdv")}
-                      className="text-xs font-semibold text-[#d95d24] hover:underline"
+                      className="text-xs font-semibold text-[#2563eb] hover:underline"
                     >
                       Novo Pedido →
                     </button>
@@ -762,7 +762,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                     {data.orders.slice(0, 6).map((order) => (
                       <div
                         key={order.id}
-                        className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#eeeeea] bg-[#fafaf8] p-3 text-xs"
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#f1f5f9] bg-[#fafaf8] p-3 text-xs"
                       >
                         <div>
                           <div className="flex items-center gap-2">
@@ -782,13 +782,13 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                               {order.status}
                             </span>
                           </div>
-                          <p className="mt-1 text-[#5a5f67]">
+                          <p className="mt-1 text-[#475569]">
                             {order.customerName ?? "Cliente"} · {order.items.length} itens
                           </p>
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <span className="font-mono-num text-sm font-bold text-[#121417]">
+                          <span className="font-mono-num text-sm font-bold text-[#0f172a]">
                             {formatBRL(order.total)}
                           </span>
                           <button
@@ -809,10 +809,10 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                 <div className="card-bistro p-5 xl:col-span-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h3 className="font-display flex items-center gap-2 text-lg font-bold">
-                      <StickyNote className="h-4 w-4 text-[#d95d24]" />
+                      <StickyNote className="h-4 w-4 text-[#2563eb]" />
                       Mural do Turno
                     </h3>
-                    <span className="chip bg-[#eeeeea] text-[#5a5f67]">
+                    <span className="chip bg-[#f1f5f9] text-[#475569]">
                       {data.shiftNotes.filter((n) => !n.isDone).length} ativos
                     </span>
                   </div>
@@ -859,16 +859,16 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                         key={note.id}
                         className={`flex items-start justify-between gap-2 rounded-xl border p-2.5 text-xs ${
                           note.isDone
-                            ? "border-[#e5e4df] bg-[#fafaf8] opacity-60"
+                            ? "border-[#e2e8f0] bg-[#fafaf8] opacity-60"
                             : note.priority === "IMPORTANTE"
                               ? "border-amber-300 bg-amber-50/70"
-                              : "border-[#eeeeea] bg-[#fafaf8]"
+                              : "border-[#f1f5f9] bg-[#fafaf8]"
                         }`}
                       >
                         <button
                           type="button"
                           onClick={() => handleToggleNote(note.id, !note.isDone)}
-                          className="mt-0.5 text-[#d95d24]"
+                          className="mt-0.5 text-[#2563eb]"
                           title="Marcar concluído"
                         >
                           {note.isDone ? (
@@ -879,7 +879,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                         </button>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-[#121417]">{note.author}</span>
+                            <span className="font-bold text-[#0f172a]">{note.author}</span>
                             {note.priority === "IMPORTANTE" && (
                               <span className="rounded bg-amber-200 px-1.5 py-0.5 text-[9px] font-bold text-amber-950">
                                 IMPORTANTE
@@ -887,7 +887,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                             )}
                           </div>
                           <p
-                            className={`mt-0.5 text-[#5a5f67] ${
+                            className={`mt-0.5 text-[#475569] ${
                               note.isDone ? "line-through" : ""
                             }`}
                           >
@@ -912,12 +912,12 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                   <div className="card-bistro p-5">
                     <div className="mb-3 flex items-center justify-between">
                       <h3 className="font-display flex items-center gap-2 text-lg font-bold">
-                        <Croissant className="h-4 w-4 text-[#d95d24]" /> Fornadas
+                        <Croissant className="h-4 w-4 text-[#2563eb]" /> Fornadas
                       </h3>
                       <button
                         type="button"
                         onClick={() => setActiveTab("bakery")}
-                        className="text-xs font-semibold text-[#d95d24] hover:underline"
+                        className="text-xs font-semibold text-[#2563eb] hover:underline"
                       >
                         Gerenciar →
                       </button>
@@ -926,7 +926,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                       {data.batches.slice(0, 4).map((b) => (
                         <div
                           key={b.id}
-                          className="flex items-center justify-between rounded-xl bg-[#f6f6f3] px-3 py-2 text-xs"
+                          className="flex items-center justify-between rounded-xl bg-[#f8fafc] px-3 py-2 text-xs"
                         >
                           <span className="truncate">
                             <strong className="font-mono-num">{b.bakeTime}</strong> ·{" "}
@@ -943,12 +943,12 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                   <div className="card-bistro p-5">
                     <div className="mb-3 flex items-center justify-between">
                       <h3 className="font-display flex items-center gap-2 text-lg font-bold">
-                        <QrCode className="h-4 w-4 text-[#d95d24]" /> Mesas QR
+                        <QrCode className="h-4 w-4 text-[#2563eb]" /> Mesas QR
                       </h3>
                       <button
                         type="button"
                         onClick={() => setActiveTab("tables")}
-                        className="text-xs font-semibold text-[#d95d24] hover:underline"
+                        className="text-xs font-semibold text-[#2563eb] hover:underline"
                       >
                         Ver Mesas →
                       </button>
@@ -959,7 +959,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                           key={t.id}
                           type="button"
                           onClick={() => setQrTableNumber(t.number)}
-                          className="rounded-xl border border-[#e5e4df] bg-[#fafaf8] px-2.5 py-1.5 text-xs font-semibold hover:border-[#d95d24]"
+                          className="rounded-xl border border-[#e2e8f0] bg-[#fafaf8] px-2.5 py-1.5 text-xs font-semibold hover:border-[#2563eb]"
                         >
                           {t.name}
                         </button>
@@ -1088,7 +1088,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
       </div>
 
       {/* Mobile Bottom Quick Dock */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t border-[#e5e4df] bg-white/95 px-2 py-1.5 backdrop-blur-md lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t border-[#e2e8f0] bg-white/95 px-2 py-1.5 backdrop-blur-md lg:hidden">
         {(
           [
             { id: "overview", label: "Painel", icon: LayoutDashboard },
@@ -1106,7 +1106,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
               type="button"
               onClick={() => setActiveTab(item.id)}
               className={`flex flex-col items-center gap-0.5 rounded-xl px-3 py-1 text-[10px] font-bold transition ${
-                active ? "text-[#d95d24]" : "text-[#5a5f67]"
+                active ? "text-[#2563eb]" : "text-[#475569]"
               }`}
             >
               <Icon className="h-4 w-4" />

@@ -333,13 +333,13 @@ export function PosSection({
       <div className="min-w-0 space-y-4 xl:col-span-8">
         <div className="card-bistro flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1">
-            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#5a5f67]" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#475569]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar pão, bolo, prato, bebida ou código..."
-              className="w-full rounded-xl border border-[#e5e4df] bg-[#f6f6f3] py-2 pr-3 pl-9 text-sm outline-none focus:border-[#d95d24]"
+              className="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] py-2 pr-3 pl-9 text-sm outline-none focus:border-[#2563eb]"
             />
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -350,8 +350,8 @@ export function PosSection({
                 onClick={() => setSector(s.id)}
                 className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
                   sector === s.id
-                    ? "bg-[#121417] text-white"
-                    : "bg-[#eeeeea] text-[#5a5f67] hover:text-[#121417]"
+                    ? "bg-[#0f172a] text-white"
+                    : "bg-[#f1f5f9] text-[#475569] hover:text-[#0f172a]"
                 }`}
               >
                 {s.label}
@@ -360,22 +360,22 @@ export function PosSection({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-[#e5e4df] bg-gradient-to-r from-[#fff8ee] to-[#f7ede0] px-4 py-2.5 text-xs">
-          <span className="inline-flex items-center gap-1.5 font-bold text-[#b84917]">
-            <Sparkles className="h-3.5 w-3.5 text-[#d95d24]" />
+        <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-[#e2e8f0] bg-gradient-to-r from-[#fff8ee] to-[#f7ede0] px-4 py-2.5 text-xs">
+          <span className="inline-flex items-center gap-1.5 font-bold text-[#1d4ed8]">
+            <Sparkles className="h-3.5 w-3.5 text-[#2563eb]" />
             Combos Rápidos (desc. R$ 5):
           </span>
           <button
             type="button"
             onClick={() => applyCombo("CAFE_MANHA")}
-            className="rounded-lg border border-[#e09132]/40 bg-white px-2.5 py-1 font-semibold text-[#121417] transition hover:border-[#d95d24] hover:bg-[#d95d24] hover:text-white"
+            className="rounded-lg border border-[#3b82f6]/40 bg-white px-2.5 py-1 font-semibold text-[#0f172a] transition hover:border-[#2563eb] hover:bg-[#2563eb] hover:text-white"
           >
             + Café da Manhã (Croissant + Cappuccino)
           </button>
           <button
             type="button"
             onClick={() => applyCombo("BISTRO")}
-            className="rounded-lg border border-[#e09132]/40 bg-white px-2.5 py-1 font-semibold text-[#121417] transition hover:border-[#d95d24] hover:bg-[#d95d24] hover:text-white"
+            className="rounded-lg border border-[#3b82f6]/40 bg-white px-2.5 py-1 font-semibold text-[#0f172a] transition hover:border-[#2563eb] hover:bg-[#2563eb] hover:text-white"
           >
             + Almoço Bistrô (Risoto + Suco)
           </button>
@@ -391,7 +391,7 @@ export function PosSection({
             >
               <div>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="rounded-md bg-[#eeeeea] px-2 py-0.5 text-[10px] font-bold text-[#5a5f67]">
+                  <span className="rounded-md bg-[#f1f5f9] px-2 py-0.5 text-[10px] font-bold text-[#475569]">
                     {product.category.sector} · {product.prepStation}
                   </span>
                   {product.unit === "KG" && (
@@ -400,18 +400,18 @@ export function PosSection({
                     </span>
                   )}
                 </div>
-                <h3 className="mt-2.5 font-semibold text-[#121417] group-hover:text-[#d95d24]">
+                <h3 className="mt-2.5 font-semibold text-[#0f172a] group-hover:text-[#2563eb]">
                   {product.name}
                 </h3>
-                <p className="mt-1 line-clamp-2 text-xs text-[#5a5f67]">
+                <p className="mt-1 line-clamp-2 text-xs text-[#475569]">
                   {product.description}
                 </p>
               </div>
 
-              <div className="mt-3 flex items-end justify-between border-t border-[#eeeeea] pt-2.5">
-                <span className="font-mono-num text-base font-bold text-[#121417]">
+              <div className="mt-3 flex items-end justify-between border-t border-[#f1f5f9] pt-2.5">
+                <span className="font-mono-num text-base font-bold text-[#0f172a]">
                   {formatBRL(product.price)}
-                  <span className="text-[11px] font-normal text-[#5a5f67]">
+                  <span className="text-[11px] font-normal text-[#475569]">
                     /{product.unit}
                   </span>
                 </span>
@@ -419,7 +419,7 @@ export function PosSection({
                   className={`text-[11px] font-semibold ${
                     product.stockQty <= product.minStockQty
                       ? "text-amber-700"
-                      : "text-[#5a5f67]"
+                      : "text-[#475569]"
                   }`}
                 >
                   Estq: {product.stockQty}
@@ -433,10 +433,10 @@ export function PosSection({
       {/* Right Cart / Checkout */}
       <div className="xl:col-span-4">
         <div className="card-bistro p-5 xl:sticky xl:top-20">
-          <div className="mb-4 flex items-center justify-between border-b border-[#eeeeea] pb-3">
+          <div className="mb-4 flex items-center justify-between border-b border-[#f1f5f9] pb-3">
             <div className="flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5 text-[#d95d24]" />
-              <h2 className="font-display text-lg font-bold text-[#121417]">
+              <ShoppingCart className="h-5 w-5 text-[#2563eb]" />
+              <h2 className="font-display text-lg font-bold text-[#0f172a]">
                 Caixa / Comanda
               </h2>
             </div>
@@ -452,7 +452,7 @@ export function PosSection({
           </div>
 
           {/* Channel Mode Switcher */}
-          <div className="mb-3 grid grid-cols-4 gap-1 rounded-xl bg-[#eeeeea] p-1">
+          <div className="mb-3 grid grid-cols-4 gap-1 rounded-xl bg-[#f1f5f9] p-1">
             {(
               [
                 { id: "BALCAO", label: "Balcão", icon: ShoppingCart },
@@ -474,7 +474,7 @@ export function PosSection({
                     if (m.id !== "MESA") setTargetTableNumber("");
                   }}
                   className={`flex flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 text-[10px] font-bold transition ${
-                    active ? "bg-[#121417] text-white shadow" : "text-[#5a5f67] hover:text-[#121417]"
+                    active ? "bg-[#0f172a] text-white shadow" : "text-[#475569] hover:text-[#0f172a]"
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" />
@@ -487,7 +487,7 @@ export function PosSection({
           <div className="mb-3 grid gap-2.5 sm:grid-cols-2">
             {effectiveMode === "MESA" && (
               <div>
-                <label className="mb-1 block text-[11px] font-semibold uppercase text-[#5a5f67]">
+                <label className="mb-1 block text-[11px] font-semibold uppercase text-[#475569]">
                   Mesa
                 </label>
                 <select
@@ -498,7 +498,7 @@ export function PosSection({
                       e.target.value ? Number(e.target.value) : "",
                     );
                   }}
-                  className="w-full rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs font-medium outline-none focus:border-[#d95d24]"
+                  className="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-xs font-medium outline-none focus:border-[#2563eb]"
                 >
                   <option value="">Selecione a mesa...</option>
                   {tables.map((t) => (
@@ -510,7 +510,7 @@ export function PosSection({
               </div>
             )}
             <div className={effectiveMode === "MESA" ? "" : isDeliveryChannel ? "" : "sm:col-span-2"}>
-              <label className="mb-1 block text-[11px] font-semibold uppercase text-[#5a5f67]">
+              <label className="mb-1 block text-[11px] font-semibold uppercase text-[#475569]">
                 {isDeliveryChannel ? "Nome do Cliente *" : "Cliente / Identificação"}
               </label>
               <input
@@ -518,12 +518,12 @@ export function PosSection({
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder={selectedCustomer ? selectedCustomer.name : "Ex: João / Balcão"}
-                className="w-full rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs outline-none focus:border-[#d95d24]"
+                className="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-xs outline-none focus:border-[#2563eb]"
               />
             </div>
             {isDeliveryChannel && (
               <div>
-                <label className="mb-1 block text-[11px] font-semibold uppercase text-[#5a5f67]">
+                <label className="mb-1 block text-[11px] font-semibold uppercase text-[#475569]">
                   Telefone / WhatsApp
                 </label>
                 <input
@@ -531,7 +531,7 @@ export function PosSection({
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   placeholder={selectedCustomer?.phone ?? "(11) 99999-9999"}
-                  className="w-full rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs outline-none focus:border-[#d95d24]"
+                  className="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-xs outline-none focus:border-[#2563eb]"
                 />
               </div>
             )}
@@ -540,13 +540,13 @@ export function PosSection({
           {isDelivery && (
             <div className="mb-3 space-y-2 rounded-xl border border-orange-200 bg-orange-50/50 p-3 text-xs">
               <div>
-                <label className="mb-1 block text-[10px] font-bold uppercase text-[#5a5f67]">
+                <label className="mb-1 block text-[10px] font-bold uppercase text-[#475569]">
                   Bairro / Região de Entrega
                 </label>
                 <select
                   value={selectedZone?.id ?? ""}
                   onChange={(e) => setDeliveryZoneId(Number(e.target.value))}
-                  className="w-full rounded-lg border border-[#e5e4df] bg-white px-2.5 py-1.5 text-xs font-medium"
+                  className="w-full rounded-lg border border-[#e2e8f0] bg-white px-2.5 py-1.5 text-xs font-medium"
                 >
                   {activeZones.map((z) => (
                     <option key={z.id} value={z.id}>
@@ -560,7 +560,7 @@ export function PosSection({
                 value={deliveryAddress}
                 onChange={(e) => setDeliveryAddress(e.target.value)}
                 placeholder="Rua, número e complemento *"
-                className="w-full rounded-lg border border-[#e5e4df] bg-white px-2.5 py-1.5 text-xs"
+                className="w-full rounded-lg border border-[#e2e8f0] bg-white px-2.5 py-1.5 text-xs"
               />
               <div className="grid grid-cols-2 gap-2">
                 <input
@@ -568,7 +568,7 @@ export function PosSection({
                   value={deliveryReference}
                   onChange={(e) => setDeliveryReference(e.target.value)}
                   placeholder="Ponto de referência"
-                  className="w-full rounded-lg border border-[#e5e4df] bg-white px-2.5 py-1.5 text-xs"
+                  className="w-full rounded-lg border border-[#e2e8f0] bg-white px-2.5 py-1.5 text-xs"
                 />
                 {paymentMethod === "DINHEIRO" && (
                   <input
@@ -578,17 +578,17 @@ export function PosSection({
                     value={changeFor}
                     onChange={(e) => setChangeFor(e.target.value)}
                     placeholder="Troco p/ (R$)"
-                    className="w-full rounded-lg border border-[#e5e4df] bg-white px-2.5 py-1.5 text-xs"
+                    className="w-full rounded-lg border border-[#e2e8f0] bg-white px-2.5 py-1.5 text-xs"
                   />
                 )}
               </div>
             </div>
           )}
 
-          <div className="mb-4 rounded-xl border border-[#e5e4df] bg-[#f6f6f3] p-2.5 text-xs">
+          <div className="mb-4 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-2.5 text-xs">
             <div className="flex items-center justify-between gap-2">
-              <label className="inline-flex items-center gap-1 text-[11px] font-bold text-[#5a5f67]">
-                <Award className="h-3.5 w-3.5 text-[#d95d24]" /> Clube Fidelidade
+              <label className="inline-flex items-center gap-1 text-[11px] font-bold text-[#475569]">
+                <Award className="h-3.5 w-3.5 text-[#2563eb]" /> Clube Fidelidade
               </label>
               {selectedCustomer && (
                 <span className="font-mono-num rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-900">
@@ -606,7 +606,7 @@ export function PosSection({
                 );
                 setRedeemLoyaltyPoints(false);
               }}
-              className="mt-1.5 w-full rounded-lg border border-[#e5e4df] bg-white px-2.5 py-1.5 text-xs outline-none focus:border-[#d95d24]"
+              className="mt-1.5 w-full rounded-lg border border-[#e2e8f0] bg-white px-2.5 py-1.5 text-xs outline-none focus:border-[#2563eb]"
             >
               <option value="">Sem vínculo de fidelidade</option>
               {customers.map((c) => (
@@ -629,7 +629,7 @@ export function PosSection({
           </div>
 
           {cart.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[#e5e4df] bg-[#f6f6f3] p-6 text-center text-xs text-[#5a5f67]">
+            <div className="rounded-xl border border-dashed border-[#e2e8f0] bg-[#f8fafc] p-6 text-center text-xs text-[#475569]">
               Clique nos produtos ao lado para adicionar ao carrinho ou lançar na
               comanda da mesa.
             </div>
@@ -638,21 +638,21 @@ export function PosSection({
               {cart.map((line) => (
                 <div
                   key={line.product.id}
-                  className="rounded-xl border border-[#eeeeea] bg-[#f6f6f3] p-3"
+                  className="rounded-xl border border-[#f1f5f9] bg-[#f8fafc] p-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="text-xs font-bold text-[#121417]">
+                      <p className="text-xs font-bold text-[#0f172a]">
                         {line.product.name}
                       </p>
-                      <p className="font-mono-num text-[11px] text-[#5a5f67]">
+                      <p className="font-mono-num text-[11px] text-[#475569]">
                         {formatBRL(line.product.price)} / {line.product.unit}
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={() => setItemQty(line.product.id, 0)}
-                      className="text-[#5a5f67] hover:text-red-700"
+                      className="text-[#475569] hover:text-red-700"
                       aria-label="Remover item"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -668,8 +668,8 @@ export function PosSection({
                           onClick={() => setItemQty(line.product.id, preset)}
                           className={`rounded-md px-2 py-0.5 text-[10px] font-bold ${
                             line.qty === preset
-                              ? "bg-[#d95d24] text-white"
-                              : "border border-[#e5e4df] bg-white text-[#5a5f67]"
+                              ? "bg-[#2563eb] text-white"
+                              : "border border-[#e2e8f0] bg-white text-[#475569]"
                           }`}
                         >
                           {preset === 1 ? "1kg" : `${preset * 1000}g`}
@@ -693,7 +693,7 @@ export function PosSection({
                             ),
                           )
                         }
-                        className="rounded-lg border border-[#e5e4df] bg-white p-1 hover:bg-[#eeeeea]"
+                        className="rounded-lg border border-[#e2e8f0] bg-white p-1 hover:bg-[#f1f5f9]"
                       >
                         <Minus className="h-3 w-3" />
                       </button>
@@ -708,7 +708,7 @@ export function PosSection({
                             Math.max(0.05, Number(e.target.value) || 0),
                           )
                         }
-                        className="font-mono-num w-16 rounded-lg border border-[#e5e4df] bg-white px-2 py-1 text-center text-xs font-bold"
+                        className="font-mono-num w-16 rounded-lg border border-[#e2e8f0] bg-white px-2 py-1 text-center text-xs font-bold"
                       />
                       <button
                         type="button"
@@ -723,12 +723,12 @@ export function PosSection({
                             ),
                           )
                         }
-                        className="rounded-lg border border-[#e5e4df] bg-white p-1 hover:bg-[#eeeeea]"
+                        className="rounded-lg border border-[#e2e8f0] bg-white p-1 hover:bg-[#f1f5f9]"
                       >
                         <Plus className="h-3 w-3" />
                       </button>
                     </div>
-                    <span className="font-mono-num text-xs font-bold text-[#121417]">
+                    <span className="font-mono-num text-xs font-bold text-[#0f172a]">
                       {formatBRL(line.qty * line.product.price)}
                     </span>
                   </div>
@@ -738,7 +738,7 @@ export function PosSection({
                     value={line.notes}
                     onChange={(e) => setItemNotes(line.product.id, e.target.value)}
                     placeholder="Obs (ex: fatiado, sem açúcar)..."
-                    className="mt-2 w-full rounded-lg border border-[#e5e4df] bg-white px-2.5 py-1 text-[11px] outline-none focus:border-[#d95d24]"
+                    className="mt-2 w-full rounded-lg border border-[#e2e8f0] bg-white px-2.5 py-1 text-[11px] outline-none focus:border-[#2563eb]"
                   />
                 </div>
               ))}
@@ -751,26 +751,26 @@ export function PosSection({
               value={orderNotes}
               onChange={(e) => setOrderNotes(e.target.value)}
               placeholder="Observação geral do pedido (embalagem, entrega)..."
-              className="mt-3 w-full rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs outline-none focus:border-[#d95d24]"
+              className="mt-3 w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-xs outline-none focus:border-[#2563eb]"
             />
           )}
 
-          <div className="mt-4 space-y-2 border-t border-[#eeeeea] pt-3 text-xs">
+          <div className="mt-4 space-y-2 border-t border-[#f1f5f9] pt-3 text-xs">
             <div className="flex items-center justify-between">
-              <span className="text-[#5a5f67]">Subtotal</span>
+              <span className="text-[#475569]">Subtotal</span>
               <span className="font-mono-num font-semibold">
                 {formatBRL(totals.subtotal)}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[#5a5f67]">Desconto (R$)</span>
+              <span className="text-[#475569]">Desconto (R$)</span>
               <input
                 type="number"
                 min="0"
                 step="1"
                 value={discount}
                 onChange={(e) => setDiscount(e.target.value)}
-                className="font-mono-num w-24 rounded-lg border border-[#e5e4df] bg-[#f6f6f3] px-2 py-1 text-right text-xs font-semibold"
+                className="font-mono-num w-24 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-2 py-1 text-right text-xs font-semibold"
               />
             </div>
             {effectiveRedeem && (
@@ -781,7 +781,7 @@ export function PosSection({
             )}
             {totals.serviceFee > 0 && (
               <div className="flex items-center justify-between">
-                <span className="text-[#5a5f67]">Taxa de Serviço (10%)</span>
+                <span className="text-[#475569]">Taxa de Serviço (10%)</span>
                 <span className="font-mono-num font-semibold">
                   {formatBRL(totals.serviceFee)}
                 </span>
@@ -789,7 +789,7 @@ export function PosSection({
             )}
             {isDelivery && (
               <div className="flex items-center justify-between">
-                <span className="text-[#5a5f67]">
+                <span className="text-[#475569]">
                   Taxa de Entrega ({selectedZone?.name ?? "—"})
                 </span>
                 <span className="font-mono-num font-semibold text-[#15803d]">
@@ -797,9 +797,9 @@ export function PosSection({
                 </span>
               </div>
             )}
-            <div className="flex items-center justify-between border-t border-[#eeeeea] pt-2 text-base font-bold text-[#121417]">
+            <div className="flex items-center justify-between border-t border-[#f1f5f9] pt-2 text-base font-bold text-[#0f172a]">
               <span>Total</span>
-              <span className="font-mono-num text-[#d95d24]">
+              <span className="font-mono-num text-[#2563eb]">
                 {formatBRL(totals.total)}
               </span>
             </div>
@@ -813,7 +813,7 @@ export function PosSection({
           {effectiveMode !== "MESA" && (
             <div className="mt-3 space-y-2.5">
               <div>
-                <label className="mb-1.5 block text-[11px] font-semibold uppercase text-[#5a5f67]">
+                <label className="mb-1.5 block text-[11px] font-semibold uppercase text-[#475569]">
                   {isDeliveryChannel ? "Pagamento na Entrega / Retirada" : "Forma de Pagamento (Balcão)"}
                 </label>
                 <div className="grid grid-cols-4 gap-1.5">
@@ -825,8 +825,8 @@ export function PosSection({
                         onClick={() => setPaymentMethod(pm)}
                         className={`rounded-xl py-1.5 text-[11px] font-bold transition ${
                           paymentMethod === pm
-                            ? "bg-[#121417] text-white"
-                            : "border border-[#e5e4df] bg-[#f6f6f3] text-[#5a5f67]"
+                            ? "bg-[#0f172a] text-white"
+                            : "border border-[#e2e8f0] bg-[#f8fafc] text-[#475569]"
                         }`}
                       >
                         {pm}
@@ -889,7 +889,7 @@ export function PosSection({
                   type="button"
                   disabled={cart.length === 0 || submitting || minMissing > 0}
                   onClick={() => handleSubmit(true)}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-4 py-2.5 text-xs font-semibold text-[#121417] hover:bg-[#eeeeea] disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-4 py-2.5 text-xs font-semibold text-[#0f172a] hover:bg-[#f1f5f9] disabled:opacity-50"
                 >
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" />
                   Já Pago (PIX/Cartão antecipado)
@@ -910,7 +910,7 @@ export function PosSection({
                   type="button"
                   disabled={cart.length === 0 || submitting}
                   onClick={() => handleSubmit(false)}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-4 py-2.5 text-xs font-semibold text-[#121417] hover:bg-[#eeeeea] disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-4 py-2.5 text-xs font-semibold text-[#0f172a] hover:bg-[#f1f5f9] disabled:opacity-50"
                 >
                   <Send className="h-3.5 w-3.5" />
                   Enviar apenas para KDS (Pagar depois)

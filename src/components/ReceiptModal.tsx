@@ -14,15 +14,15 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-      <div className="w-full max-w-sm rounded-2xl border border-[#e5e4df] bg-white p-5 shadow-2xl">
+      <div className="w-full max-w-sm rounded-2xl border border-[#e2e8f0] bg-white p-5 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-display text-lg font-bold text-[#121417]">
+          <h3 className="font-display text-lg font-bold text-[#0f172a]">
             Comanda / Cupom 80mm
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-[#5a5f67] hover:bg-[#eeeeea]"
+            className="rounded-lg p-1.5 text-[#475569] hover:bg-[#f1f5f9]"
             aria-label="Fechar cupom"
           >
             <X className="h-5 w-5" />
@@ -31,11 +31,11 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
 
         <div
           id="thermal-receipt-print"
-          className="font-mono-num mx-auto rounded-lg border border-dashed border-[#cbbba7] bg-[#fffdf7] p-4 text-xs text-[#121417]"
+          className="font-mono-num mx-auto rounded-lg border border-dashed border-[#cbbba7] bg-[#fffdf7] p-4 text-xs text-[#0f172a]"
         >
           <div className="border-b border-dashed border-[#cbbba7] pb-2 text-center">
             <p className="text-sm font-bold tracking-wide">FORNO & MESA GASTRONOMIA</p>
-            <p className="text-[11px] text-[#5a5f67]">
+            <p className="text-[11px] text-[#475569]">
               Padaria · Confeitaria · Restaurante
             </p>
             <p className="mt-1 text-[11px]">DOCUMENTO NÃO FISCAL</p>
@@ -72,7 +72,7 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
                   {order.deliveryNeighborhood ? ` · ${order.deliveryNeighborhood}` : ""}
                 </span>
                 {order.deliveryReference && (
-                  <p className="text-[#5a5f67]">Ref: {order.deliveryReference}</p>
+                  <p className="text-[#475569]">Ref: {order.deliveryReference}</p>
                 )}
               </div>
             )}
@@ -89,7 +89,7 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
           </div>
 
           <div className="my-2 space-y-1.5 border-b border-dashed border-[#cbbba7] pb-2">
-            <div className="flex justify-between text-[10px] font-bold uppercase text-[#5a5f67]">
+            <div className="flex justify-between text-[10px] font-bold uppercase text-[#475569]">
               <span>Item / Qtd</span>
               <span>Total</span>
             </div>
@@ -99,7 +99,7 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
                   <span className="truncate font-medium">{item.productName}</span>
                   <span>{formatBRL(item.totalPrice)}</span>
                 </div>
-                <div className="text-[10px] text-[#5a5f67]">
+                <div className="text-[10px] text-[#475569]">
                   {item.qty} × {formatBRL(item.unitPrice)}
                   {item.notes ? ` · Obs: ${item.notes}` : ""}
                 </div>
@@ -134,19 +134,19 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
               <span>TOTAL</span>
               <span>{formatBRL(order.total)}</span>
             </div>
-            <div className="flex justify-between pt-1 text-[11px] text-[#5a5f67]">
+            <div className="flex justify-between pt-1 text-[11px] text-[#475569]">
               <span>Pagamento:</span>
               <span>{order.paymentMethod ?? order.status}</span>
             </div>
             {order.changeFor && (
-              <div className="flex justify-between text-[11px] text-[#5a5f67]">
+              <div className="flex justify-between text-[11px] text-[#475569]">
                 <span>Troco para:</span>
                 <span>{formatBRL(order.changeFor)}</span>
               </div>
             )}
           </div>
 
-          <p className="mt-3 border-t border-dashed border-[#cbbba7] pt-2 text-center text-[10px] text-[#5a5f67]">
+          <p className="mt-3 border-t border-dashed border-[#cbbba7] pt-2 text-center text-[10px] text-[#475569]">
             Obrigado pela preferência! Volte sempre.
           </p>
         </div>
@@ -155,7 +155,7 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
           <button
             type="button"
             onClick={() => window.print()}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#d95d24] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#b84917]"
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1d4ed8]"
           >
             <Printer className="h-4 w-4" />
             Imprimir 80mm
@@ -163,7 +163,7 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-[#e5e4df] px-4 py-2.5 text-sm font-medium text-[#121417] hover:bg-[#eeeeea]"
+            className="rounded-xl border border-[#e2e8f0] px-4 py-2.5 text-sm font-medium text-[#0f172a] hover:bg-[#f1f5f9]"
           >
             Fechar
           </button>

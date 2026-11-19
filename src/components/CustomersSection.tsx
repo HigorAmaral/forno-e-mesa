@@ -88,14 +88,14 @@ export function CustomersSection({
       {/* Cadastro de Cliente */}
       <section className="card-bistro p-5 xl:col-span-4">
         <div className="mb-4 flex items-center gap-2.5">
-          <div className="rounded-xl bg-[#eeeeea] p-2 text-[#d95d24]">
+          <div className="rounded-xl bg-[#f1f5f9] p-2 text-[#2563eb]">
             <Award className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="font-display text-lg font-bold text-[#121417]">
+            <h2 className="font-display text-lg font-bold text-[#0f172a]">
               Clube do Café · Novo Cliente
             </h2>
-            <p className="text-xs text-[#5a5f67]">
+            <p className="text-xs text-[#475569]">
               A cada R$ 10 gastos = 1 ponto. 10 pts valem R$ 15 de desconto no PDV.
             </p>
           </div>
@@ -108,7 +108,7 @@ export function CustomersSection({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Nome completo"
-            className="w-full rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs"
+            className="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-xs"
           />
           <input
             type="text"
@@ -116,28 +116,28 @@ export function CustomersSection({
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="WhatsApp (ex: (11) 99999-8888)"
-            className="w-full rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs"
+            className="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-xs"
           />
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="E-mail (opcional)"
-            className="w-full rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs"
+            className="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-xs"
           />
           <input
             type="text"
             value={favoriteItem}
             onChange={(e) => setFavoriteItem(e.target.value)}
             placeholder="Pedido favorito (ex: Cappuccino + Croissant)"
-            className="w-full rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs"
+            className="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-xs"
           />
           <textarea
             rows={2}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Preferências do barista (ex: leite vegetal, sem açúcar)"
-            className="w-full rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs"
+            className="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-xs"
           />
           <button
             type="submit"
@@ -154,21 +154,21 @@ export function CustomersSection({
       <section className="card-bistro p-5 xl:col-span-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="font-display text-lg font-bold text-[#121417]">
+            <h2 className="font-display text-lg font-bold text-[#0f172a]">
               Base de Clientes & Pontuação ({customers.length})
             </h2>
-            <p className="text-xs text-[#5a5f67]">
+            <p className="text-xs text-[#475569]">
               Selecione um cliente para iniciar pedido no PDV já acumulando ou resgatando pontos.
             </p>
           </div>
           <div className="relative w-full sm:w-64">
-            <Search className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-[#5a5f67]" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-[#475569]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar nome ou telefone..."
-              className="w-full rounded-xl border border-[#e5e4df] bg-[#f6f6f3] py-2 pr-3 pl-8 text-xs"
+              className="w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] py-2 pr-3 pl-8 text-xs"
             />
           </div>
         </div>
@@ -179,39 +179,39 @@ export function CustomersSection({
             return (
               <div
                 key={customer.id}
-                className="flex flex-col justify-between rounded-2xl border border-[#e5e4df] bg-[#f6f6f3] p-4"
+                className="flex flex-col justify-between rounded-2xl border border-[#e2e8f0] bg-[#f8fafc] p-4"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-[#121417]">{customer.name}</h3>
+                        <h3 className="font-bold text-[#0f172a]">{customer.name}</h3>
                         <span
                           className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${TIER_BADGES[tier]}`}
                         >
                           {tier}
                         </span>
                       </div>
-                      <p className="mt-0.5 text-xs text-[#5a5f67]">{customer.phone}</p>
+                      <p className="mt-0.5 text-xs text-[#475569]">{customer.phone}</p>
                     </div>
                     <div className="text-right">
-                      <span className="font-mono-num inline-flex items-center gap-1 rounded-xl bg-white px-2.5 py-1 text-xs font-bold text-[#d95d24] shadow-xs">
+                      <span className="font-mono-num inline-flex items-center gap-1 rounded-xl bg-white px-2.5 py-1 text-xs font-bold text-[#2563eb] shadow-xs">
                         <Gift className="h-3.5 w-3.5" /> {customer.loyaltyPoints} pts
                       </span>
                     </div>
                   </div>
 
                   {customer.favoriteItem && (
-                    <p className="mt-2.5 flex items-center gap-1.5 text-xs font-medium text-[#121417]">
-                      <Coffee className="h-3.5 w-3.5 shrink-0 text-[#d95d24]" />
+                    <p className="mt-2.5 flex items-center gap-1.5 text-xs font-medium text-[#0f172a]">
+                      <Coffee className="h-3.5 w-3.5 shrink-0 text-[#2563eb]" />
                       {customer.favoriteItem}
                     </p>
                   )}
                   {customer.notes && (
-                    <p className="mt-1 text-[11px] text-[#5a5f67]">{customer.notes}</p>
+                    <p className="mt-1 text-[11px] text-[#475569]">{customer.notes}</p>
                   )}
 
-                  <div className="mt-3 flex items-center justify-between border-t border-[#e5e4df] pt-2 text-[11px] text-[#5a5f67]">
+                  <div className="mt-3 flex items-center justify-between border-t border-[#e2e8f0] pt-2 text-[11px] text-[#475569]">
                     <span>Visitas: {customer.visitsCount}</span>
                     <span className="font-mono-num font-bold text-[#15803d]">
                       Total: {formatBRL(customer.totalSpent)}
@@ -231,7 +231,7 @@ export function CustomersSection({
                   <button
                     type="button"
                     onClick={() => adjustPoints(customer.id, 5)}
-                    className="rounded-xl border border-[#e5e4df] bg-white px-2.5 py-2 text-xs font-semibold text-[#121417] hover:bg-[#eeeeea]"
+                    className="rounded-xl border border-[#e2e8f0] bg-white px-2.5 py-2 text-xs font-semibold text-[#0f172a] hover:bg-[#f1f5f9]"
                     title="Bonificar +5 pontos"
                   >
                     +5 pts

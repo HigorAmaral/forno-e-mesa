@@ -36,7 +36,7 @@ const NEXT_STAGE: Record<
   PRONTO: {
     next: "ENTREGUE",
     label: "Entregar",
-    color: "bg-[#121417] text-white hover:bg-black",
+    color: "bg-[#0f172a] text-white hover:bg-black",
   },
 };
 
@@ -144,12 +144,12 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
     <div className="animate-fade-in space-y-5">
       <div className="card-bistro flex flex-wrap items-center justify-between gap-3 p-4">
         <div className="flex items-center gap-2.5">
-          <ChefHat className="h-5 w-5 text-[#d95d24]" />
+          <ChefHat className="h-5 w-5 text-[#2563eb]" />
           <div>
-            <h2 className="font-display text-xl font-bold text-[#121417]">
+            <h2 className="font-display text-xl font-bold text-[#0f172a]">
               KDS · Tela de Produção (Cozinha, Forno & Confeitaria)
             </h2>
-            <p className="text-xs text-[#5a5f67]">
+            <p className="text-xs text-[#475569]">
               Pedidos de Balcão, Mesas e QR Code chegam aqui em tempo real com
               controle de SLA.
             </p>
@@ -163,7 +163,7 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
             className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
               soundEnabled
                 ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-                : "border-[#e5e4df] bg-[#f6f6f3] text-[#5a5f67]"
+                : "border-[#e2e8f0] bg-[#f8fafc] text-[#475569]"
             }`}
           >
             {soundEnabled ? (
@@ -182,8 +182,8 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
                 onClick={() => setStation(st.id)}
                 className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
                   station === st.id
-                    ? "bg-[#d95d24] text-white"
-                    : "bg-[#eeeeea] text-[#5a5f67] hover:text-[#121417]"
+                    ? "bg-[#2563eb] text-white"
+                    : "bg-[#f1f5f9] text-[#475569] hover:text-[#0f172a]"
                 }`}
               >
                 {st.label}
@@ -196,10 +196,10 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
       {activeTickets.length === 0 ? (
         <div className="card-bistro border-dashed p-10 text-center">
           <Check className="mx-auto h-8 w-8 text-[#15803d]" />
-          <p className="mt-2 font-semibold text-[#121417]">
+          <p className="mt-2 font-semibold text-[#0f172a]">
             Nenhum item pendente nesta estação!
           </p>
-          <p className="text-xs text-[#5a5f67]">
+          <p className="text-xs text-[#475569]">
             Novos pedidos do PDV, Mesas ou QR Code aparecerão aqui
             automaticamente.
           </p>
@@ -229,21 +229,21 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
                 className="card-bistro flex flex-col justify-between overflow-hidden"
               >
                 <div>
-                  <div className="flex items-center justify-between border-b border-[#eeeeea] bg-[#f6f6f3] px-4 py-3">
+                  <div className="flex items-center justify-between border-b border-[#f1f5f9] bg-[#f8fafc] px-4 py-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono-num text-sm font-bold text-[#121417]">
+                        <span className="font-mono-num text-sm font-bold text-[#0f172a]">
                           {ticket.code}
                         </span>
                         <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold text-white ${
                           ticket.channel === "DELIVERY" || ticket.channel === "RETIRADA"
-                            ? "bg-[#d95d24]"
-                            : "bg-[#121417]"
+                            ? "bg-[#2563eb]"
+                            : "bg-[#0f172a]"
                         }`}>
                           {ticket.table ? ticket.table.name : channelLabel(ticket.channel)}
                         </span>
                       </div>
-                      <p className="text-xs text-[#5a5f67]">
+                      <p className="text-xs text-[#475569]">
                         {ticket.customerName ?? "Cliente"}
                         {ticket.deliveryNeighborhood ? ` · ${ticket.deliveryNeighborhood}` : ""}
                       </p>
@@ -261,14 +261,14 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
                       return (
                         <div
                           key={item.id}
-                          className="flex items-center justify-between gap-3 rounded-xl border border-[#eeeeea] bg-[#f6f6f3]/70 p-3"
+                          className="flex items-center justify-between gap-3 rounded-xl border border-[#f1f5f9] bg-[#f8fafc]/70 p-3"
                         >
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="rounded bg-white px-1.5 py-0.5 text-[10px] font-bold text-[#d95d24]">
+                              <span className="rounded bg-white px-1.5 py-0.5 text-[10px] font-bold text-[#2563eb]">
                                 {item.prepStation}
                               </span>
-                              <span className="truncate text-xs font-bold text-[#121417]">
+                              <span className="truncate text-xs font-bold text-[#0f172a]">
                                 {item.qty}× {item.productName}
                               </span>
                             </div>
@@ -278,7 +278,7 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
                                 {item.notes}
                               </p>
                             )}
-                            <p className="mt-0.5 text-[10px] font-semibold text-[#5a5f67]">
+                            <p className="mt-0.5 text-[10px] font-semibold text-[#475569]">
                               Status: {item.itemStatus}
                             </p>
                           </div>
@@ -301,7 +301,7 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
                   </div>
                 </div>
 
-                <div className="border-t border-[#eeeeea] bg-[#f6f6f3]/60 px-4 py-2.5">
+                <div className="border-t border-[#f1f5f9] bg-[#f8fafc]/60 px-4 py-2.5">
                   <button
                     type="button"
                     disabled={busyId === ticket.id}
@@ -313,7 +313,7 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
                     }
                     className={`flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition disabled:opacity-50 ${
                       allReady
-                        ? "bg-[#121417] text-white hover:bg-black"
+                        ? "bg-[#0f172a] text-white hover:bg-black"
                         : "bg-[#15803d] text-white hover:bg-[#22523d]"
                     }`}
                   >

@@ -2,6 +2,71 @@ import { prisma } from "./prisma";
 import { calculateOrderTotals } from "./domain";
 
 let seedPromise: Promise<void> | null = null;
+let deliverySchemaPromise: Promise<void> | null = null;
+
+async function ensureDeliverySchema() {
+  if (!deliverySchemaPromise) {
+    deliverySchemaPromise = (async () => {
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "DeliveryZone" (
+          "id" SERIAL NOT NULL,
+          "name" TEXT NOT NULL,
+          "fee" DOUBLE PRECISION NOT NULL DEFAULT 6,
+          "etaMinutes" INTEGER NOT NULL DEFAULT 35,
+          "minOrder" DOUBLE PRECISION NOT NULL DEFAULT 25,
+          "isActive" BOOLEAN NOT NULL DEFAULT true,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "DeliveryZone_pkey" PRIMARY KEY ("id")
+        )
+      `);
+      await prisma.$executeRawUnsafe(
+        `CREATE UNIQUE INDEX IF NOT EXISTS "DeliveryZone_name_key" ON "DeliveryZone"("name")`,
+      );
+      const orderCols = [
+        `"deliveryFee" DOUBLE PRECISION NOT NULL DEFAULT 0`,
+        `"deliveryStatus" TEXT`,
+        `"deliveryAddress" TEXT`,
+        `"deliveryNeighborhood" TEXT`,
+        `"deliveryReference" TEXT`,
+        `"deliveryZoneId" INTEGER`,
+        `"courierName" TEXT`,
+        `"changeFor" DOUBLE PRECISION`,
+        `"estimatedMinutes" INTEGER`,
+        `"trackingToken" TEXT`,
+        `"dispatchedAt" TIMESTAMP(3)`,
+        `"deliveredAt" TIMESTAMP(3)`,
+      ];
+      for (const col of orderCols) {
+        await prisma.$executeRawUnsafe(
+          `ALTER TABLE "Order" ADD COLUMN IF NOT EXISTS ${col}`,
+        );
+      }
+      await prisma.$executeRawUnsafe(
+        `CREATE UNIQUE INDEX IF NOT EXISTS "Order_trackingToken_key" ON "Order"("trackingToken")`,
+      );
+      await prisma.$executeRawUnsafe(
+        `CREATE INDEX IF NOT EXISTS "Order_deliveryStatus_idx" ON "Order"("deliveryStatus")`,
+      );
+      await prisma.$executeRawUnsafe(`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint WHERE conname = 'Order_deliveryZoneId_fkey'
+          ) THEN
+            ALTER TABLE "Order"
+            ADD CONSTRAINT "Order_deliveryZoneId_fkey"
+            FOREIGN KEY ("deliveryZoneId") REFERENCES "DeliveryZone"("id")
+            ON DELETE SET NULL ON UPDATE CASCADE;
+          END IF;
+        END $$;
+      `);
+    })().catch((err) => {
+      deliverySchemaPromise = null;
+      throw err;
+    });
+  }
+  await deliverySchemaPromise;
+}
 
 export async function ensureSeeded() {
   const existing = await prisma.category.count();
@@ -14,6 +79,7 @@ export async function ensureSeeded() {
     await seedPromise;
   }
 
+  await ensureDeliverySchema();
   const zoneCount = await prisma.deliveryZone.count();
   if (zoneCount === 0) {
     await prisma.deliveryZone.createMany({

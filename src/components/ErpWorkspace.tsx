@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   Award,
+  BarChart3,
   Boxes,
   CakeSlice,
   CheckSquare,
@@ -12,6 +13,7 @@ import {
   Coffee,
   Croissant,
   Download,
+  ExternalLink,
   Landmark,
   LayoutDashboard,
   Menu,
@@ -140,6 +142,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
       .slice(0, 5);
 
     const salesByHour = computeSalesByHour(data.orders);
+    const maxHourRevenue = Math.max(1, ...salesByHour);
 
     return {
       totalPaid,
@@ -147,68 +150,82 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
       payments: [...byPayment.entries()],
       topProducts,
       salesByHour,
+      maxHourRevenue,
     };
   }, [data.orders]);
 
-  const navItems: Array<{
-    id: TabId;
-    label: string;
-    icon: typeof LayoutDashboard;
-    badge?: number;
+  const navGroups: Array<{
+    title: string;
+    items: Array<{
+      id: TabId;
+      label: string;
+      icon: typeof LayoutDashboard;
+      badge?: number;
+    }>;
   }> = [
-    { id: "overview", label: "Painel Geral", icon: LayoutDashboard },
-    { id: "pdv", label: "PDV Balcão", icon: ShoppingCart },
     {
-      id: "delivery",
-      label: "Delivery",
-      icon: Truck,
-      badge: data.metrics.activeDeliveries || undefined,
+      title: "Operação",
+      items: [
+        { id: "overview", label: "Painel Geral", icon: LayoutDashboard },
+        { id: "pdv", label: "PDV & Caixa", icon: ShoppingCart },
+        {
+          id: "delivery",
+          label: "Delivery",
+          icon: Truck,
+          badge: data.metrics.activeDeliveries || undefined,
+        },
+        {
+          id: "tables",
+          label: "Mesas & QR",
+          icon: UtensilsCrossed,
+          badge: data.metrics.occupiedTables || undefined,
+        },
+        {
+          id: "kds",
+          label: "KDS Cozinha",
+          icon: ChefHat,
+          badge: data.metrics.kdsPendingCount || undefined,
+        },
+      ],
     },
     {
-      id: "tables",
-      label: "Mesas & QR",
-      icon: UtensilsCrossed,
-      badge: data.metrics.occupiedTables || undefined,
-    },
-    {
-      id: "kds",
-      label: "KDS Cozinha",
-      icon: ChefHat,
-      badge: data.metrics.kdsPendingCount || undefined,
-    },
-    {
-      id: "bakery",
-      label: "Padaria & Bolos",
-      icon: CakeSlice,
-      badge: data.metrics.activeCakeOrders || undefined,
-    },
-    {
-      id: "orders",
-      label: "Pedidos & CSV",
-      icon: ClipboardList,
-    },
-    {
-      id: "finance",
-      label: "Financeiro & DRE",
-      icon: Landmark,
-      badge:
-        data.financialEntries.filter(
-          (e) => e.type === "DESPESA" && e.status !== "PAGO",
-        ).length || undefined,
-    },
-    {
-      id: "customers",
-      label: "Clube / Clientes",
-      icon: Award,
-      badge: data.customers.length || undefined,
-    },
-    {
-      id: "inventory",
-      label: "Estoque & Caixa",
-      icon: Boxes,
-      badge: data.metrics.lowStockAlerts || undefined,
+      title: "Gestão & Produção",
+      items: [
+        {
+          id: "bakery",
+          label: "Padaria & Bolos",
+          icon: CakeSlice,
+          badge: data.metrics.activeCakeOrders || undefined,
+        },
+        { id: "orders", label: "Pedidos & CSV", icon: ClipboardList },
+        {
+          id: "finance",
+          label: "Financeiro & DRE",
+          icon: Landmark,
+          badge:
+            data.financialEntries.filter(
+              (e) => e.type === "DESPESA" && e.status !== "PAGO",
+            ).length || undefined,
+        },
+        {
+          id: "customers",
+          label: "Clube / Clientes",
+          icon: Award,
+          badge: data.customers.length || undefined,
+        },
+        {
+          id: "inventory",
+          label: "Estoque & Caixa",
+          icon: Boxes,
+          badge: data.metrics.lowStockAlerts || undefined,
+        },
+      ],
     },
   ];
+
+  const allNavItems = navGroups.flatMap((g) => g.items);
+  const currentTabLabel =
+    allNavItems.find((i) => i.id === activeTab)?.label ?? "Painel Geral";
 
   async function handleCreateNote(e: React.FormEvent) {
     e.preventDefault();
@@ -268,53 +285,171 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
     0,
   );
 
-  return (
-    <div className="flex min-h-screen w-full flex-col overflow-x-hidden text-[#211611]">
-      {/* Full-Width Top Espresso Command Dock */}
-      <header className="cafe-sidebar sticky top-0 z-30 w-full text-[#fbf8f3] shadow-lg">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+  const sidebarContent = (
+    <div className="flex h-full flex-col justify-between p-4 text-[#f4f4f1]">
+      <div className="space-y-6">
+        {/* Brand */}
+        <div className="flex items-center justify-between gap-2 px-1">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#d4943a] to-[#b5652a] text-white shadow-md">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#e0682e] to-[#b84917] text-white shadow-md">
               <Coffee className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="font-display text-lg leading-tight font-bold text-white sm:text-xl">
+              <h1 className="font-display text-lg font-bold leading-tight text-white">
                 Forno & Mesa
               </h1>
-              <p className="text-[11px] font-medium text-[#d3c1ae]">
-                Torrefação, Cafeteria, Padaria & Bistrô · Operação em Tempo Real
+              <p className="text-[11px] font-medium text-[#8b9098]">
+                Bistrô & Padaria ERP
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(false)}
+            className="rounded-lg p-1.5 text-[#8b9098] hover:bg-white/10 hover:text-white lg:hidden"
+            aria-label="Fechar menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Navigation Groups */}
+        <nav className="space-y-5">
+          {navGroups.map((group) => (
+            <div key={group.title} className="space-y-1">
+              <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#6e747d]">
+                {group.title}
+              </p>
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const active = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveTab(item.id);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-xs font-semibold transition ${
+                        active
+                          ? "bg-[#d95d24] text-white shadow-md shadow-[#d95d24]/25"
+                          : "text-[#b6bac1] hover:bg-white/8 hover:text-white"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <Icon className="h-4 w-4 shrink-0" />
+                        <span>{item.label}</span>
+                      </span>
+                      {item.badge !== undefined && (
+                        <span
+                          className={`font-mono-num rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            active
+                              ? "bg-white/25 text-white"
+                              : "bg-white/10 text-[#f2b880]"
+                          }`}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </nav>
+      </div>
+
+      {/* Bottom Status & Storefront Link */}
+      <div className="space-y-2 border-t border-white/10 pt-4">
+        <a
+          href="/delivery"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-semibold text-white transition hover:bg-white/10"
+        >
+          <span className="flex items-center gap-2">
+            <Truck className="h-4 w-4 text-[#e09132]" />
+            Cardápio Delivery
+          </span>
+          <ExternalLink className="h-3.5 w-3.5 text-[#8b9098]" />
+        </a>
+
+        <div className="rounded-xl bg-white/5 px-3 py-2.5 text-[11px]">
+          <p className="text-[#8b9098]">Status do Caixa</p>
+          <p
+            className={`font-mono-num mt-0.5 font-bold ${
+              data.openCashSession ? "text-emerald-400" : "text-amber-300"
+            }`}
+          >
+            {data.openCashSession
+              ? `Aberto · ${formatBRL(data.openCashSession.expectedAmount)}`
+              : "Caixa Fechado"}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex min-h-screen w-full overflow-x-hidden text-[#121417]">
+      {/* Desktop Fixed Sidebar */}
+      <aside className="cafe-sidebar hidden w-64 shrink-0 border-r lg:sticky lg:top-0 lg:block lg:h-screen lg:overflow-y-auto">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile Slide-Over Drawer */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex lg:hidden">
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <aside className="cafe-sidebar relative z-10 h-full w-72 overflow-y-auto shadow-2xl">
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+
+      {/* Main Content Shell */}
+      <div className="flex min-w-0 flex-1 flex-col pb-20 lg:pb-0">
+        {/* Slim Sticky Topbar */}
+        <header className="cafe-topbar sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="icon-btn lg:hidden"
+              aria-label="Abrir menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <div>
+              <h2 className="font-display text-lg font-bold leading-tight text-[#121417] sm:text-xl">
+                {currentTabLabel}
+              </h2>
+              <p className="hidden text-[11px] text-[#5a5f67] sm:block">
+                Operação unificada · Salão, Balcão, Delivery & Produção
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono-num hidden items-center gap-1.5 rounded-xl border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-emerald-300 sm:inline-flex">
-              {data.openCashSession
-                ? `Caixa Aberto · ${formatBRL(data.openCashSession.expectedAmount)}`
-                : "Caixa Fechado"}
-            </span>
-            <a
-              href="/delivery"
-              target="_blank"
-              rel="noreferrer"
-              className="hidden items-center gap-1.5 rounded-xl border border-orange-300/30 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/20 md:inline-flex"
-            >
-              <Truck className="h-3.5 w-3.5 text-[#d4943a]" />
-              Cardápio Delivery
-            </a>
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setQrTableNumber(data.tables[0]?.number ?? 1)}
-              className="hidden items-center gap-1.5 rounded-xl border border-amber-300/30 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/20 lg:inline-flex"
+              className="hidden items-center gap-1.5 rounded-xl border border-[#e5e4df] bg-white px-3 py-1.5 text-xs font-semibold text-[#121417] transition hover:bg-[#eeeeea] sm:inline-flex"
             >
-              <QrCode className="h-3.5 w-3.5 text-[#d4943a]" />
-              QR Cardápio
+              <QrCode className="h-3.5 w-3.5 text-[#d95d24]" />
+              QR Mesas
             </button>
             <a
               href="/api/reports/export"
-              className="hidden items-center gap-1.5 rounded-xl border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/20 sm:inline-flex"
+              className="hidden items-center gap-1.5 rounded-xl border border-[#e5e4df] bg-white px-3 py-1.5 text-xs font-semibold text-[#121417] transition hover:bg-[#eeeeea] md:inline-flex"
             >
-              <Download className="h-3.5 w-3.5 text-emerald-300" />
+              <Download className="h-3.5 w-3.5 text-emerald-700" />
               CSV
             </a>
             <button
@@ -322,8 +457,8 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
               onClick={() => setAutoPoll((v) => !v)}
               className={`hidden rounded-xl border px-3 py-1.5 text-xs font-semibold sm:inline-flex ${
                 autoPoll
-                  ? "border-emerald-400/40 bg-emerald-500/20 text-emerald-200"
-                  : "border-white/15 bg-white/10 text-[#d3c1ae]"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  : "border-[#e5e4df] bg-white text-[#5a5f67]"
               }`}
             >
               {autoPoll ? "● Sync 15s" : "Sync pausado"}
@@ -331,104 +466,15 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
             <button
               type="button"
               onClick={refreshWorkspace}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/20"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[#e5e4df] bg-white px-3 py-1.5 text-xs font-semibold text-[#121417] transition hover:bg-[#eeeeea]"
             >
-              <RefreshCw
-                className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`}
-              />
+              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">Atualizar</span>
             </button>
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen((v) => !v)}
-              className="rounded-xl bg-white/10 p-2 text-white hover:bg-white/20 md:hidden"
-              aria-label="Alternar menu"
-            >
-              {mobileMenuOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
-            </button>
           </div>
-        </div>
+        </header>
 
-        {/* Horizontal Segmented Pill Navigation Dock */}
-        <nav
-          className={`border-t border-white/10 px-4 py-2 sm:px-6 lg:px-8 ${
-            mobileMenuOpen ? "block" : "hidden md:block"
-          }`}
-        >
-          <div className="flex flex-wrap items-center gap-1.5">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const active = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition ${
-                    active
-                      ? "bg-gradient-to-r from-[#c06d30] to-[#944b19] text-white shadow-md"
-                      : "text-[#d3c1ae] hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span>{item.label}</span>
-                  {item.badge !== undefined && (
-                    <span
-                      className={`font-mono-num rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                        active
-                          ? "bg-white text-[#8c4517]"
-                          : "bg-white/15 text-amber-200"
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </nav>
-
-        {!mobileMenuOpen && (
-          <div className="flex gap-1.5 overflow-x-auto border-t border-white/10 px-3 py-2 md:hidden">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const active = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setActiveTab(item.id)}
-                  className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                    active
-                      ? "bg-[#b5652a] text-white"
-                      : "bg-white/10 text-[#d3c1ae]"
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {item.label}
-                  {item.badge !== undefined && (
-                    <span className="font-mono-num rounded-full bg-black/25 px-1.5 text-[10px]">
-                      {item.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </header>
-
-      {/* Main Full-Width Viewport Workspace */}
-      <main className="w-full flex-1 px-4 py-6 sm:px-6 lg:px-8">
-
+        <main className="w-full flex-1 px-4 py-6 sm:px-6 lg:px-8">
           {dbError && (
             <div className="mb-5 flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
               <AlertTriangle className="h-5 w-5 shrink-0 text-red-700" />
@@ -453,27 +499,24 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
 
           {activeTab === "overview" && (
             <div className="animate-fade-in space-y-6">
-              {/* Top Hero Bento Grid */}
+              {/* Hero + KPI Bento Grid */}
               <div className="grid gap-4 lg:grid-cols-12">
-                {/* Meta Diaria Hero Card */}
-                <div className="flex flex-col justify-between rounded-2xl border border-[#3a271d] bg-gradient-to-br from-[#211611] via-[#311f16] to-[#4b2d1f] p-5 text-[#fbf8f3] shadow-lg lg:col-span-5">
+                <div className="flex flex-col justify-between rounded-2xl bg-[#121417] p-6 text-white shadow-lg lg:col-span-5">
                   <div>
                     <div className="flex items-center justify-between gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold text-amber-200">
-                        <Target className="h-3.5 w-3.5 text-[#d4943a]" />
-                        Meta Diária do Turno
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold text-[#f2b880]">
+                        <Target className="h-3.5 w-3.5 text-[#d95d24]" />
+                        Meta Diária
                       </span>
                       <div className="flex items-center gap-1 text-[11px]">
                         <button
                           type="button"
-                          onClick={() =>
-                            setDailyGoal((g) => Math.max(500, g - 250))
-                          }
+                          onClick={() => setDailyGoal((g) => Math.max(500, g - 250))}
                           className="rounded-lg border border-white/15 bg-white/10 px-2 py-0.5 font-bold hover:bg-white/20"
                         >
                           -250
                         </button>
-                        <span className="font-mono-num px-1 font-semibold text-amber-200">
+                        <span className="font-mono-num px-1 font-semibold text-[#f2b880]">
                           {formatBRL(dailyGoal)}
                         </span>
                         <button
@@ -486,31 +529,29 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                       </div>
                     </div>
 
-                    <div className="mt-4 flex items-baseline justify-between gap-3">
+                    <div className="mt-5 flex items-baseline justify-between gap-3">
                       <div>
-                        <p className="text-xs text-[#d3c1ae]">
-                          Faturamento Pago Hoje
-                        </p>
-                        <p className="font-mono-num mt-0.5 text-3xl font-bold text-white">
+                        <p className="text-xs text-[#8b9098]">Faturamento Pago Hoje</p>
+                        <p className="font-mono-num mt-1 text-3xl font-bold tracking-tight text-white">
                           {formatBRL(data.metrics.revenueToday)}
                         </p>
                       </div>
                       <span className="font-mono-num rounded-xl bg-emerald-500/20 px-3 py-1 text-sm font-bold text-emerald-300">
-                        {goalPct}% da meta
+                        {goalPct}%
                       </span>
                     </div>
 
-                    <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white/15">
+                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-[#d4943a] to-[#40916c] transition-all duration-500"
+                        className="h-full rounded-full bg-gradient-to-r from-[#d95d24] to-[#22c55e] transition-all duration-500"
                         style={{ width: `${goalPct}%` }}
                       />
                     </div>
                   </div>
 
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-3 text-xs">
-                    <span className="text-[#d3c1ae]">
-                      {data.metrics.paidCount} vendas · Ticket médio{" "}
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-4 text-xs">
+                    <span className="text-[#8b9098]">
+                      {data.metrics.paidCount} vendas · Ticket{" "}
                       <strong className="font-mono-num text-white">
                         {formatBRL(data.metrics.avgTicket)}
                       </strong>
@@ -519,122 +560,95 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                       <button
                         type="button"
                         onClick={() => setActiveTab("pdv")}
-                        className="rounded-xl bg-[#b5652a] px-3 py-1.5 font-semibold text-white hover:bg-[#9c511d]"
+                        className="btn-primary rounded-xl px-3 py-1.5 font-semibold"
                       >
-                        + Novo Pedido PDV
+                        + Novo Pedido
                       </button>
                       <button
                         type="button"
                         onClick={() => setActiveTab("delivery")}
-                        className="rounded-xl border border-orange-300/30 bg-orange-500/20 px-3 py-1.5 font-semibold text-orange-200 hover:bg-orange-500/30"
-                      >
-                        Delivery ({data.metrics.activeDeliveries})
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("tables")}
                         className="rounded-xl border border-white/15 bg-white/10 px-3 py-1.5 font-semibold text-white hover:bg-white/20"
                       >
-                        Mesas
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("finance")}
-                        className="rounded-xl border border-emerald-400/30 bg-emerald-500/20 px-3 py-1.5 font-semibold text-emerald-200 hover:bg-emerald-500/30"
-                      >
-                        Financeiro
+                        Delivery ({data.metrics.activeDeliveries})
                       </button>
                     </div>
                   </div>
                 </div>
 
-                {/* Right 4 KPI Bento Tiles */}
+                {/* 4 KPI Tiles */}
                 <div className="grid gap-4 sm:grid-cols-2 lg:col-span-7">
-                  <div className="card-bistro flex flex-col justify-between p-4">
+                  <div className="card-bistro flex flex-col justify-between p-5">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-[#6e594b]">
-                        Mesas & Comandas
-                      </p>
-                      <span className="rounded-lg bg-amber-100 p-1.5 text-amber-800">
+                      <p className="text-xs font-semibold text-[#5a5f67]">Mesas & Salão</p>
+                      <span className="rounded-xl bg-amber-50 p-2 text-amber-700">
                         <UtensilsCrossed className="h-4 w-4" />
                       </span>
                     </div>
-                    <p className="font-mono-num mt-2 text-2xl font-bold text-[#211611]">
+                    <p className="font-mono-num mt-2 text-2xl font-bold text-[#121417]">
                       {data.metrics.occupiedTables} / {data.metrics.totalTables}
                     </p>
-                    <p className="mt-1 text-[11px] text-[#6e594b]">
+                    <p className="mt-1 text-[11px] text-[#5a5f67]">
                       {data.metrics.activeOrdersCount} pedidos em aberto no salão
                     </p>
                   </div>
 
-                  <div className="card-bistro flex flex-col justify-between p-4">
+                  <div className="card-bistro flex flex-col justify-between p-5">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-[#6e594b]">
-                        Fila KDS & Encomendas
-                      </p>
-                      <span className="rounded-lg bg-orange-100 p-1.5 text-[#b5652a]">
-                        <ChefHat className="h-4 w-4" />
+                      <p className="text-xs font-semibold text-[#5a5f67]">Delivery & KDS</p>
+                      <span className="rounded-xl bg-orange-50 p-2 text-[#d95d24]">
+                        <Truck className="h-4 w-4" />
                       </span>
                     </div>
-                    <p className="font-mono-num mt-2 text-2xl font-bold text-[#b5652a]">
-                      {data.metrics.kdsPendingCount} itens
+                    <p className="font-mono-num mt-2 text-2xl font-bold text-[#d95d24]">
+                      {data.metrics.activeDeliveries} entregas · {data.metrics.kdsPendingCount} KDS
                     </p>
-                    <p className="mt-1 text-[11px] text-[#6e594b]">
-                      {data.metrics.activeCakeOrders} encomendas de confeitaria
-                      ativas
+                    <p className="mt-1 text-[11px] text-[#5a5f67]">
+                      Receita delivery hoje: {formatBRL(data.metrics.deliveryRevenue)}
                     </p>
                   </div>
 
-                  <div className="card-bistro flex flex-col justify-between p-4">
+                  <div className="card-bistro flex flex-col justify-between p-5">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-[#6e594b]">
-                        Clube Fidelidade
-                      </p>
-                      <span className="rounded-lg bg-emerald-100 p-1.5 text-[#2d6a4f]">
+                      <p className="text-xs font-semibold text-[#5a5f67]">Clube Fidelidade</p>
+                      <span className="rounded-xl bg-emerald-50 p-2 text-emerald-700">
                         <Award className="h-4 w-4" />
                       </span>
                     </div>
-                    <p className="font-mono-num mt-2 text-2xl font-bold text-[#2d6a4f]">
+                    <p className="font-mono-num mt-2 text-2xl font-bold text-emerald-700">
                       {data.customers.length} clientes
                     </p>
-                    <p className="mt-1 text-[11px] text-[#6e594b]">
-                      {activePointsTotal} pontos acumulados · clique em Clube
+                    <p className="mt-1 text-[11px] text-[#5a5f67]">
+                      {activePointsTotal} pontos acumulados · {data.metrics.activeCakeOrders} encomendas
                     </p>
                   </div>
 
-                  <div className="card-bistro flex flex-col justify-between p-4">
+                  <div className="card-bistro flex flex-col justify-between p-5">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-[#6e594b]">
-                        Alertas de Estoque
-                      </p>
-                      <span className="rounded-lg bg-red-100 p-1.5 text-red-700">
+                      <p className="text-xs font-semibold text-[#5a5f67]">Alertas de Estoque</p>
+                      <span className="rounded-xl bg-red-50 p-2 text-red-700">
                         <AlertTriangle className="h-4 w-4" />
                       </span>
                     </div>
                     <p className="font-mono-num mt-2 text-2xl font-bold text-amber-700">
                       {data.metrics.lowStockAlerts}
                     </p>
-                    <p className="mt-1 text-[11px] text-[#6e594b]">
+                    <p className="mt-1 text-[11px] text-[#5a5f67]">
                       Insumos ou produtos abaixo do mínimo
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Analytics Breakdown */}
-              <div className="grid gap-4 lg:grid-cols-3">
+              {/* Analytics + Hourly Chart */}
+              <div className="grid gap-4 lg:grid-cols-4">
                 <div className="card-bistro p-5">
-                  <h3 className="font-display text-base font-bold">
-                    Receita por Canal
-                  </h3>
+                  <h3 className="font-display text-base font-bold">Receita por Canal</h3>
                   <div className="mt-3 space-y-2.5 text-xs">
                     {analytics.channels.length === 0 ? (
-                      <p className="text-[#6e594b]">Sem vendas pagas ainda.</p>
+                      <p className="text-[#5a5f67]">Sem vendas pagas ainda.</p>
                     ) : (
                       analytics.channels.map(([ch, val]) => {
-                        const pct = Math.round(
-                          (val / Math.max(1, analytics.totalPaid)) * 100,
-                        );
+                        const pct = Math.round((val / Math.max(1, analytics.totalPaid)) * 100);
                         return (
                           <div key={ch} className="space-y-1">
                             <div className="flex justify-between font-semibold">
@@ -643,9 +657,9 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                                 {formatBRL(val)} ({pct}%)
                               </span>
                             </div>
-                            <div className="h-2 overflow-hidden rounded-full bg-[#f2ebe1]">
+                            <div className="h-2 overflow-hidden rounded-full bg-[#eeeeea]">
                               <div
-                                className="h-full rounded-full bg-[#b5652a]"
+                                className="h-full rounded-full bg-[#d95d24]"
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
@@ -657,17 +671,13 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                 </div>
 
                 <div className="card-bistro p-5">
-                  <h3 className="font-display text-base font-bold">
-                    Meios de Pagamento
-                  </h3>
+                  <h3 className="font-display text-base font-bold">Meios de Pagamento</h3>
                   <div className="mt-3 space-y-2.5 text-xs">
                     {analytics.payments.length === 0 ? (
-                      <p className="text-[#6e594b]">Sem recebimentos ainda.</p>
+                      <p className="text-[#5a5f67]">Sem recebimentos ainda.</p>
                     ) : (
                       analytics.payments.map(([pm, val]) => {
-                        const pct = Math.round(
-                          (val / Math.max(1, analytics.totalPaid)) * 100,
-                        );
+                        const pct = Math.round((val / Math.max(1, analytics.totalPaid)) * 100);
                         return (
                           <div key={pm} className="space-y-1">
                             <div className="flex justify-between font-semibold">
@@ -676,9 +686,9 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                                 {formatBRL(val)} ({pct}%)
                               </span>
                             </div>
-                            <div className="h-2 overflow-hidden rounded-full bg-[#f2ebe1]">
+                            <div className="h-2 overflow-hidden rounded-full bg-[#eeeeea]">
                               <div
-                                className="h-full rounded-full bg-[#2d6a4f]"
+                                className="h-full rounded-full bg-[#15803d]"
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
@@ -690,19 +700,45 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                 </div>
 
                 <div className="card-bistro p-5">
-                  <h3 className="font-display text-base font-bold">
-                    Mais Vendidos (Top 5)
+                  <h3 className="font-display flex items-center gap-1.5 text-base font-bold">
+                    <BarChart3 className="h-4 w-4 text-[#d95d24]" /> Vendas por Hora
                   </h3>
+                  <div className="mt-4 flex h-28 items-end gap-1">
+                    {analytics.salesByHour.slice(7, 23).map((val, idx) => {
+                      const hour = idx + 7;
+                      const heightPct = val > 0 ? Math.max(12, Math.round((val / analytics.maxHourRevenue) * 100)) : 4;
+                      return (
+                        <div key={hour} className="group flex flex-1 flex-col items-center gap-1">
+                          <div className="flex h-20 w-full items-end">
+                            <div
+                              title={`${hour}h: ${formatBRL(val)}`}
+                              className={`w-full rounded-t-sm transition-all ${
+                                val > 0 ? "bg-[#d95d24] group-hover:bg-[#b84917]" : "bg-[#eeeeea]"
+                              }`}
+                              style={{ height: `${heightPct}%` }}
+                            />
+                          </div>
+                          {hour % 3 === 0 && (
+                            <span className="font-mono-num text-[9px] text-[#8b9098]">{hour}h</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="card-bistro p-5">
+                  <h3 className="font-display text-base font-bold">Top 5 Produtos</h3>
                   <div className="mt-3 space-y-2 text-xs">
                     {analytics.topProducts.map((p, idx) => (
                       <div
                         key={p.name}
-                        className="flex items-center justify-between rounded-lg bg-[#fbf8f3] px-2.5 py-1.5"
+                        className="flex items-center justify-between rounded-lg bg-[#f6f6f3] px-2.5 py-1.5"
                       >
                         <span className="truncate font-semibold">
                           {idx + 1}. {p.name}
                         </span>
-                        <span className="font-mono-num shrink-0 font-bold text-[#b5652a]">
+                        <span className="font-mono-num shrink-0 font-bold text-[#d95d24]">
                           {formatBRL(p.revenue)}
                         </span>
                       </div>
@@ -715,15 +751,13 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                 {/* Recent Orders */}
                 <div className="card-bistro p-5 lg:col-span-5">
                   <div className="mb-3 flex items-center justify-between">
-                    <h3 className="font-display text-lg font-bold">
-                      Últimos Pedidos
-                    </h3>
+                    <h3 className="font-display text-lg font-bold">Últimos Pedidos</h3>
                     <button
                       type="button"
                       onClick={() => setActiveTab("pdv")}
-                      className="text-xs font-semibold text-[#b5652a] hover:underline"
+                      className="text-xs font-semibold text-[#d95d24] hover:underline"
                     >
-                      Novo Pedido no PDV →
+                      Novo Pedido →
                     </button>
                   </div>
 
@@ -731,15 +765,13 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                     {data.orders.slice(0, 6).map((order) => (
                       <div
                         key={order.id}
-                        className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#f2ebe1] bg-[#fbf8f3] p-3 text-xs"
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#eeeeea] bg-[#fafaf8] p-3 text-xs"
                       >
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-mono-num font-bold">
-                              {order.code}
-                            </span>
+                            <span className="font-mono-num font-bold">{order.code}</span>
                             <span className="rounded bg-white px-2 py-0.5 text-[10px] font-bold">
-                              {order.table ? order.table.name : order.channel}
+                              {order.table ? order.table.name : channelLabel(order.channel)}
                             </span>
                             <span
                               className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
@@ -753,20 +785,19 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                               {order.status}
                             </span>
                           </div>
-                          <p className="mt-1 text-[#6e594b]">
-                            {order.customerName ?? "Cliente"} ·{" "}
-                            {order.items.length} itens
+                          <p className="mt-1 text-[#5a5f67]">
+                            {order.customerName ?? "Cliente"} · {order.items.length} itens
                           </p>
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <span className="font-mono-num text-sm font-bold text-[#211611]">
+                          <span className="font-mono-num text-sm font-bold text-[#121417]">
                             {formatBRL(order.total)}
                           </span>
                           <button
                             type="button"
                             onClick={() => setReceiptOrder(order)}
-                            className="rounded-lg border border-[#e8ddd0] bg-white p-1.5 hover:bg-[#f2ebe1]"
+                            className="icon-btn"
                             title="Ver Cupom 80mm"
                           >
                             <Receipt className="h-3.5 w-3.5" />
@@ -777,14 +808,14 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                   </div>
                 </div>
 
-                {/* Mural do Turno (Shift Handoff Notes) */}
+                {/* Mural do Turno */}
                 <div className="card-bistro p-5 lg:col-span-4">
                   <div className="mb-3 flex items-center justify-between">
-                    <h3 className="flex items-center gap-2 font-display text-lg font-bold">
-                      <StickyNote className="h-4 w-4 text-[#b5652a]" />
+                    <h3 className="font-display flex items-center gap-2 text-lg font-bold">
+                      <StickyNote className="h-4 w-4 text-[#d95d24]" />
                       Mural do Turno
                     </h3>
-                    <span className="rounded-full bg-[#f2ebe1] px-2.5 py-0.5 text-[10px] font-bold text-[#6e594b]">
+                    <span className="chip bg-[#eeeeea] text-[#5a5f67]">
                       {data.shiftNotes.filter((n) => !n.isDone).length} ativos
                     </span>
                   </div>
@@ -796,16 +827,14 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                         value={noteAuthor}
                         onChange={(e) => setNoteAuthor(e.target.value)}
                         placeholder="Autor"
-                        className="w-24 rounded-lg border border-[#e8ddd0] bg-[#fbf8f3] px-2.5 py-1.5 text-xs outline-none focus:border-[#b5652a]"
+                        className="input-field w-24 py-1.5 text-xs"
                       />
                       <select
                         value={notePriority}
                         onChange={(e) =>
-                          setNotePriority(
-                            e.target.value as "NORMAL" | "IMPORTANTE",
-                          )
+                          setNotePriority(e.target.value as "NORMAL" | "IMPORTANTE")
                         }
-                        className="rounded-lg border border-[#e8ddd0] bg-[#fbf8f3] px-2 py-1.5 text-xs outline-none focus:border-[#b5652a]"
+                        className="input-field w-auto py-1.5 text-xs"
                       >
                         <option value="NORMAL">Normal</option>
                         <option value="IMPORTANTE">Importante</option>
@@ -813,7 +842,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                       <button
                         type="submit"
                         disabled={noteBusy || !noteContent.trim()}
-                        className="btn-primary ml-auto inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold disabled:opacity-50"
+                        className="btn-primary ml-auto inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
                       >
                         <Plus className="h-3.5 w-3.5" /> Fixar
                       </button>
@@ -823,7 +852,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                       value={noteContent}
                       onChange={(e) => setNoteContent(e.target.value)}
                       placeholder="Recado para barista, forno ou caixa..."
-                      className="w-full rounded-lg border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-1.5 text-xs outline-none focus:border-[#b5652a]"
+                      className="input-field py-1.5 text-xs"
                     />
                   </form>
 
@@ -833,37 +862,35 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                         key={note.id}
                         className={`flex items-start justify-between gap-2 rounded-xl border p-2.5 text-xs ${
                           note.isDone
-                            ? "border-[#e8ddd0] bg-[#fbf8f3]/60 opacity-65"
+                            ? "border-[#e5e4df] bg-[#fafaf8] opacity-60"
                             : note.priority === "IMPORTANTE"
                               ? "border-amber-300 bg-amber-50/70"
-                              : "border-[#f2ebe1] bg-[#fbf8f3]"
+                              : "border-[#eeeeea] bg-[#fafaf8]"
                         }`}
                       >
                         <button
                           type="button"
                           onClick={() => handleToggleNote(note.id, !note.isDone)}
-                          className="mt-0.5 text-[#b5652a]"
+                          className="mt-0.5 text-[#d95d24]"
                           title="Marcar concluído"
                         >
                           {note.isDone ? (
-                            <CheckSquare className="h-4 w-4 text-[#2d6a4f]" />
+                            <CheckSquare className="h-4 w-4 text-emerald-700" />
                           ) : (
                             <Square className="h-4 w-4" />
                           )}
                         </button>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-[#211611]">
-                              {note.author}
-                            </span>
+                            <span className="font-bold text-[#121417]">{note.author}</span>
                             {note.priority === "IMPORTANTE" && (
-                              <span className="rounded bg-amber-200 px-1.5 py-0.2 text-[9px] font-bold text-amber-950">
+                              <span className="rounded bg-amber-200 px-1.5 py-0.5 text-[9px] font-bold text-amber-950">
                                 IMPORTANTE
                               </span>
                             )}
                           </div>
                           <p
-                            className={`mt-0.5 text-[#6e594b] ${
+                            className={`mt-0.5 text-[#5a5f67] ${
                               note.isDone ? "line-through" : ""
                             }`}
                           >
@@ -873,7 +900,7 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                         <button
                           type="button"
                           onClick={() => handleDeleteNote(note.id)}
-                          className="text-[#6e594b] hover:text-red-700"
+                          className="text-[#8b9098] hover:text-red-700"
                           title="Apagar recado"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -887,14 +914,13 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                 <div className="space-y-4 lg:col-span-3">
                   <div className="card-bistro p-5">
                     <div className="mb-3 flex items-center justify-between">
-                      <h3 className="flex items-center gap-2 font-display text-lg font-bold">
-                        <Croissant className="h-4 w-4 text-[#b5652a]" />{" "}
-                        Fornadas
+                      <h3 className="font-display flex items-center gap-2 text-lg font-bold">
+                        <Croissant className="h-4 w-4 text-[#d95d24]" /> Fornadas
                       </h3>
                       <button
                         type="button"
                         onClick={() => setActiveTab("bakery")}
-                        className="text-xs font-semibold text-[#b5652a] hover:underline"
+                        className="text-xs font-semibold text-[#d95d24] hover:underline"
                       >
                         Gerenciar →
                       </button>
@@ -903,13 +929,11 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
                       {data.batches.slice(0, 4).map((b) => (
                         <div
                           key={b.id}
-                          className="flex items-center justify-between rounded-xl bg-[#fbf8f3] px-3 py-2 text-xs"
+                          className="flex items-center justify-between rounded-xl bg-[#f6f6f3] px-3 py-2 text-xs"
                         >
                           <span className="truncate">
-                            <strong className="font-mono-num">
-                              {b.bakeTime}
-                            </strong>{" "}
-                            · {b.productName}
+                            <strong className="font-mono-num">{b.bakeTime}</strong> ·{" "}
+                            {b.productName}
                           </span>
                           <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[10px] font-bold">
                             {b.status}
@@ -921,27 +945,24 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
 
                   <div className="card-bistro p-5">
                     <div className="mb-3 flex items-center justify-between">
-                      <h3 className="flex items-center gap-2 font-display text-lg font-bold">
-                        <QrCode className="h-4 w-4 text-[#b5652a]" /> Mesas QR
+                      <h3 className="font-display flex items-center gap-2 text-lg font-bold">
+                        <QrCode className="h-4 w-4 text-[#d95d24]" /> Mesas QR
                       </h3>
                       <button
                         type="button"
                         onClick={() => setActiveTab("tables")}
-                        className="text-xs font-semibold text-[#b5652a] hover:underline"
+                        className="text-xs font-semibold text-[#d95d24] hover:underline"
                       >
                         Ver Mesas →
                       </button>
                     </div>
-                    <p className="mb-3 text-xs text-[#6e594b]">
-                      Teste o cardápio digital caindo direto no KDS:
-                    </p>
                     <div className="flex flex-wrap gap-1.5">
                       {data.tables.slice(0, 6).map((t) => (
                         <button
                           key={t.id}
                           type="button"
                           onClick={() => setQrTableNumber(t.number)}
-                          className="rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-2.5 py-1.5 text-xs font-semibold hover:border-[#b5652a]"
+                          className="rounded-xl border border-[#e5e4df] bg-[#fafaf8] px-2.5 py-1.5 text-xs font-semibold hover:border-[#d95d24]"
                         >
                           {t.name}
                         </button>
@@ -1066,7 +1087,37 @@ export function ErpWorkspace({ initialData, dbError }: ErpWorkspaceProps) {
               onError={(msg) => showToast("err", msg)}
             />
           )}
-      </main>
+        </main>
+      </div>
+
+      {/* Mobile Bottom Quick Dock */}
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t border-[#e5e4df] bg-white/95 px-2 py-1.5 backdrop-blur-md lg:hidden">
+        {(
+          [
+            { id: "overview", label: "Painel", icon: LayoutDashboard },
+            { id: "pdv", label: "PDV", icon: ShoppingCart },
+            { id: "delivery", label: "Delivery", icon: Truck },
+            { id: "tables", label: "Mesas", icon: UtensilsCrossed },
+            { id: "kds", label: "KDS", icon: ChefHat },
+          ] as const
+        ).map((item) => {
+          const Icon = item.icon;
+          const active = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setActiveTab(item.id)}
+              className={`flex flex-col items-center gap-0.5 rounded-xl px-3 py-1 text-[10px] font-bold transition ${
+                active ? "text-[#d95d24]" : "text-[#5a5f67]"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
 
       <ReceiptModal order={receiptOrder} onClose={() => setReceiptOrder(null)} />
       <QrModal tableNumber={qrTableNumber} onClose={() => setQrTableNumber(null)} />

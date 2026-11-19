@@ -106,12 +106,12 @@ export function DeliveryTrackerClient({
       <header className="cafe-sidebar text-white shadow-md">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3.5">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#d4943a] to-[#b5652a]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#e09132] to-[#d95d24]">
               <Coffee className="h-4 w-4" />
             </div>
             <div>
               <p className="font-display text-base font-bold">Forno & Mesa</p>
-              <p className="text-[11px] text-[#d3c1ae]">Acompanhamento em tempo real</p>
+              <p className="text-[11px] text-[#9ca3af]">Acompanhamento em tempo real</p>
             </div>
           </div>
           <button
@@ -129,14 +129,14 @@ export function DeliveryTrackerClient({
         <div className="card-bistro p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <span className="chip bg-[#f2ebe1] text-[#6e594b]">
+              <span className="chip bg-[#eeeeea] text-[#5a5f67]">
                 {isPickup ? <Store className="h-3 w-3" /> : <Bike className="h-3 w-3" />}
                 {isPickup ? "Retirada no balcão" : "Entrega Delivery"}
               </span>
-              <h1 className="font-display mt-2 text-2xl font-bold text-[#211611]">
-                Pedido <span className="font-mono-num text-[#b5652a]">{order.code}</span>
+              <h1 className="font-display mt-2 text-2xl font-bold text-[#121417]">
+                Pedido <span className="font-mono-num text-[#d95d24]">{order.code}</span>
               </h1>
-              <p className="text-xs text-[#6e594b]">
+              <p className="text-xs text-[#5a5f67]">
                 Olá, <strong>{order.customerName}</strong> ·{" "}
                 {current === "CANCELADO"
                   ? "Pedido cancelado"
@@ -170,24 +170,24 @@ export function DeliveryTrackerClient({
                     key={step}
                     className={`flex items-center gap-2.5 rounded-2xl border p-3 sm:flex-col sm:text-center ${
                       isCurrent
-                        ? "border-[#b5652a] bg-amber-50/70 ring-2 ring-[#b5652a]/20"
+                        ? "border-[#d95d24] bg-amber-50/70 ring-2 ring-[#d95d24]/20"
                         : done
                           ? "border-emerald-200 bg-emerald-50/60"
-                          : "border-[#f2ebe1] bg-[#fbf8f3] opacity-55"
+                          : "border-[#eeeeea] bg-[#f6f6f3] opacity-55"
                     }`}
                   >
                     <div
                       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
                         isCurrent
-                          ? "bg-[#b5652a] text-white"
+                          ? "bg-[#d95d24] text-white"
                           : done
-                            ? "bg-[#2d6a4f] text-white"
-                            : "bg-[#e8ddd0] text-[#6e594b]"
+                            ? "bg-[#15803d] text-white"
+                            : "bg-[#e5e4df] text-[#5a5f67]"
                       }`}
                     >
                       <Icon className="h-4 w-4" />
                     </div>
-                    <span className="text-xs font-bold text-[#211611]">
+                    <span className="text-xs font-bold text-[#121417]">
                       {DELIVERY_STATUS_LABELS[step]}
                     </span>
                   </li>
@@ -204,10 +204,10 @@ export function DeliveryTrackerClient({
           )}
 
           {!isPickup && order.deliveryAddress && (
-            <div className="mt-3 flex items-start gap-2 rounded-xl bg-[#fbf8f3] p-3 text-xs text-[#6e594b]">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#b5652a]" />
+            <div className="mt-3 flex items-start gap-2 rounded-xl bg-[#f6f6f3] p-3 text-xs text-[#5a5f67]">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#d95d24]" />
               <div>
-                <p className="font-semibold text-[#211611]">Endereço de entrega</p>
+                <p className="font-semibold text-[#121417]">Endereço de entrega</p>
                 <p>
                   {order.deliveryAddress}
                   {order.deliveryNeighborhood ? ` · ${order.deliveryNeighborhood}` : ""}
@@ -219,36 +219,36 @@ export function DeliveryTrackerClient({
 
         <div className="card-bistro p-5">
           <h2 className="font-display text-lg font-bold">Resumo dos itens</h2>
-          <ul className="mt-3 divide-y divide-[#f2ebe1] text-xs">
+          <ul className="mt-3 divide-y divide-[#eeeeea] text-xs">
             {order.items.map((it) => (
               <li key={it.id} className="flex items-center justify-between py-2.5">
                 <div>
                   <span className="font-mono-num font-bold">{it.qty}×</span>{" "}
                   <span className="font-semibold">{it.productName}</span>
-                  {it.notes && <p className="text-[11px] text-[#6e594b]">{it.notes}</p>}
+                  {it.notes && <p className="text-[11px] text-[#5a5f67]">{it.notes}</p>}
                 </div>
                 <span className="font-mono-num font-bold">{formatBRL(it.totalPrice)}</span>
               </li>
             ))}
           </ul>
 
-          <div className="mt-3 space-y-1 border-t border-[#f2ebe1] pt-3 text-xs">
-            <div className="flex justify-between text-[#6e594b]">
+          <div className="mt-3 space-y-1 border-t border-[#eeeeea] pt-3 text-xs">
+            <div className="flex justify-between text-[#5a5f67]">
               <span>Subtotal</span>
               <span className="font-mono-num">{formatBRL(order.subtotal)}</span>
             </div>
             {order.deliveryFee > 0 && (
-              <div className="flex justify-between text-[#6e594b]">
+              <div className="flex justify-between text-[#5a5f67]">
                 <span>Taxa de entrega</span>
                 <span className="font-mono-num">{formatBRL(order.deliveryFee)}</span>
               </div>
             )}
             <div className="flex justify-between pt-1 text-base font-bold">
               <span>Total ({order.paymentMethod ?? "A combinar"})</span>
-              <span className="font-mono-num text-[#b5652a]">{formatBRL(order.total)}</span>
+              <span className="font-mono-num text-[#d95d24]">{formatBRL(order.total)}</span>
             </div>
             {order.changeFor && (
-              <p className="text-[11px] text-[#6e594b]">
+              <p className="text-[11px] text-[#5a5f67]">
                 Troco solicitado para {formatBRL(order.changeFor)}
               </p>
             )}
@@ -257,7 +257,7 @@ export function DeliveryTrackerClient({
 
         <Link
           href="/delivery"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#b5652a] hover:underline"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#d95d24] hover:underline"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Fazer outro pedido
         </Link>

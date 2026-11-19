@@ -266,17 +266,17 @@ export function FinanceSection({
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="card-bistro p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#6e594b]">
+            <span className="text-xs font-semibold text-[#5a5f67]">
               Receita Bruta Realizada
             </span>
-            <span className="rounded-lg bg-emerald-100 p-1.5 text-[#2d6a4f]">
+            <span className="rounded-lg bg-emerald-100 p-1.5 text-[#15803d]">
               <TrendingUp className="h-4 w-4" />
             </span>
           </div>
-          <p className="font-mono-num mt-2 text-2xl font-bold text-[#2d6a4f]">
+          <p className="font-mono-num mt-2 text-2xl font-bold text-[#15803d]">
             {formatBRL(dre.grossRevenue)}
           </p>
-          <p className="mt-1 text-[11px] text-[#6e594b]">
+          <p className="mt-1 text-[11px] text-[#5a5f67]">
             Vendas {formatBRL(dre.ordersRevenue)} · Sinais/Extras{" "}
             {formatBRL(dre.cakeDepositsReceived + dre.extraRevenuePaid)}
           </p>
@@ -284,23 +284,23 @@ export function FinanceSection({
 
         <div className="card-bistro p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#6e594b]">
+            <span className="text-xs font-semibold text-[#5a5f67]">
               Lucro Líquido Estimado (DRE)
             </span>
-            <span className="rounded-lg bg-amber-100 p-1.5 text-[#b5652a]">
+            <span className="rounded-lg bg-amber-100 p-1.5 text-[#d95d24]">
               <Calculator className="h-4 w-4" />
             </span>
           </div>
           <p
             className={`font-mono-num mt-2 text-2xl font-bold ${
-              dre.netProfit >= 0 ? "text-[#211611]" : "text-red-700"
+              dre.netProfit >= 0 ? "text-[#121417]" : "text-red-700"
             }`}
           >
             {formatBRL(dre.netProfit)}
           </p>
-          <p className="mt-1 text-[11px] text-[#6e594b]">
+          <p className="mt-1 text-[11px] text-[#5a5f67]">
             Margem líquida:{" "}
-            <strong className="font-mono-num text-[#b5652a]">
+            <strong className="font-mono-num text-[#d95d24]">
               {dre.netMarginPct}%
             </strong>{" "}
             (já descontando CMV e taxas)
@@ -309,7 +309,7 @@ export function FinanceSection({
 
         <div className="card-bistro p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#6e594b]">
+            <span className="text-xs font-semibold text-[#5a5f67]">
               Contas a Pagar (Pendentes)
             </span>
             <span className="rounded-lg bg-red-100 p-1.5 text-red-700">
@@ -319,7 +319,7 @@ export function FinanceSection({
           <p className="font-mono-num mt-2 text-2xl font-bold text-red-700">
             {formatBRL(dre.operatingExpensesPending)}
           </p>
-          <p className="mt-1 text-[11px] text-[#6e594b]">
+          <p className="mt-1 text-[11px] text-[#5a5f67]">
             {pendingPayableCount} títulos em aberto · Já pago:{" "}
             {formatBRL(dre.operatingExpensesPaid)}
           </p>
@@ -327,17 +327,17 @@ export function FinanceSection({
 
         <div className="card-bistro p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#6e594b]">
+            <span className="text-xs font-semibold text-[#5a5f67]">
               A Receber (Mesas, Bolos & Extra)
             </span>
-            <span className="rounded-lg bg-emerald-100 p-1.5 text-[#2d6a4f]">
+            <span className="rounded-lg bg-emerald-100 p-1.5 text-[#15803d]">
               <ArrowUpRight className="h-4 w-4" />
             </span>
           </div>
-          <p className="font-mono-num mt-2 text-2xl font-bold text-[#b5652a]">
+          <p className="font-mono-num mt-2 text-2xl font-bold text-[#d95d24]">
             {formatBRL(dre.receivablesPending)}
           </p>
-          <p className="mt-1 text-[11px] text-[#6e594b]">
+          <p className="mt-1 text-[11px] text-[#5a5f67]">
             Comandas abertas + saldo encomendas + recebíveis
           </p>
         </div>
@@ -347,14 +347,14 @@ export function FinanceSection({
       <div className="grid gap-5 lg:grid-cols-12">
         {/* DRE Gerencial */}
         <section className="card-bistro p-5 lg:col-span-7">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-[#f2ebe1] pb-3">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-[#eeeeea] pb-3">
             <div className="flex items-center gap-2">
-              <Landmark className="h-5 w-5 text-[#b5652a]" />
+              <Landmark className="h-5 w-5 text-[#d95d24]" />
               <div>
-                <h2 className="font-display text-lg font-bold text-[#211611]">
+                <h2 className="font-display text-lg font-bold text-[#121417]">
                   DRE Gerencial — Demonstrativo de Resultados
                 </h2>
-                <p className="text-xs text-[#6e594b]">
+                <p className="text-xs text-[#5a5f67]">
                   Consolidado automático entre PDV, Mesas, Encomendas, CMV das
                   fichas técnicas e despesas.
                 </p>
@@ -362,27 +362,27 @@ export function FinanceSection({
             </div>
             <a
               href="/api/reports/export?scope=finance"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-1.5 text-xs font-semibold text-[#211611] hover:bg-[#f2ebe1]"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-1.5 text-xs font-semibold text-[#121417] hover:bg-[#eeeeea]"
             >
-              <Download className="h-3.5 w-3.5 text-[#2d6a4f]" />
+              <Download className="h-3.5 w-3.5 text-[#15803d]" />
               Exportar Financeiro CSV
             </a>
           </div>
 
           <div className="space-y-2 text-xs">
-            <div className="flex items-center justify-between rounded-xl bg-[#fbf8f3] px-3.5 py-2.5">
-              <span className="font-semibold text-[#211611]">
+            <div className="flex items-center justify-between rounded-xl bg-[#f6f6f3] px-3.5 py-2.5">
+              <span className="font-semibold text-[#121417]">
                 (+) Receita de Pedidos Pagos (PDV, Mesas & QR)
               </span>
-              <span className="font-mono-num font-bold text-[#2d6a4f]">
+              <span className="font-mono-num font-bold text-[#15803d]">
                 {formatBRL(dre.ordersRevenue)}
               </span>
             </div>
-            <div className="flex items-center justify-between rounded-xl bg-[#fbf8f3] px-3.5 py-2.5">
-              <span className="font-semibold text-[#211611]">
+            <div className="flex items-center justify-between rounded-xl bg-[#f6f6f3] px-3.5 py-2.5">
+              <span className="font-semibold text-[#121417]">
                 (+) Sinais de Bolos & Receitas Extras Recebidas
               </span>
-              <span className="font-mono-num font-bold text-[#2d6a4f]">
+              <span className="font-mono-num font-bold text-[#15803d]">
                 {formatBRL(dre.cakeDepositsReceived + dre.extraRevenuePaid)}
               </span>
             </div>
@@ -394,7 +394,7 @@ export function FinanceSection({
                 {formatBRL(dre.grossRevenue)}
               </span>
             </div>
-            <div className="flex items-center justify-between px-3.5 py-1.5 text-[#6e594b]">
+            <div className="flex items-center justify-between px-3.5 py-1.5 text-[#5a5f67]">
               <span>
                 (-) Taxas de Adquirência Estimadas (Crédito 3,2% · Débito 1,6%)
               </span>
@@ -402,7 +402,7 @@ export function FinanceSection({
                 - {formatBRL(dre.cardFeesEstimated)}
               </span>
             </div>
-            <div className="flex items-center justify-between px-3.5 py-1.5 text-[#6e594b]">
+            <div className="flex items-center justify-between px-3.5 py-1.5 text-[#5a5f67]">
               <span>
                 (-) CMV Estimado (Custo de Insumos das Fichas Técnicas)
               </span>
@@ -410,26 +410,26 @@ export function FinanceSection({
                 - {formatBRL(dre.estimatedCmv)}
               </span>
             </div>
-            <div className="flex items-center justify-between rounded-xl bg-[#f2ebe1] px-3.5 py-2.5">
-              <span className="font-bold text-[#211611]">
+            <div className="flex items-center justify-between rounded-xl bg-[#eeeeea] px-3.5 py-2.5">
+              <span className="font-bold text-[#121417]">
                 (=) Margem de Contribuição
               </span>
-              <span className="font-mono-num font-bold text-[#211611]">
+              <span className="font-mono-num font-bold text-[#121417]">
                 {formatBRL(dre.contributionMargin)}
               </span>
             </div>
-            <div className="flex items-center justify-between px-3.5 py-1.5 text-[#6e594b]">
+            <div className="flex items-center justify-between px-3.5 py-1.5 text-[#5a5f67]">
               <span>(-) Despesas Operacionais Pagas (Fornecedores/Custos)</span>
               <span className="font-mono-num font-semibold text-red-700">
                 - {formatBRL(dre.operatingExpensesPaid)}
               </span>
             </div>
-            <div className="flex items-center justify-between rounded-xl bg-gradient-to-r from-[#211611] to-[#3a251a] px-4 py-3 text-white">
+            <div className="flex items-center justify-between rounded-xl bg-gradient-to-r from-[#121417] to-[#3a251a] px-4 py-3 text-white">
               <div>
                 <span className="font-display text-sm font-bold">
                   (=) Resultado Líquido Estimado
                 </span>
-                <p className="text-[10px] text-[#d3c1ae]">
+                <p className="text-[10px] text-[#9ca3af]">
                   Descontos concedidos: {formatBRL(dre.discountsTotal)} · Taxas
                   de serviço 10%: {formatBRL(dre.serviceFeesTotal)}
                 </p>
@@ -450,34 +450,34 @@ export function FinanceSection({
         <section className="space-y-5 lg:col-span-5">
           <div className="card-bistro p-5">
             <div className="mb-3 flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-[#b5652a]" />
-              <h3 className="font-display text-base font-bold text-[#211611]">
+              <CreditCard className="h-4 w-4 text-[#d95d24]" />
+              <h3 className="font-display text-base font-bold text-[#121417]">
                 Conciliação por Meio de Pagamento
               </h3>
             </div>
             <div className="space-y-2.5 text-xs">
               {paymentBreakdown.length === 0 ? (
-                <p className="text-[#6e594b]">
+                <p className="text-[#5a5f67]">
                   Nenhuma venda paga registrada ainda.
                 </p>
               ) : (
                 paymentBreakdown.map(([pm, stats]) => (
                   <div
                     key={pm}
-                    className="rounded-xl border border-[#f2ebe1] bg-[#fbf8f3] p-3"
+                    className="rounded-xl border border-[#eeeeea] bg-[#f6f6f3] p-3"
                   >
-                    <div className="flex items-center justify-between font-bold text-[#211611]">
+                    <div className="flex items-center justify-between font-bold text-[#121417]">
                       <span>
                         {pm}{" "}
-                        <span className="text-[10px] font-normal text-[#6e594b]">
+                        <span className="text-[10px] font-normal text-[#5a5f67]">
                           ({stats.count} vendas)
                         </span>
                       </span>
-                      <span className="font-mono-num text-[#2d6a4f]">
+                      <span className="font-mono-num text-[#15803d]">
                         Líq. {formatBRL(stats.net)}
                       </span>
                     </div>
-                    <div className="mt-1 flex justify-between text-[11px] text-[#6e594b]">
+                    <div className="mt-1 flex justify-between text-[11px] text-[#5a5f67]">
                       <span>Bruto: {formatBRL(stats.gross)}</span>
                       <span>Taxa est.: - {formatBRL(stats.fee)}</span>
                     </div>
@@ -489,14 +489,14 @@ export function FinanceSection({
 
           <div className="card-bistro p-5">
             <div className="mb-3 flex items-center gap-2">
-              <Wallet className="h-4 w-4 text-[#b5652a]" />
-              <h3 className="font-display text-base font-bold text-[#211611]">
+              <Wallet className="h-4 w-4 text-[#d95d24]" />
+              <h3 className="font-display text-base font-bold text-[#121417]">
                 Histórico de Turnos de Caixa
               </h3>
             </div>
             <div className="max-h-56 space-y-2 overflow-y-auto pr-1 text-xs">
               {cashSessions.length === 0 ? (
-                <p className="text-[#6e594b]">Nenhum turno registrado.</p>
+                <p className="text-[#5a5f67]">Nenhum turno registrado.</p>
               ) : (
                 cashSessions.map((session) => {
                   const diff =
@@ -508,10 +508,10 @@ export function FinanceSection({
                   return (
                     <div
                       key={session.id}
-                      className="rounded-xl border border-[#f2ebe1] bg-[#fbf8f3] p-3"
+                      className="rounded-xl border border-[#eeeeea] bg-[#f6f6f3] p-3"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-[#211611]">
+                        <span className="font-bold text-[#121417]">
                           #{session.id} · {session.openedBy}
                         </span>
                         <span
@@ -524,18 +524,18 @@ export function FinanceSection({
                           {session.status}
                         </span>
                       </div>
-                      <div className="mt-1 flex flex-wrap justify-between gap-2 text-[11px] text-[#6e594b]">
+                      <div className="mt-1 flex flex-wrap justify-between gap-2 text-[11px] text-[#5a5f67]">
                         <span>
                           Abertura: {formatBRL(session.openingAmount)}
                         </span>
-                        <span className="font-mono-num font-semibold text-[#211611]">
+                        <span className="font-mono-num font-semibold text-[#121417]">
                           Esperado: {formatBRL(session.expectedAmount)}
                         </span>
                         {diff !== null && (
                           <span
                             className={`font-mono-num font-bold ${
                               diff === 0
-                                ? "text-[#2d6a4f]"
+                                ? "text-[#15803d]"
                                 : diff > 0
                                   ? "text-amber-700"
                                   : "text-red-700"
@@ -559,10 +559,10 @@ export function FinanceSection({
       <section className="card-bistro p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="font-display text-lg font-bold text-[#211611]">
+            <h2 className="font-display text-lg font-bold text-[#121417]">
               Contas a Pagar & Receber
             </h2>
-            <p className="text-xs text-[#6e594b]">
+            <p className="text-xs text-[#5a5f67]">
               Registre compras de grãos, farinha, energia, aluguel, eventos e
               controle vencimentos com baixa em 1 clique.
             </p>
@@ -570,16 +570,16 @@ export function FinanceSection({
 
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
-              <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-[#6e594b]" />
+              <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-[#5a5f67]" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar título ou fornecedor..."
-                className="rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] py-1.5 pr-3 pl-8 text-xs outline-none focus:border-[#b5652a]"
+                className="rounded-xl border border-[#e5e4df] bg-[#f6f6f3] py-1.5 pr-3 pl-8 text-xs outline-none focus:border-[#d95d24]"
               />
             </div>
-            <div className="flex flex-wrap gap-1 rounded-xl bg-[#f2ebe1] p-1">
+            <div className="flex flex-wrap gap-1 rounded-xl bg-[#eeeeea] p-1">
               {(
                 [
                   { id: "ALL", label: "Todos" },
@@ -595,8 +595,8 @@ export function FinanceSection({
                   onClick={() => setFilterType(tab.id)}
                   className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
                     filterType === tab.id
-                      ? "bg-[#19110d] text-white"
-                      : "text-[#6e594b] hover:text-[#211611]"
+                      ? "bg-[#121417] text-white"
+                      : "text-[#5a5f67] hover:text-[#121417]"
                   }`}
                 >
                   {tab.label}
@@ -609,7 +609,7 @@ export function FinanceSection({
         {/* Form Novo Lançamento */}
         <form
           onSubmit={handleCreateEntry}
-          className="mb-5 grid gap-2.5 rounded-2xl border border-[#e8ddd0] bg-[#fbf8f3] p-4 sm:grid-cols-2 lg:grid-cols-8"
+          className="mb-5 grid gap-2.5 rounded-2xl border border-[#e5e4df] bg-[#f6f6f3] p-4 sm:grid-cols-2 lg:grid-cols-8"
         >
           <select
             value={type}
@@ -619,7 +619,7 @@ export function FinanceSection({
               if (next === "RECEITA") setCategory("VENDAS_EXTRA");
               else if (category === "VENDAS_EXTRA") setCategory("FORNECEDOR");
             }}
-            className="rounded-xl border border-[#e8ddd0] bg-white px-2.5 py-2 text-xs font-semibold"
+            className="rounded-xl border border-[#e5e4df] bg-white px-2.5 py-2 text-xs font-semibold"
           >
             <option value="DESPESA">Despesa (Pagar)</option>
             <option value="RECEITA">Receita (Receber)</option>
@@ -628,7 +628,7 @@ export function FinanceSection({
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as typeof category)}
-            className="rounded-xl border border-[#e8ddd0] bg-white px-2.5 py-2 text-xs"
+            className="rounded-xl border border-[#e5e4df] bg-white px-2.5 py-2 text-xs"
           >
             {Object.entries(CATEGORY_LABELS).map(([val, label]) => (
               <option key={val} value={val}>
@@ -643,7 +643,7 @@ export function FinanceSection({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Descrição (ex: Compra Leite A2)"
-            className="rounded-xl border border-[#e8ddd0] bg-white px-3 py-2 text-xs lg:col-span-2"
+            className="rounded-xl border border-[#e5e4df] bg-white px-3 py-2 text-xs lg:col-span-2"
           />
 
           <input
@@ -651,7 +651,7 @@ export function FinanceSection({
             value={counterparty}
             onChange={(e) => setCounterparty(e.target.value)}
             placeholder="Fornecedor / Cliente"
-            className="rounded-xl border border-[#e8ddd0] bg-white px-3 py-2 text-xs"
+            className="rounded-xl border border-[#e5e4df] bg-white px-3 py-2 text-xs"
           />
 
           <input
@@ -662,7 +662,7 @@ export function FinanceSection({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="Valor R$"
-            className="font-mono-num rounded-xl border border-[#e8ddd0] bg-white px-3 py-2 text-xs"
+            className="font-mono-num rounded-xl border border-[#e5e4df] bg-white px-3 py-2 text-xs"
           />
 
           <input
@@ -670,7 +670,7 @@ export function FinanceSection({
             required
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="rounded-xl border border-[#e8ddd0] bg-white px-2.5 py-2 text-xs"
+            className="rounded-xl border border-[#e5e4df] bg-white px-2.5 py-2 text-xs"
           />
 
           <select
@@ -678,7 +678,7 @@ export function FinanceSection({
             onChange={(e) =>
               setPaymentMethod(e.target.value as typeof paymentMethod)
             }
-            className="rounded-xl border border-[#e8ddd0] bg-white px-2.5 py-2 text-xs"
+            className="rounded-xl border border-[#e5e4df] bg-white px-2.5 py-2 text-xs"
           >
             <option value="PIX">PIX</option>
             <option value="BOLETO">Boleto</option>
@@ -694,7 +694,7 @@ export function FinanceSection({
               onChange={(e) =>
                 setStatus(e.target.value as "PENDENTE" | "PAGO")
               }
-              className="w-32 rounded-xl border border-[#e8ddd0] bg-white px-2.5 py-2 text-xs"
+              className="w-32 rounded-xl border border-[#e5e4df] bg-white px-2.5 py-2 text-xs"
             >
               <option value="PENDENTE">Status: Pendente</option>
               <option value="PAGO">Status: Já Pago</option>
@@ -711,7 +711,7 @@ export function FinanceSection({
 
         <div className="space-y-2">
           {filteredEntries.length === 0 ? (
-            <p className="py-6 text-center text-xs text-[#6e594b]">
+            <p className="py-6 text-center text-xs text-[#5a5f67]">
               Nenhum lançamento financeiro encontrado para esse filtro.
             </p>
           ) : (
@@ -721,7 +721,7 @@ export function FinanceSection({
               return (
                 <div
                   key={entry.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#f2ebe1] bg-[#fbf8f3] p-3 text-xs"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#eeeeea] bg-[#f6f6f3] p-3 text-xs"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -734,14 +734,14 @@ export function FinanceSection({
                       >
                         {isExpense ? "DESPESA" : "RECEITA"}
                       </span>
-                      <span className="rounded bg-white px-2 py-0.5 text-[10px] font-semibold text-[#6e594b]">
+                      <span className="rounded bg-white px-2 py-0.5 text-[10px] font-semibold text-[#5a5f67]">
                         {CATEGORY_LABELS[entry.category] ?? entry.category}
                       </span>
-                      <span className="font-bold text-[#211611]">
+                      <span className="font-bold text-[#121417]">
                         {entry.description}
                       </span>
                     </div>
-                    <p className="mt-1 text-[11px] text-[#6e594b]">
+                    <p className="mt-1 text-[11px] text-[#5a5f67]">
                       {entry.counterparty
                         ? `${entry.counterparty} · `
                         : ""}
@@ -755,7 +755,7 @@ export function FinanceSection({
                   <div className="flex flex-wrap items-center gap-2.5">
                     <span
                       className={`font-mono-num text-sm font-bold ${
-                        isExpense ? "text-red-700" : "text-[#2d6a4f]"
+                        isExpense ? "text-red-700" : "text-[#15803d]"
                       }`}
                     >
                       {isExpense ? "-" : "+"} {formatBRL(entry.amount)}
@@ -768,7 +768,7 @@ export function FinanceSection({
                       className={`inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-[11px] font-bold transition ${
                         isPaid
                           ? "bg-emerald-100 text-emerald-900 hover:bg-emerald-200"
-                          : "bg-[#19110d] text-white hover:bg-[#3a251a]"
+                          : "bg-[#121417] text-white hover:bg-[#3a251a]"
                       }`}
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" />
@@ -779,7 +779,7 @@ export function FinanceSection({
                       type="button"
                       disabled={busy}
                       onClick={() => deleteEntry(entry.id)}
-                      className="rounded-lg border border-[#e8ddd0] bg-white p-1.5 text-[#6e594b] hover:text-red-700"
+                      className="rounded-lg border border-[#e5e4df] bg-white p-1.5 text-[#5a5f67] hover:text-red-700"
                       title="Excluir lançamento"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -795,12 +795,12 @@ export function FinanceSection({
       {/* Engenharia de Cardápio (CMV & Margem por Produto) */}
       <section className="card-bistro p-5">
         <div className="mb-4 flex items-center gap-2">
-          <Percent className="h-5 w-5 text-[#b5652a]" />
+          <Percent className="h-5 w-5 text-[#d95d24]" />
           <div>
-            <h2 className="font-display text-lg font-bold text-[#211611]">
+            <h2 className="font-display text-lg font-bold text-[#121417]">
               Engenharia de Cardápio — CMV & Margem de Lucro por Produto
             </h2>
-            <p className="text-xs text-[#6e594b]">
+            <p className="text-xs text-[#5a5f67]">
               Custo calculado pelas fichas técnicas ligadas aos insumos (ou
               referência de 32% quando sem ficha cadastrada).
             </p>
@@ -812,11 +812,11 @@ export function FinanceSection({
             ({ product, hasRecipe, unitCost, unitProfit, marginPct }) => (
               <div
                 key={product.id}
-                className="flex flex-col justify-between rounded-xl border border-[#f2ebe1] bg-[#fbf8f3] p-3.5 text-xs"
+                className="flex flex-col justify-between rounded-xl border border-[#eeeeea] bg-[#f6f6f3] p-3.5 text-xs"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
-                    <span className="font-bold text-[#211611]">
+                    <span className="font-bold text-[#121417]">
                       {product.name}
                     </span>
                     <span
@@ -831,28 +831,28 @@ export function FinanceSection({
                       {marginPct}% margem
                     </span>
                   </div>
-                  <p className="mt-0.5 text-[10px] text-[#6e594b]">
+                  <p className="mt-0.5 text-[10px] text-[#5a5f67]">
                     {product.category.name} ·{" "}
                     {hasRecipe ? "CMV Ficha Técnica" : "CMV Estimado (32%)"}
                   </p>
                 </div>
 
-                <div className="mt-3 grid grid-cols-3 gap-1 border-t border-[#e8ddd0] pt-2 text-[11px]">
+                <div className="mt-3 grid grid-cols-3 gap-1 border-t border-[#e5e4df] pt-2 text-[11px]">
                   <div>
-                    <p className="text-[10px] text-[#6e594b]">Venda</p>
-                    <p className="font-mono-num font-bold text-[#211611]">
+                    <p className="text-[10px] text-[#5a5f67]">Venda</p>
+                    <p className="font-mono-num font-bold text-[#121417]">
                       {formatBRL(product.price)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-[#6e594b]">Custo</p>
+                    <p className="text-[10px] text-[#5a5f67]">Custo</p>
                     <p className="font-mono-num font-semibold text-red-700">
                       {formatBRL(unitCost)}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[10px] text-[#6e594b]">Lucro/un</p>
-                    <p className="font-mono-num font-bold text-[#2d6a4f]">
+                    <p className="text-[10px] text-[#5a5f67]">Lucro/un</p>
+                    <p className="font-mono-num font-bold text-[#15803d]">
                       {formatBRL(unitProfit)}
                     </p>
                   </div>

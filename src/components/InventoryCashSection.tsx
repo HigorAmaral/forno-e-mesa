@@ -191,12 +191,12 @@ export function InventoryCashSection({
         {/* Insumos / Estoque */}
         <section className="card-bistro p-5 xl:col-span-7">
           <div className="mb-4 flex items-center gap-2">
-            <Boxes className="h-5 w-5 text-[#b5652a]" />
+            <Boxes className="h-5 w-5 text-[#d95d24]" />
             <div>
-              <h2 className="font-display text-lg font-bold text-[#211611]">
+              <h2 className="font-display text-lg font-bold text-[#121417]">
                 Estoque de Insumos & Fichas Técnicas
               </h2>
-              <p className="text-xs text-[#6e594b]">
+              <p className="text-xs text-[#5a5f67]">
                 Baixa automática pelas vendas ligadas às receitas; cadastre e
                 reponha insumos em 1 clique.
               </p>
@@ -205,7 +205,7 @@ export function InventoryCashSection({
 
           <form
             onSubmit={createIngredient}
-            className="mb-4 grid gap-2 rounded-xl border border-[#f2ebe1] bg-[#fbf8f3] p-3 sm:grid-cols-6"
+            className="mb-4 grid gap-2 rounded-xl border border-[#eeeeea] bg-[#f6f6f3] p-3 sm:grid-cols-6"
           >
             <input
               type="text"
@@ -213,12 +213,12 @@ export function InventoryCashSection({
               value={ingName}
               onChange={(e) => setIngName(e.target.value)}
               placeholder="Novo insumo (ex: Morango)"
-              className="rounded-lg border border-[#e8ddd0] bg-white px-2.5 py-1.5 text-xs sm:col-span-2"
+              className="rounded-lg border border-[#e5e4df] bg-white px-2.5 py-1.5 text-xs sm:col-span-2"
             />
             <select
               value={ingUnit}
               onChange={(e) => setIngUnit(e.target.value as typeof ingUnit)}
-              className="rounded-lg border border-[#e8ddd0] bg-white px-2 py-1.5 text-xs"
+              className="rounded-lg border border-[#e5e4df] bg-white px-2 py-1.5 text-xs"
             >
               <option value="KG">KG</option>
               <option value="L">L</option>
@@ -233,7 +233,7 @@ export function InventoryCashSection({
               value={ingQty}
               onChange={(e) => setIngQty(e.target.value)}
               placeholder="Qtd"
-              className="rounded-lg border border-[#e8ddd0] bg-white px-2.5 py-1.5 text-xs"
+              className="rounded-lg border border-[#e5e4df] bg-white px-2.5 py-1.5 text-xs"
             />
             <input
               type="number"
@@ -242,7 +242,7 @@ export function InventoryCashSection({
               value={ingMin}
               onChange={(e) => setIngMin(e.target.value)}
               placeholder="Mínimo"
-              className="rounded-lg border border-[#e8ddd0] bg-white px-2.5 py-1.5 text-xs"
+              className="rounded-lg border border-[#e5e4df] bg-white px-2.5 py-1.5 text-xs"
             />
             <button
               type="submit"
@@ -258,14 +258,14 @@ export function InventoryCashSection({
               value={ingCost}
               onChange={(e) => setIngCost(e.target.value)}
               placeholder="Custo unit. R$"
-              className="rounded-lg border border-[#e8ddd0] bg-white px-2.5 py-1.5 text-xs sm:col-span-2"
+              className="rounded-lg border border-[#e5e4df] bg-white px-2.5 py-1.5 text-xs sm:col-span-2"
             />
             <input
               type="text"
               value={ingSupplier}
               onChange={(e) => setIngSupplier(e.target.value)}
               placeholder="Fornecedor (opcional)"
-              className="rounded-lg border border-[#e8ddd0] bg-white px-2.5 py-1.5 text-xs sm:col-span-4"
+              className="rounded-lg border border-[#e5e4df] bg-white px-2.5 py-1.5 text-xs sm:col-span-4"
             />
           </form>
 
@@ -282,13 +282,13 @@ export function InventoryCashSection({
                   className={`rounded-xl border p-3 ${
                     isLow
                       ? "border-red-200 bg-red-50/50"
-                      : "border-[#f2ebe1] bg-[#fbf8f3]"
+                      : "border-[#eeeeea] bg-[#f6f6f3]"
                   }`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-[#211611]">
+                        <span className="text-sm font-bold text-[#121417]">
                           {ing.name}
                         </span>
                         {isLow && (
@@ -297,9 +297,9 @@ export function InventoryCashSection({
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-[#6e594b]">
+                      <p className="text-xs text-[#5a5f67]">
                         Atual:{" "}
-                        <span className="font-mono-num font-bold text-[#211611]">
+                        <span className="font-mono-num font-bold text-[#121417]">
                           {ing.currentQty} {ing.unit}
                         </span>{" "}
                         · Mínimo: {ing.minQty} {ing.unit} · Custo:{" "}
@@ -312,14 +312,14 @@ export function InventoryCashSection({
                       <button
                         type="button"
                         onClick={() => adjustIngredient(ing.id, -1)}
-                        className="rounded-lg border border-[#e8ddd0] bg-white px-2.5 py-1 text-xs font-bold hover:bg-[#f2ebe1]"
+                        className="rounded-lg border border-[#e5e4df] bg-white px-2.5 py-1 text-xs font-bold hover:bg-[#eeeeea]"
                       >
                         -1
                       </button>
                       <button
                         type="button"
                         onClick={() => adjustIngredient(ing.id, 5)}
-                        className="rounded-lg bg-[#2d6a4f] px-2.5 py-1 text-xs font-bold text-white hover:bg-[#22523d]"
+                        className="rounded-lg bg-[#15803d] px-2.5 py-1 text-xs font-bold text-white hover:bg-[#22523d]"
                       >
                         +5 {ing.unit}
                       </button>
@@ -328,7 +328,7 @@ export function InventoryCashSection({
                   <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white">
                     <div
                       className={`h-full rounded-full transition-all ${
-                        isLow ? "bg-red-500" : "bg-[#2d6a4f]"
+                        isLow ? "bg-red-500" : "bg-[#15803d]"
                       }`}
                       style={{ width: `${pct}%` }}
                     />
@@ -342,20 +342,20 @@ export function InventoryCashSection({
         {/* Caixa */}
         <section className="card-bistro p-5 xl:col-span-5">
           <div className="mb-4 flex items-center gap-2">
-            <Banknote className="h-5 w-5 text-[#2d6a4f]" />
+            <Banknote className="h-5 w-5 text-[#15803d]" />
             <div>
-              <h2 className="font-display text-lg font-bold text-[#211611]">
+              <h2 className="font-display text-lg font-bold text-[#121417]">
                 Frente de Caixa (Turnos)
               </h2>
-              <p className="text-xs text-[#6e594b]">
+              <p className="text-xs text-[#5a5f67]">
                 Controle de abertura, sangria, suprimento e fechamento do dia.
               </p>
             </div>
           </div>
 
           {!openCashSession ? (
-            <div className="space-y-3 rounded-xl border border-dashed border-[#e8ddd0] bg-[#fbf8f3] p-4">
-              <p className="text-xs font-semibold text-[#211611]">
+            <div className="space-y-3 rounded-xl border border-dashed border-[#e5e4df] bg-[#f6f6f3] p-4">
+              <p className="text-xs font-semibold text-[#121417]">
                 Nenhum turno de caixa aberto.
               </p>
               <div className="grid gap-2 sm:grid-cols-2">
@@ -364,14 +364,14 @@ export function InventoryCashSection({
                   value={openedBy}
                   onChange={(e) => setOpenedBy(e.target.value)}
                   placeholder="Operador"
-                  className="rounded-xl border border-[#e8ddd0] bg-white px-3 py-2 text-xs"
+                  className="rounded-xl border border-[#e5e4df] bg-white px-3 py-2 text-xs"
                 />
                 <input
                   type="number"
                   value={openingAmount}
                   onChange={(e) => setOpeningAmount(e.target.value)}
                   placeholder="Troco inicial R$"
-                  className="rounded-xl border border-[#e8ddd0] bg-white px-3 py-2 text-xs"
+                  className="rounded-xl border border-[#e5e4df] bg-white px-3 py-2 text-xs"
                 />
               </div>
               <button
@@ -384,25 +384,25 @@ export function InventoryCashSection({
                     openingAmount: Number(openingAmount) || 0,
                   })
                 }
-                className="w-full rounded-xl bg-[#2d6a4f] py-2.5 text-xs font-semibold text-white hover:bg-[#22523d]"
+                className="w-full rounded-xl bg-[#15803d] py-2.5 text-xs font-semibold text-white hover:bg-[#22523d]"
               >
                 Abrir Turno de Caixa
               </button>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-2.5 rounded-xl bg-[#fbf8f3] p-3.5 text-xs">
+              <div className="grid grid-cols-2 gap-2.5 rounded-xl bg-[#f6f6f3] p-3.5 text-xs">
                 <div>
-                  <span className="text-[#6e594b]">Operador</span>
-                  <p className="font-bold text-[#211611]">
+                  <span className="text-[#5a5f67]">Operador</span>
+                  <p className="font-bold text-[#121417]">
                     {openCashSession.openedBy}
                   </p>
                 </div>
                 <div>
-                  <span className="text-[#6e594b]">
+                  <span className="text-[#5a5f67]">
                     Saldo Esperado (Dinheiro)
                   </span>
-                  <p className="font-mono-num text-base font-bold text-[#2d6a4f]">
+                  <p className="font-mono-num text-base font-bold text-[#15803d]">
                     {formatBRL(openCashSession.expectedAmount)}
                   </p>
                 </div>
@@ -415,14 +415,14 @@ export function InventoryCashSection({
                   value={movAmount}
                   onChange={(e) => setMovAmount(e.target.value)}
                   placeholder="Valor R$"
-                  className="rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-2 text-xs"
+                  className="rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs"
                 />
                 <input
                   type="text"
                   value={movDesc}
                   onChange={(e) => setMovDesc(e.target.value)}
                   placeholder="Motivo (ex: Pag. gelo)"
-                  className="rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-2 text-xs"
+                  className="rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs"
                 />
               </div>
 
@@ -438,7 +438,7 @@ export function InventoryCashSection({
                       description: movDesc,
                     })
                   }
-                  className="flex-1 rounded-xl bg-[#2d6a4f] px-3 py-2 text-xs font-semibold text-white hover:bg-[#22523d]"
+                  className="flex-1 rounded-xl bg-[#15803d] px-3 py-2 text-xs font-semibold text-white hover:bg-[#22523d]"
                 >
                   + Suprimento
                 </button>
@@ -467,17 +467,17 @@ export function InventoryCashSection({
                 </button>
               </div>
 
-              <div className="max-h-64 space-y-1.5 overflow-y-auto border-t border-[#f2ebe1] pt-3">
+              <div className="max-h-64 space-y-1.5 overflow-y-auto border-t border-[#eeeeea] pt-3">
                 {openCashSession.movements.map((mov) => (
                   <div
                     key={mov.id}
-                    className="flex items-center justify-between rounded-lg bg-[#fbf8f3] px-3 py-1.5 text-xs"
+                    className="flex items-center justify-between rounded-lg bg-[#f6f6f3] px-3 py-1.5 text-xs"
                   >
                     <div>
-                      <span className="font-bold text-[#211611]">
+                      <span className="font-bold text-[#121417]">
                         {mov.type}
                       </span>
-                      <span className="ml-2 text-[#6e594b]">
+                      <span className="ml-2 text-[#5a5f67]">
                         {mov.description}
                       </span>
                     </div>
@@ -485,7 +485,7 @@ export function InventoryCashSection({
                       className={`font-mono-num font-bold ${
                         mov.type === "SANGRIA"
                           ? "text-red-700"
-                          : "text-[#2d6a4f]"
+                          : "text-[#15803d]"
                       }`}
                     >
                       {mov.type === "SANGRIA" ? "-" : "+"}{" "}
@@ -502,12 +502,12 @@ export function InventoryCashSection({
       {/* Cardápio / Cadastro rápido */}
       <section className="card-bistro p-5">
         <div className="mb-4 flex items-center gap-2">
-          <Utensils className="h-5 w-5 text-[#b5652a]" />
+          <Utensils className="h-5 w-5 text-[#d95d24]" />
           <div>
-            <h2 className="font-display text-lg font-bold text-[#211611]">
+            <h2 className="font-display text-lg font-bold text-[#121417]">
               Catálogo Unificado de Produtos & Fichas Técnicas
             </h2>
-            <p className="text-xs text-[#6e594b]">
+            <p className="text-xs text-[#5a5f67]">
               Cadastre novos itens, pause disponibilidade em tempo real e
               acompanhe os insumos ligados a cada receita.
             </p>
@@ -521,7 +521,7 @@ export function InventoryCashSection({
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Nome do produto"
-            className="rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-2 text-xs sm:col-span-2"
+            className="rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs sm:col-span-2"
           />
           <input
             type="text"
@@ -529,7 +529,7 @@ export function InventoryCashSection({
             value={newDesc}
             onChange={(e) => setNewDesc(e.target.value)}
             placeholder="Descrição curta"
-            className="rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-2 text-xs sm:col-span-2"
+            className="rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs sm:col-span-2"
           />
           <input
             type="number"
@@ -538,12 +538,12 @@ export function InventoryCashSection({
             value={newPrice}
             onChange={(e) => setNewPrice(e.target.value)}
             placeholder="Preço"
-            className="rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-2 text-xs"
+            className="rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs"
           />
           <select
             value={newCategoryId}
             onChange={(e) => setNewCategoryId(Number(e.target.value))}
-            className="rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-2 text-xs"
+            className="rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs"
           >
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
@@ -554,7 +554,7 @@ export function InventoryCashSection({
           <select
             value={newUnit}
             onChange={(e) => setNewUnit(e.target.value as typeof newUnit)}
-            className="rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-2 text-xs"
+            className="rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs"
           >
             <option value="UN">Unidade (UN)</option>
             <option value="KG">Quilo (KG)</option>
@@ -564,7 +564,7 @@ export function InventoryCashSection({
           <select
             value={newStation}
             onChange={(e) => setNewStation(e.target.value as typeof newStation)}
-            className="rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-2 text-xs"
+            className="rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs"
           >
             <option value="COZINHA">Estação: Cozinha</option>
             <option value="FORNO">Estação: Forno</option>
@@ -585,14 +585,14 @@ export function InventoryCashSection({
           {products.map((product) => (
             <div
               key={product.id}
-              className="flex flex-col justify-between gap-2 rounded-xl border border-[#f2ebe1] bg-[#fbf8f3] p-3"
+              className="flex flex-col justify-between gap-2 rounded-xl border border-[#eeeeea] bg-[#f6f6f3] p-3"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="truncate text-xs font-bold text-[#211611]">
+                  <p className="truncate text-xs font-bold text-[#121417]">
                     {product.name}
                   </p>
-                  <p className="font-mono-num text-[11px] text-[#6e594b]">
+                  <p className="font-mono-num text-[11px] text-[#5a5f67]">
                     {formatBRL(product.price)}/{product.unit} · {product.prepStation}{" "}
                     · Estq: {product.stockQty}
                   </p>
@@ -614,7 +614,7 @@ export function InventoryCashSection({
                   {product.recipeItems.map((ri) => (
                     <span
                       key={ri.id}
-                      className="rounded-md bg-white px-1.5 py-0.5 text-[10px] font-medium text-[#6e594b]"
+                      className="rounded-md bg-white px-1.5 py-0.5 text-[10px] font-medium text-[#5a5f67]"
                     >
                       {ri.ingredient.name}: {ri.qtyRequired}
                       {ri.ingredient.unit}
@@ -622,7 +622,7 @@ export function InventoryCashSection({
                   ))}
                 </div>
               )}
-              <div className="flex flex-wrap items-center justify-between gap-1 border-t border-[#e8ddd0]/70 pt-2">
+              <div className="flex flex-wrap items-center justify-between gap-1 border-t border-[#e5e4df]/70 pt-2">
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
@@ -631,7 +631,7 @@ export function InventoryCashSection({
                         price: Math.max(1, Number((product.price - 1).toFixed(2))),
                       })
                     }
-                    className="rounded-md border border-[#e8ddd0] bg-white px-2 py-0.5 text-[10px] font-bold text-[#6e594b] hover:bg-[#f2ebe1]"
+                    className="rounded-md border border-[#e5e4df] bg-white px-2 py-0.5 text-[10px] font-bold text-[#5a5f67] hover:bg-[#eeeeea]"
                   >
                     -R$1
                   </button>
@@ -642,7 +642,7 @@ export function InventoryCashSection({
                         price: Number((product.price + 1).toFixed(2)),
                       })
                     }
-                    className="rounded-md border border-[#e8ddd0] bg-white px-2 py-0.5 text-[10px] font-bold text-[#6e594b] hover:bg-[#f2ebe1]"
+                    className="rounded-md border border-[#e5e4df] bg-white px-2 py-0.5 text-[10px] font-bold text-[#5a5f67] hover:bg-[#eeeeea]"
                   >
                     +R$1
                   </button>
@@ -654,7 +654,7 @@ export function InventoryCashSection({
                       stockQty: Number((product.stockQty + 5).toFixed(2)),
                     })
                   }
-                  className="rounded-md bg-[#2d6a4f] px-2 py-0.5 text-[10px] font-bold text-white hover:bg-[#22523d]"
+                  className="rounded-md bg-[#15803d] px-2 py-0.5 text-[10px] font-bold text-white hover:bg-[#22523d]"
                 >
                   +5 Estq
                 </button>

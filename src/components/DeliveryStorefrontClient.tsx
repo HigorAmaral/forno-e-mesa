@@ -225,9 +225,9 @@ export function DeliveryStorefrontClient({
 
   const cartPanel = (
     <form onSubmit={handleCheckout} className="space-y-4">
-      <div className="flex items-center justify-between border-b border-[#f2ebe1] pb-3">
+      <div className="flex items-center justify-between border-b border-[#eeeeea] pb-3">
         <div className="flex items-center gap-2">
-          <ShoppingBag className="h-5 w-5 text-[#b5652a]" />
+          <ShoppingBag className="h-5 w-5 text-[#d95d24]" />
           <h2 className="font-display text-lg font-bold">Seu Pedido</h2>
         </div>
         {cart.length > 0 && (
@@ -238,12 +238,12 @@ export function DeliveryStorefrontClient({
       </div>
 
       {/* Mode Switcher */}
-      <div className="grid grid-cols-2 gap-2 rounded-xl bg-[#f2ebe1] p-1">
+      <div className="grid grid-cols-2 gap-2 rounded-xl bg-[#eeeeea] p-1">
         <button
           type="button"
           onClick={() => setMode("DELIVERY")}
           className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold transition ${
-            mode === "DELIVERY" ? "bg-[#19110d] text-white shadow" : "text-[#6e594b]"
+            mode === "DELIVERY" ? "bg-[#121417] text-white shadow" : "text-[#5a5f67]"
           }`}
         >
           <Bike className="h-4 w-4" /> Delivery
@@ -252,7 +252,7 @@ export function DeliveryStorefrontClient({
           type="button"
           onClick={() => setMode("RETIRADA")}
           className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold transition ${
-            mode === "RETIRADA" ? "bg-[#19110d] text-white shadow" : "text-[#6e594b]"
+            mode === "RETIRADA" ? "bg-[#121417] text-white shadow" : "text-[#5a5f67]"
           }`}
         >
           <Store className="h-4 w-4" /> Retirar no Balcão
@@ -261,19 +261,19 @@ export function DeliveryStorefrontClient({
 
       {/* Free Shipping Bar */}
       {mode === "DELIVERY" && (
-        <div className="rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] p-2.5 text-[11px]">
+        <div className="rounded-xl border border-[#e5e4df] bg-[#f6f6f3] p-2.5 text-[11px]">
           <div className="flex items-center justify-between font-semibold">
-            <span className="inline-flex items-center gap-1 text-[#8c4517]">
-              <Sparkles className="h-3.5 w-3.5 text-[#d4943a]" />
+            <span className="inline-flex items-center gap-1 text-[#b84917]">
+              <Sparkles className="h-3.5 w-3.5 text-[#e09132]" />
               {freeShippingRemaining === 0
                 ? "Frete grátis desbloqueado!"
                 : `Faltam ${formatBRL(freeShippingRemaining)} para frete grátis`}
             </span>
-            <span className="font-mono-num text-[#6e594b]">{freeShippingPct}%</span>
+            <span className="font-mono-num text-[#5a5f67]">{freeShippingPct}%</span>
           </div>
-          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#e8ddd0]">
+          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#e5e4df]">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-[#d4943a] to-[#2d6a4f] transition-all"
+              className="h-full rounded-full bg-gradient-to-r from-[#e09132] to-[#15803d] transition-all"
               style={{ width: `${freeShippingPct}%` }}
             />
           </div>
@@ -282,7 +282,7 @@ export function DeliveryStorefrontClient({
 
       {/* Cart Items */}
       {cart.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-[#e8ddd0] bg-[#fbf8f3] p-5 text-center text-xs text-[#6e594b]">
+        <p className="rounded-xl border border-dashed border-[#e5e4df] bg-[#f6f6f3] p-5 text-center text-xs text-[#5a5f67]">
           Escolha itens do cardápio ao lado para montar seu pedido.
         </p>
       ) : (
@@ -290,19 +290,19 @@ export function DeliveryStorefrontClient({
           {cart.map((line) => (
             <div
               key={line.product.id}
-              className="rounded-xl border border-[#f2ebe1] bg-[#fbf8f3] p-2.5 text-xs"
+              className="rounded-xl border border-[#eeeeea] bg-[#f6f6f3] p-2.5 text-xs"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="truncate font-bold">{line.product.name}</p>
-                  <p className="font-mono-num text-[11px] text-[#6e594b]">
+                  <p className="font-mono-num text-[11px] text-[#5a5f67]">
                     {formatBRL(line.product.price)}/{line.product.unit}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => updateQty(line.product.id, 0)}
-                  className="text-[#6e594b] hover:text-red-700"
+                  className="text-[#5a5f67] hover:text-red-700"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
@@ -337,7 +337,7 @@ export function DeliveryStorefrontClient({
                     <Plus className="h-3 w-3" />
                   </button>
                 </div>
-                <span className="font-mono-num font-bold text-[#b5652a]">
+                <span className="font-mono-num font-bold text-[#d95d24]">
                   {formatBRL(line.qty * line.product.price)}
                 </span>
               </div>
@@ -354,7 +354,7 @@ export function DeliveryStorefrontClient({
       )}
 
       {/* Customer & Address Fields */}
-      <div className="space-y-2.5 border-t border-[#f2ebe1] pt-3">
+      <div className="space-y-2.5 border-t border-[#eeeeea] pt-3">
         <div className="grid gap-2 sm:grid-cols-2">
           <label className="field-label">
             Seu nome *
@@ -429,8 +429,8 @@ export function DeliveryStorefrontClient({
                 onClick={() => setPaymentMethod(pm)}
                 className={`rounded-xl py-1.5 text-[11px] font-bold transition ${
                   paymentMethod === pm
-                    ? "bg-[#19110d] text-white"
-                    : "border border-[#e8ddd0] bg-[#fbf8f3] text-[#6e594b]"
+                    ? "bg-[#121417] text-white"
+                    : "border border-[#e5e4df] bg-[#f6f6f3] text-[#5a5f67]"
                 }`}
               >
                 {pm}
@@ -465,22 +465,22 @@ export function DeliveryStorefrontClient({
       </div>
 
       {/* Totals */}
-      <div className="space-y-1.5 border-t border-[#f2ebe1] pt-3 text-xs">
-        <div className="flex justify-between text-[#6e594b]">
+      <div className="space-y-1.5 border-t border-[#eeeeea] pt-3 text-xs">
+        <div className="flex justify-between text-[#5a5f67]">
           <span>Subtotal</span>
           <span className="font-mono-num font-semibold">{formatBRL(totals.subtotal)}</span>
         </div>
         {mode === "DELIVERY" && (
-          <div className="flex justify-between text-[#6e594b]">
+          <div className="flex justify-between text-[#5a5f67]">
             <span>Taxa de entrega ({selectedZone?.name ?? "—"})</span>
             <span className="font-mono-num font-semibold">
               {totals.deliveryFee === 0 ? "Grátis" : formatBRL(totals.deliveryFee)}
             </span>
           </div>
         )}
-        <div className="flex justify-between border-t border-[#f2ebe1] pt-2 text-base font-bold">
+        <div className="flex justify-between border-t border-[#eeeeea] pt-2 text-base font-bold">
           <span>Total</span>
-          <span className="font-mono-num text-[#b5652a]">{formatBRL(totals.total)}</span>
+          <span className="font-mono-num text-[#d95d24]">{formatBRL(totals.total)}</span>
         </div>
       </div>
 
@@ -514,16 +514,16 @@ export function DeliveryStorefrontClient({
       <header className="cafe-sidebar sticky top-0 z-30 text-white shadow-lg">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#d4943a] to-[#b5652a]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#e09132] to-[#d95d24]">
               <Coffee className="h-5 w-5" />
             </div>
             <div>
               <h1 className="font-display text-lg font-bold leading-tight sm:text-xl">
                 Forno & Mesa · Delivery
               </h1>
-              <p className="flex items-center gap-2 text-[11px] text-[#d3c1ae]">
+              <p className="flex items-center gap-2 text-[11px] text-[#9ca3af]">
                 <span className="inline-flex items-center gap-1">
-                  <Truck className="h-3 w-3 text-[#d4943a]" /> Frete grátis acima de{" "}
+                  <Truck className="h-3 w-3 text-[#e09132]" /> Frete grátis acima de{" "}
                   {formatBRL(FREE_DELIVERY_ABOVE)}
                 </span>
               </p>
@@ -547,7 +547,7 @@ export function DeliveryStorefrontClient({
         <div className="space-y-5 lg:col-span-7 xl:col-span-8">
           <div className="card-bistro space-y-3 p-4">
             <div className="relative">
-              <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#6e594b]" />
+              <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#5a5f67]" />
               <input
                 type="text"
                 value={search}
@@ -563,8 +563,8 @@ export function DeliveryStorefrontClient({
                 onClick={() => setActiveCategory("ALL")}
                 className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
                   activeCategory === "ALL"
-                    ? "bg-[#19110d] text-white"
-                    : "bg-[#f2ebe1] text-[#6e594b]"
+                    ? "bg-[#121417] text-white"
+                    : "bg-[#eeeeea] text-[#5a5f67]"
                 }`}
               >
                 Todos
@@ -576,8 +576,8 @@ export function DeliveryStorefrontClient({
                   onClick={() => setActiveCategory(cat.id)}
                   className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
                     activeCategory === cat.id
-                      ? "bg-[#19110d] text-white"
-                      : "bg-[#f2ebe1] text-[#6e594b]"
+                      ? "bg-[#121417] text-white"
+                      : "bg-[#eeeeea] text-[#5a5f67]"
                   }`}
                 >
                   {cat.name}
@@ -590,7 +590,7 @@ export function DeliveryStorefrontClient({
             <section key={cat.id} className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="font-display text-xl font-bold">{cat.name}</h2>
-                <span className="chip bg-[#f2ebe1] text-[#6e594b]">{cat.sector}</span>
+                <span className="chip bg-[#eeeeea] text-[#5a5f67]">{cat.sector}</span>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 {cat.products.map((prod) => {
@@ -602,21 +602,21 @@ export function DeliveryStorefrontClient({
                     >
                       <div>
                         <div className="flex items-start justify-between gap-2">
-                          <h3 className="font-semibold text-[#211611]">{prod.name}</h3>
+                          <h3 className="font-semibold text-[#121417]">{prod.name}</h3>
                           {prod.isFeatured && (
                             <span className="chip bg-amber-100 text-amber-900">Destaque</span>
                           )}
                         </div>
-                        <p className="mt-1 line-clamp-2 text-xs text-[#6e594b]">
+                        <p className="mt-1 line-clamp-2 text-xs text-[#5a5f67]">
                           {prod.description}
                         </p>
                       </div>
-                      <div className="mt-3 flex items-center justify-between border-t border-[#f2ebe1] pt-3">
+                      <div className="mt-3 flex items-center justify-between border-t border-[#eeeeea] pt-3">
                         <div>
-                          <span className="font-mono-num text-base font-bold text-[#211611]">
+                          <span className="font-mono-num text-base font-bold text-[#121417]">
                             {formatBRL(prod.price)}
                           </span>
-                          <span className="text-[11px] text-[#6e594b]">/{prod.unit}</span>
+                          <span className="text-[11px] text-[#5a5f67]">/{prod.unit}</span>
                         </div>
                         <button
                           type="button"
@@ -643,7 +643,7 @@ export function DeliveryStorefrontClient({
 
       {/* Mobile Floating Checkout Bar */}
       {cart.length > 0 && !cartOpenMobile && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[#e8ddd0] bg-white/95 p-3 backdrop-blur-md lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[#e5e4df] bg-white/95 p-3 backdrop-blur-md lg:hidden">
           <button
             type="button"
             onClick={() => setCartOpenMobile(true)}

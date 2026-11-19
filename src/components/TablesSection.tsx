@@ -30,7 +30,7 @@ const TABLE_STYLES: Record<
 > = {
   LIVRE: {
     badge: "bg-emerald-100 text-emerald-800",
-    border: "border-[#e8ddd0] bg-white",
+    border: "border-[#e5e4df] bg-white",
     label: "Livre",
   },
   OCUPADA: {
@@ -200,10 +200,10 @@ export function TablesSection({
     <div className="animate-fade-in space-y-5">
       <div className="card-bistro flex flex-wrap items-center justify-between gap-3 p-4">
         <div>
-          <h2 className="font-display text-xl font-bold text-[#211611]">
+          <h2 className="font-display text-xl font-bold text-[#121417]">
             Salão, Varanda & Comandas
           </h2>
-          <p className="text-xs text-[#6e594b]">
+          <p className="text-xs text-[#5a5f67]">
             Controle mesas, divida a conta por pessoas, transfira comandas ou
             gere o QR Code para pedidos pelo celular.
           </p>
@@ -217,7 +217,7 @@ export function TablesSection({
           >
             {showNewTable ? "Fechar Cadastro" : "+ Nova Mesa"}
           </button>
-          <div className="flex gap-1 rounded-xl bg-[#f2ebe1] p-1">
+          <div className="flex gap-1 rounded-xl bg-[#eeeeea] p-1">
             {[
               { id: "ALL", label: "Todas" },
               { id: "SALAO", label: "Salão" },
@@ -230,8 +230,8 @@ export function TablesSection({
                 onClick={() => setAreaFilter(area.id)}
                 className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
                   areaFilter === area.id
-                    ? "bg-[#19110d] text-white"
-                    : "text-[#6e594b] hover:text-[#211611]"
+                    ? "bg-[#121417] text-white"
+                    : "text-[#5a5f67] hover:text-[#121417]"
                 }`}
               >
                 {area.label}
@@ -263,21 +263,21 @@ export function TablesSection({
             value={newTableNumber}
             onChange={(e) => setNewTableNumber(e.target.value)}
             placeholder="Nº da Mesa (ex: 11)"
-            className="rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-2 text-xs outline-none focus:border-[#b5652a]"
+            className="rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs outline-none focus:border-[#d95d24]"
           />
           <input
             type="text"
             value={newTableName}
             onChange={(e) => setNewTableName(e.target.value)}
             placeholder="Nome (ex: Mesa 11)"
-            className="rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-2 text-xs outline-none focus:border-[#b5652a]"
+            className="rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs outline-none focus:border-[#d95d24]"
           />
           <select
             value={newTableArea}
             onChange={(e) =>
               setNewTableArea(e.target.value as "SALAO" | "VARANDA" | "BALCAO")
             }
-            className="rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-2 text-xs outline-none focus:border-[#b5652a]"
+            className="rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs outline-none focus:border-[#d95d24]"
           >
             <option value="SALAO">Salão</option>
             <option value="VARANDA">Varanda</option>
@@ -290,7 +290,7 @@ export function TablesSection({
             value={newTableCapacity}
             onChange={(e) => setNewTableCapacity(e.target.value)}
             placeholder="Lugares"
-            className="rounded-xl border border-[#e8ddd0] bg-[#fbf8f3] px-3 py-2 text-xs outline-none focus:border-[#b5652a]"
+            className="rounded-xl border border-[#e5e4df] bg-[#f6f6f3] px-3 py-2 text-xs outline-none focus:border-[#d95d24]"
           />
           <button
             type="submit"
@@ -331,7 +331,7 @@ export function TablesSection({
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-display text-lg font-bold text-[#211611]">
+                      <h3 className="font-display text-lg font-bold text-[#121417]">
                         {table.name}
                       </h3>
                       <span
@@ -340,7 +340,7 @@ export function TablesSection({
                         {st.label}
                       </span>
                     </div>
-                    <p className="mt-0.5 flex items-center gap-2 text-xs text-[#6e594b]">
+                    <p className="mt-0.5 flex items-center gap-2 text-xs text-[#5a5f67]">
                       <span>{table.area}</span>
                       <span>·</span>
                       <span className="inline-flex items-center gap-1">
@@ -352,7 +352,7 @@ export function TablesSection({
                   <button
                     type="button"
                     onClick={() => onOpenQr(table.number)}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-[#e8ddd0] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#211611] hover:border-[#b5652a] hover:text-[#b5652a]"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-[#e5e4df] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#121417] hover:border-[#d95d24] hover:text-[#d95d24]"
                   >
                     <QrCode className="h-3.5 w-3.5" />
                     QR
@@ -360,16 +360,16 @@ export function TablesSection({
                 </div>
 
                 {activeOrder ? (
-                  <div className="mt-4 rounded-xl border border-[#e8ddd0] bg-white p-3">
+                  <div className="mt-4 rounded-xl border border-[#e5e4df] bg-white p-3">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-mono-num font-bold text-[#211611]">
+                      <span className="font-mono-num font-bold text-[#121417]">
                         {activeOrder.code}
                       </span>
-                      <span className="font-mono-num text-sm font-bold text-[#b5652a]">
+                      <span className="font-mono-num text-sm font-bold text-[#d95d24]">
                         {formatBRL(activeOrder.total)}
                       </span>
                     </div>
-                    <div className="mt-2 max-h-28 space-y-1 overflow-y-auto text-[11px] text-[#6e594b]">
+                    <div className="mt-2 max-h-28 space-y-1 overflow-y-auto text-[11px] text-[#5a5f67]">
                       {activeOrder.items.map((item) => (
                         <div
                           key={item.id}
@@ -378,7 +378,7 @@ export function TablesSection({
                           <span className="truncate">
                             {item.qty}× {item.productName}
                           </span>
-                          <span className="shrink-0 font-semibold text-[#211611]">
+                          <span className="shrink-0 font-semibold text-[#121417]">
                             {item.itemStatus}
                           </span>
                         </div>
@@ -386,7 +386,7 @@ export function TablesSection({
                     </div>
                   </div>
                 ) : (
-                  <div className="mt-4 rounded-xl border border-dashed border-[#e8ddd0] bg-[#fbf8f3]/70 p-3 text-center text-xs text-[#6e594b]">
+                  <div className="mt-4 rounded-xl border border-dashed border-[#e5e4df] bg-[#f6f6f3]/70 p-3 text-center text-xs text-[#5a5f67]">
                     Nenhuma comanda aberta no momento.
                   </div>
                 )}
@@ -396,18 +396,18 @@ export function TablesSection({
                 {checkoutOrderId === activeOrder?.id &&
                 activeOrder &&
                 previewTotals ? (
-                  <div className="space-y-2.5 rounded-xl border border-[#b5652a]/40 bg-white p-3 text-xs">
+                  <div className="space-y-2.5 rounded-xl border border-[#d95d24]/40 bg-white p-3 text-xs">
                     <div className="flex items-center justify-between">
-                      <p className="font-bold text-[#211611]">
+                      <p className="font-bold text-[#121417]">
                         Fechar {activeOrder.code}
                       </p>
-                      <span className="font-mono-num text-sm font-bold text-[#b5652a]">
+                      <span className="font-mono-num text-sm font-bold text-[#d95d24]">
                         {formatBRL(previewTotals.total)}
                       </span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
-                      <label className="flex items-center gap-1.5 text-[11px] font-medium text-[#6e594b]">
+                      <label className="flex items-center gap-1.5 text-[11px] font-medium text-[#5a5f67]">
                         <input
                           type="checkbox"
                           checked={applyServiceFee}
@@ -416,27 +416,27 @@ export function TablesSection({
                         Serviço 10%
                       </label>
                       <div className="flex items-center justify-end gap-1">
-                        <span className="text-[11px] text-[#6e594b]">Desc:</span>
+                        <span className="text-[11px] text-[#5a5f67]">Desc:</span>
                         <input
                           type="number"
                           min="0"
                           value={checkoutDiscount}
                           onChange={(e) => setCheckoutDiscount(e.target.value)}
-                          className="font-mono-num w-16 rounded border border-[#e8ddd0] bg-[#fbf8f3] px-1.5 py-0.5 text-right text-[11px]"
+                          className="font-mono-num w-16 rounded border border-[#e5e4df] bg-[#f6f6f3] px-1.5 py-0.5 text-right text-[11px]"
                         />
                       </div>
                     </div>
 
                     {/* Split Bill */}
-                    <div className="flex items-center justify-between rounded-lg bg-[#fbf8f3] px-2.5 py-1.5">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#6e594b]">
+                    <div className="flex items-center justify-between rounded-lg bg-[#f6f6f3] px-2.5 py-1.5">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#5a5f67]">
                         <Split className="h-3 w-3" /> Dividir por:
                       </span>
                       <div className="flex items-center gap-1.5">
                         <select
                           value={splitPeople}
                           onChange={(e) => setSplitPeople(Number(e.target.value))}
-                          className="rounded border border-[#e8ddd0] bg-white px-1.5 py-0.5 text-[11px] font-bold"
+                          className="rounded border border-[#e5e4df] bg-white px-1.5 py-0.5 text-[11px] font-bold"
                         >
                           {[1, 2, 3, 4, 5, 6, 8].map((n) => (
                             <option key={n} value={n}>
@@ -445,7 +445,7 @@ export function TablesSection({
                           ))}
                         </select>
                         {splitPeople > 1 && (
-                          <span className="font-mono-num text-[11px] font-bold text-[#b5652a]">
+                          <span className="font-mono-num text-[11px] font-bold text-[#d95d24]">
                             {formatBRL(
                               splitBillAmount(previewTotals.total, splitPeople),
                             )}
@@ -464,8 +464,8 @@ export function TablesSection({
                             onClick={() => setPaymentMethod(pm)}
                             className={`rounded-lg py-1 text-[10px] font-bold ${
                               paymentMethod === pm
-                                ? "bg-[#19110d] text-white"
-                                : "bg-[#f2ebe1] text-[#6e594b]"
+                                ? "bg-[#121417] text-white"
+                                : "bg-[#eeeeea] text-[#5a5f67]"
                             }`}
                           >
                             {pm}
@@ -478,7 +478,7 @@ export function TablesSection({
                         type="button"
                         disabled={busyId === activeOrder.id}
                         onClick={() => handleCheckout(activeOrder.id)}
-                        className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-[#2d6a4f] py-1.5 text-xs font-semibold text-white hover:bg-[#22523d]"
+                        className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-[#15803d] py-1.5 text-xs font-semibold text-white hover:bg-[#22523d]"
                       >
                         <CheckCircle2 className="h-3.5 w-3.5" /> Confirmar Pago
                       </button>
@@ -489,15 +489,15 @@ export function TablesSection({
                           setSplitPeople(1);
                           setCheckoutDiscount("0");
                         }}
-                        className="rounded-lg border border-[#e8ddd0] px-2.5 py-1.5 text-xs"
+                        className="rounded-lg border border-[#e5e4df] px-2.5 py-1.5 text-xs"
                       >
                         Voltar
                       </button>
                     </div>
                   </div>
                 ) : transferOrderId === activeOrder?.id && activeOrder ? (
-                  <div className="space-y-2 rounded-xl border border-[#e8ddd0] bg-white p-3 text-xs">
-                    <p className="font-bold text-[#211611]">
+                  <div className="space-y-2 rounded-xl border border-[#e5e4df] bg-white p-3 text-xs">
+                    <p className="font-bold text-[#121417]">
                       Transferir {activeOrder.code} para:
                     </p>
                     <select
@@ -507,7 +507,7 @@ export function TablesSection({
                           e.target.value ? Number(e.target.value) : "",
                         )
                       }
-                      className="w-full rounded-lg border border-[#e8ddd0] bg-[#fbf8f3] px-2 py-1.5 text-xs"
+                      className="w-full rounded-lg border border-[#e5e4df] bg-[#f6f6f3] px-2 py-1.5 text-xs"
                     >
                       <option value="">Selecione mesa livre...</option>
                       {freeTables.map((ft) => (
@@ -523,14 +523,14 @@ export function TablesSection({
                         onClick={() =>
                           handleOrderAction(activeOrder.id, "TRANSFER")
                         }
-                        className="flex-1 rounded-lg bg-[#19110d] py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+                        className="flex-1 rounded-lg bg-[#121417] py-1.5 text-xs font-semibold text-white disabled:opacity-50"
                       >
                         Transferir
                       </button>
                       <button
                         type="button"
                         onClick={() => setTransferOrderId(null)}
-                        className="rounded-lg border border-[#e8ddd0] px-2.5 py-1.5 text-xs"
+                        className="rounded-lg border border-[#e5e4df] px-2.5 py-1.5 text-xs"
                       >
                         Voltar
                       </button>
@@ -552,7 +552,7 @@ export function TablesSection({
                           <button
                             type="button"
                             onClick={() => onOpenReceipt(fullOrder)}
-                            className="rounded-xl border border-[#e8ddd0] bg-white px-2.5 py-2 text-xs font-semibold text-[#211611] hover:bg-[#f2ebe1]"
+                            className="rounded-xl border border-[#e5e4df] bg-white px-2.5 py-2 text-xs font-semibold text-[#121417] hover:bg-[#eeeeea]"
                             title="Cupom 80mm"
                           >
                             <Receipt className="h-3.5 w-3.5" />
@@ -561,7 +561,7 @@ export function TablesSection({
                         <button
                           type="button"
                           onClick={() => setTransferOrderId(activeOrder.id)}
-                          className="rounded-xl border border-[#e8ddd0] bg-white px-2.5 py-2 text-xs font-semibold text-[#211611] hover:bg-[#f2ebe1]"
+                          className="rounded-xl border border-[#e5e4df] bg-white px-2.5 py-2 text-xs font-semibold text-[#121417] hover:bg-[#eeeeea]"
                           title="Transferir mesa"
                         >
                           <ArrowRightLeft className="h-3.5 w-3.5" />
@@ -595,7 +595,7 @@ export function TablesSection({
                             setApplyServiceFee(true);
                             setCheckoutDiscount(String(activeOrder.discount || 0));
                           }}
-                          className="rounded-xl bg-[#19110d] px-3 py-2 text-xs font-semibold text-white hover:bg-black"
+                          className="rounded-xl bg-[#121417] px-3 py-2 text-xs font-semibold text-white hover:bg-black"
                         >
                           Receber
                         </button>
@@ -610,7 +610,7 @@ export function TablesSection({
                             table.status === "RESERVADA" ? "LIVRE" : "RESERVADA",
                           )
                         }
-                        className="rounded-xl border border-[#e8ddd0] bg-white px-3 py-2 text-xs font-semibold text-[#6e594b] hover:bg-[#f2ebe1]"
+                        className="rounded-xl border border-[#e5e4df] bg-white px-3 py-2 text-xs font-semibold text-[#5a5f67] hover:bg-[#eeeeea]"
                       >
                         {table.status === "RESERVADA" ? "Liberar" : "Reservar"}
                       </button>

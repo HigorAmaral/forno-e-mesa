@@ -93,27 +93,27 @@ export function QrModal({ tableNumber, onClose }: QrModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-      <div className="w-full max-w-md rounded-2xl border border-[#e8ddd0] bg-white p-6 shadow-2xl">
+      <div className="w-full max-w-md rounded-2xl border border-[#e5e4df] bg-white p-6 shadow-2xl">
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <QrCode className="h-5 w-5 text-[#b5652a]" />
-            <h3 className="font-display text-lg font-bold text-[#211611]">
+            <QrCode className="h-5 w-5 text-[#d95d24]" />
+            <h3 className="font-display text-lg font-bold text-[#121417]">
               QR Code · {data?.tableName ?? `Mesa ${tableNumber}`}
             </h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-[#6e594b] hover:bg-[#f2ebe1]"
+            className="rounded-lg p-1.5 text-[#5a5f67] hover:bg-[#eeeeea]"
             aria-label="Fechar QR Code"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <p className="mb-4 text-xs leading-relaxed text-[#6e594b]">
+        <p className="mb-4 text-xs leading-relaxed text-[#5a5f67]">
           Para testar no celular conectado ao mesmo Wi-Fi, o QR usa automaticamente o IP
-          da rede local em vez de <code className="rounded bg-[#f2ebe1] px-1">localhost</code>.
+          da rede local em vez de <code className="rounded bg-[#eeeeea] px-1">localhost</code>.
         </p>
 
         {error ? (
@@ -121,12 +121,12 @@ export function QrModal({ tableNumber, onClose }: QrModalProps) {
             {error}
           </div>
         ) : loading || !data ? (
-          <div className="flex h-64 items-center justify-center rounded-xl bg-[#fbf8f3] text-sm text-[#6e594b]">
+          <div className="flex h-64 items-center justify-center rounded-xl bg-[#f6f6f3] text-sm text-[#5a5f67]">
             Gerando QR Code...
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="flex flex-col items-center rounded-2xl border border-[#e8ddd0] bg-[#fbf8f3] p-4">
+            <div className="flex flex-col items-center rounded-2xl border border-[#e5e4df] bg-[#f6f6f3] p-4">
               <div className="overflow-hidden rounded-xl bg-white p-2 shadow-xs">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -137,21 +137,21 @@ export function QrModal({ tableNumber, onClose }: QrModalProps) {
                   className="h-52 w-52 object-contain"
                 />
               </div>
-              <span className="mt-2.5 text-xs font-semibold uppercase tracking-wider text-[#b5652a]">
+              <span className="mt-2.5 text-xs font-semibold uppercase tracking-wider text-[#d95d24]">
                 {data.tableName} · Cardápio Digital
               </span>
-              <div className="mt-1.5 flex w-full items-center gap-1.5 rounded-lg border border-[#e8ddd0] bg-white px-2.5 py-1.5">
-                <code className="flex-1 truncate text-[11px] text-[#211611]">
+              <div className="mt-1.5 flex w-full items-center gap-1.5 rounded-lg border border-[#e5e4df] bg-white px-2.5 py-1.5">
+                <code className="flex-1 truncate text-[11px] text-[#121417]">
                   {data.targetUrl}
                 </code>
                 <button
                   type="button"
                   onClick={handleCopy}
-                  className="shrink-0 rounded p-1 text-[#6e594b] hover:bg-[#f2ebe1] hover:text-[#211611]"
+                  className="shrink-0 rounded p-1 text-[#5a5f67] hover:bg-[#eeeeea] hover:text-[#121417]"
                   title="Copiar link"
                 >
                   {copied ? (
-                    <Check className="h-3.5 w-3.5 text-[#2d6a4f]" />
+                    <Check className="h-3.5 w-3.5 text-[#15803d]" />
                   ) : (
                     <Copy className="h-3.5 w-3.5" />
                   )}
@@ -160,7 +160,7 @@ export function QrModal({ tableNumber, onClose }: QrModalProps) {
             </div>
 
             {/* Host / Network selector */}
-            <div className="space-y-2 rounded-xl border border-[#f2ebe1] bg-[#fbf8f3] p-3">
+            <div className="space-y-2 rounded-xl border border-[#eeeeea] bg-[#f6f6f3] p-3">
               <div className="flex flex-wrap items-center gap-1.5">
                 {data.lanOrigin && (
                   <button
@@ -171,8 +171,8 @@ export function QrModal({ tableNumber, onClose }: QrModalProps) {
                     }}
                     className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold ${
                       data.targetUrl.startsWith(data.lanOrigin)
-                        ? "bg-[#211611] text-white"
-                        : "bg-white text-[#6e594b]"
+                        ? "bg-[#121417] text-white"
+                        : "bg-white text-[#5a5f67]"
                     }`}
                   >
                     <Smartphone className="h-3 w-3" /> Wi-Fi ({data.lanOrigin.replace(/^https?:\/\//, "")})
@@ -186,8 +186,8 @@ export function QrModal({ tableNumber, onClose }: QrModalProps) {
                   }}
                   className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold ${
                     data.targetUrl.startsWith(data.requestOrigin)
-                      ? "bg-[#211611] text-white"
-                      : "bg-white text-[#6e594b]"
+                      ? "bg-[#121417] text-white"
+                      : "bg-white text-[#5a5f67]"
                   }`}
                 >
                   Este PC
@@ -205,11 +205,11 @@ export function QrModal({ tableNumber, onClose }: QrModalProps) {
                   value={customBaseUrl}
                   onChange={(e) => setCustomBaseUrl(e.target.value)}
                   placeholder="Ou cole URL pública (ex: https://seu-site.vercel.app)"
-                  className="flex-1 rounded-lg border border-[#e8ddd0] bg-white px-2.5 py-1 text-[11px] outline-none focus:border-[#b5652a]"
+                  className="flex-1 rounded-lg border border-[#e5e4df] bg-white px-2.5 py-1 text-[11px] outline-none focus:border-[#d95d24]"
                 />
                 <button
                   type="submit"
-                  className="rounded-lg bg-[#211611] px-2.5 py-1 text-[11px] font-semibold text-white"
+                  className="rounded-lg bg-[#121417] px-2.5 py-1 text-[11px] font-semibold text-white"
                 >
                   Aplicar
                 </button>
@@ -221,7 +221,7 @@ export function QrModal({ tableNumber, onClose }: QrModalProps) {
                 href={data.qrPath}
                 target="_blank"
                 rel="noreferrer"
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#b5652a] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#8c4517]"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#d95d24] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#b84917]"
               >
                 <ExternalLink className="h-4 w-4" />
                 Abrir Cardápio da Mesa
@@ -229,7 +229,7 @@ export function QrModal({ tableNumber, onClose }: QrModalProps) {
               <button
                 type="button"
                 onClick={handleDownloadSvg}
-                className="flex items-center justify-center gap-2 rounded-xl border border-[#e8ddd0] px-4 py-2.5 text-sm font-semibold text-[#211611] hover:bg-[#f2ebe1]"
+                className="flex items-center justify-center gap-2 rounded-xl border border-[#e5e4df] px-4 py-2.5 text-sm font-semibold text-[#121417] hover:bg-[#eeeeea]"
               >
                 <Download className="h-4 w-4" />
                 SVG

@@ -20,11 +20,11 @@ export default async function TrackDeliveryPage({
 
   if (!order || !t || !order.trackingToken || order.trackingToken !== t) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-[#fbf8f3] p-6 text-center">
-        <h1 className="font-display text-2xl font-bold text-[#211611]">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-[#f6f6f3] p-6 text-center">
+        <h1 className="font-display text-2xl font-bold text-[#121417]">
           Pedido não encontrado
         </h1>
-        <p className="mt-2 max-w-sm text-sm text-[#6e594b]">
+        <p className="mt-2 max-w-sm text-sm text-[#5a5f67]">
           Verifique o link de acompanhamento enviado no momento do seu pedido.
         </p>
       </main>

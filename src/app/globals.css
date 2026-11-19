@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --bg-canvas: #faf6f0;
+  --bg-canvas: #f6f6f3;
   --bg-surface: #ffffff;
-  --bg-subtle: #f3ece2;
-  --bg-espresso: #18100c;
-  --bg-roast: #281b14;
-  --text-primary: #1f1510;
-  --text-secondary: #6d5849;
-  --text-muted: #9a8473;
-  --border-warm: rgba(120, 88, 60, 0.14);
-  --border-strong: rgba(120, 88, 60, 0.24);
-  --accent-caramel: #b85d27;
-  --accent-caramel-dark: #8e4216;
-  --accent-amber: #d6963a;
-  --accent-matcha: #29684c;
+  --bg-subtle: #eeeeea;
+  --bg-shell: #121417;
+  --bg-shell-hover: #1d2025;
+  --text-primary: #121417;
+  --text-secondary: #5a5f67;
+  --text-muted: #8b9098;
+  --border-warm: #e5e4df;
+  --border-strong: #d3d1ca;
+  --accent-primary: #d95d24;
+  --accent-primary-dark: #b84917;
+  --accent-amber: #e09132;
+  --accent-success: #15803d;
 }
 
 @layer base {
@@ -31,10 +31,8 @@
     margin: 0;
     background-color: var(--bg-canvas);
     background-image:
-      radial-gradient(60rem 40rem at 8% -5%, rgba(214, 150, 58, 0.09), transparent 60%),
-      radial-gradient(50rem 35rem at 92% 8%, rgba(184, 93, 39, 0.07), transparent 55%),
-      radial-gradient(45rem 35rem at 75% 100%, rgba(41, 104, 76, 0.05), transparent 60%);
-    background-attachment: fixed;
+      radial-gradient(56rem 36rem at 12% -8%, rgba(217, 93, 36, 0.055), transparent 60%),
+      radial-gradient(48rem 32rem at 95% 4%, rgba(224, 145, 50, 0.045), transparent 55%);
     color: var(--text-primary);
     font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
     line-height: 1.5;
@@ -45,15 +43,15 @@
   h3,
   .font-display {
     font-family: var(--font-display), Georgia, serif;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
   }
 
   input:focus,
   select:focus,
   textarea:focus {
     outline: none;
-    border-color: var(--accent-caramel);
-    box-shadow: 0 0 0 3px rgba(184, 93, 39, 0.14);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(217, 93, 36, 0.14);
   }
 
   button,
@@ -68,61 +66,58 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Espresso Command Dock */
+  /* Dark Charcoal App Shell */
   .cafe-sidebar {
-    background: linear-gradient(135deg, #160f0b 0%, #241812 52%, #1a110c 100%);
-    border-bottom: 1px solid rgba(255, 228, 196, 0.1);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.04) inset,
-      0 12px 32px -12px rgba(18, 11, 7, 0.55);
+    background: linear-gradient(180deg, #121417 0%, #171a1f 100%);
+    border-color: rgba(255, 255, 255, 0.08);
   }
 
   .cafe-topbar {
-    background: rgba(250, 246, 240, 0.85);
+    background: rgba(246, 246, 243, 0.86);
     backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--border-warm);
   }
 
-  /* Editorial Bistro Card */
+  /* Clean Modern Surface Card */
   .card-bistro {
     background-color: var(--bg-surface);
     border: 1px solid var(--border-warm);
-    border-radius: 1.25rem;
+    border-radius: 1rem;
     box-shadow:
-      0 1px 2px rgba(25, 17, 13, 0.03),
-      0 10px 26px -14px rgba(68, 42, 24, 0.12);
+      0 1px 2px rgba(18, 20, 23, 0.03),
+      0 6px 20px -10px rgba(18, 20, 23, 0.07);
     transition:
-      transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
-      box-shadow 180ms ease,
-      border-color 180ms ease;
+      transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 160ms ease,
+      border-color 160ms ease;
   }
 
   .card-bistro-interactive:hover {
     transform: translateY(-2px);
-    border-color: rgba(184, 93, 39, 0.42);
+    border-color: rgba(217, 93, 36, 0.45);
     box-shadow:
-      0 4px 12px -2px rgba(25, 17, 13, 0.06),
-      0 18px 34px -14px rgba(184, 93, 39, 0.22);
+      0 4px 12px -2px rgba(18, 20, 23, 0.06),
+      0 14px 28px -12px rgba(217, 93, 36, 0.18);
   }
 
-  /* Primary Copper-Caramel CTA */
+  /* Primary Terracotta CTA */
   .btn-primary {
-    background: linear-gradient(135deg, #c76b32 0%, #9b491a 100%);
+    background: linear-gradient(135deg, #e0682e 0%, #c44c17 100%);
     color: #ffffff;
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.24),
-      0 6px 16px -4px rgba(155, 73, 26, 0.42);
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 4px 14px -4px rgba(196, 76, 23, 0.45);
     transition:
-      filter 150ms ease,
+      filter 140ms ease,
       transform 120ms ease,
-      box-shadow 150ms ease;
+      box-shadow 140ms ease;
   }
 
   .btn-primary:hover:not(:disabled) {
     filter: brightness(1.06);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      0 10px 22px -6px rgba(155, 73, 26, 0.5);
+      inset 0 1px 0 rgba(255, 255, 255, 0.28),
+      0 8px 20px -6px rgba(196, 76, 23, 0.52);
   }
 
   .btn-primary:active:not(:disabled) {
@@ -134,14 +129,14 @@
     width: 100%;
     border-radius: 0.75rem;
     border: 1px solid var(--border-strong);
-    background-color: #fcfaf6;
+    background-color: #fafaf8;
     padding: 0.525rem 0.75rem;
     font-size: 0.8125rem;
     color: var(--text-primary);
     transition:
-      border-color 150ms ease,
-      box-shadow 150ms ease,
-      background-color 150ms ease;
+      border-color 140ms ease,
+      box-shadow 140ms ease,
+      background-color 140ms ease;
   }
 
   .input-field::placeholder {
@@ -174,7 +169,6 @@
     font-weight: 700;
     line-height: 1.3;
     white-space: nowrap;
-    letter-spacing: 0.01em;
   }
 
   .icon-btn {
@@ -187,9 +181,9 @@
     padding: 0.42rem;
     color: var(--text-secondary);
     transition:
-      background-color 150ms ease,
-      border-color 150ms ease,
-      color 150ms ease,
+      background-color 140ms ease,
+      border-color 140ms ease,
+      color 140ms ease,
       transform 120ms ease;
   }
 
@@ -208,22 +202,22 @@
     display: inline-flex;
     flex-wrap: wrap;
     gap: 0.25rem;
-    border-radius: 0.9rem;
+    border-radius: 0.85rem;
     border: 1px solid var(--border-warm);
     background-color: var(--bg-subtle);
     padding: 0.25rem;
   }
 
   .segmented > button {
-    border-radius: 0.65rem;
+    border-radius: 0.625rem;
     padding: 0.4rem 0.8rem;
     font-size: 0.75rem;
     font-weight: 700;
     color: var(--text-secondary);
     transition:
-      background-color 150ms ease,
-      color 150ms ease,
-      box-shadow 150ms ease;
+      background-color 140ms ease,
+      color 140ms ease,
+      box-shadow 140ms ease;
   }
 
   .segmented > button:hover:not([data-active="true"]) {
@@ -231,9 +225,9 @@
   }
 
   .segmented > button[data-active="true"] {
-    background-color: var(--bg-espresso);
+    background-color: var(--bg-shell);
     color: #ffffff;
-    box-shadow: 0 2px 8px rgba(24, 16, 12, 0.24);
+    box-shadow: 0 2px 8px rgba(18, 20, 23, 0.2);
   }
 
   /* Responsive Kanban Board */
@@ -258,10 +252,10 @@
   .kanban-col {
     display: flex;
     flex-direction: column;
-    border-radius: 1.25rem;
+    border-radius: 1rem;
     border: 1px solid var(--border-warm);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(250, 246, 240, 0.6) 100%);
-    padding: 0.85rem;
+    background: #f2f2ee;
+    padding: 0.75rem;
     min-height: 18rem;
   }
 
@@ -274,8 +268,8 @@
 
   .data-table thead th {
     border-bottom: 1px solid var(--border-warm);
-    background-color: #fcfaf6;
-    padding: 0.8rem 1rem;
+    background-color: #fafaf8;
+    padding: 0.75rem 1rem;
     text-align: left;
     font-size: 0.6875rem;
     font-weight: 700;
@@ -286,8 +280,8 @@
   }
 
   .data-table tbody td {
-    border-bottom: 1px solid rgba(120, 88, 60, 0.08);
-    padding: 0.8rem 1rem;
+    border-bottom: 1px solid #efeee9;
+    padding: 0.75rem 1rem;
     vertical-align: middle;
   }
 
@@ -300,7 +294,7 @@
   }
 
   .data-table tbody tr:hover {
-    background-color: rgba(243, 236, 226, 0.45);
+    background-color: #f8f8f5;
   }
 }
 
@@ -328,24 +322,23 @@
   scrollbar-width: none;
 }
 
-/* Warm Coffee Scrollbars */
+/* Clean Scrollbars */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f2ebe1;
-  border-radius: 999px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c8b49e;
+  background: #d3d1ca;
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9f846b;
+  background: #a4a29a;
 }
 
 @media print {

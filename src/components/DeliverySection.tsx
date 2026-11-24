@@ -71,7 +71,7 @@ export function DeliverySection({
   const [payDraft, setPayDraft] = useState<Record<number, string>>({});
 
   useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 30000);
+    const t = setInterval(() => setNow(new Date()), 5000);
     return () => clearInterval(t);
   }, []);
 

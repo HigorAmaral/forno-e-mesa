@@ -13,6 +13,7 @@ import {
   computeIngredientDeductions,
   deriveOrderStatusFromItems,
   getLoyaltyTier,
+  isSafeProductImageUrl,
   resolveCouponBenefit,
   resolveQrOrigin,
   splitBillAmount,
@@ -566,5 +567,18 @@ test("sanitizeNextPath bloqueia open redirects", () => {
   assert.equal(sanitizeNextPath("/login?next=/"), "/");
   assert.equal(sanitizeNextPath("/delivery"), "/delivery");
   assert.equal(sanitizeNextPath("/erp?tab=kds"), "/erp?tab=kds");
+});
+
+test("resolveRoutePolicy libera GET /api/menu e isSafeProductImageUrl valida imagens", () => {
+  assert.deepEqual(resolveRoutePolicy("/api/menu", "GET"), { access: "public" });
+  assert.equal(isSafeProductImageUrl(""), true);
+  assert.equal(isSafeProductImageUrl("/fotos/pao.jpg"), true);
+  assert.equal(isSafeProductImageUrl("https://cdn.exemplo.com/cafe.webp"), true);
+  assert.equal(
+    isSafeProductImageUrl("data:image/webp;base64,UklGRh4AAABXRUJQVlA4"),
+    true,
+  );
+  assert.equal(isSafeProductImageUrl("javascript:alert(1)"), false);
+  assert.equal(isSafeProductImageUrl("data:image/svg+xml;base64,PHN2Zz4="), false);
 });
 

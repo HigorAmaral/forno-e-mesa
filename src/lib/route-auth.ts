@@ -80,6 +80,10 @@ export function resolveRoutePolicy(
         : { access: "operator", allowedRoles: ADMIN_GERENTE, isApi: true };
     }
 
+    if (pathname === "/api/menu" && method === "GET") {
+      return { access: "public" };
+    }
+
     if (pathname === "/api/delivery/track" && method === "GET") {
       return { access: "public" };
     }

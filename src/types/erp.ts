@@ -120,6 +120,7 @@ export interface ProductDto {
   sku: string;
   name: string;
   description: string;
+  imageUrl?: string | null;
   price: number;
   unit: string;
   prepStation: string;

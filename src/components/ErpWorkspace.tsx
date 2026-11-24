@@ -146,6 +146,7 @@ export function ErpWorkspace({
   const [noteBusy, setNoteBusy] = useState(false);
 
   const prevAlertCountRef = useRef<number | null>(null);
+  const refreshingRef = useRef(false);
 
   useEffect(() => {
     const rafId = requestAnimationFrame(() => {
@@ -197,6 +198,8 @@ export function ErpWorkspace({
   }, []);
 
   const refreshWorkspace = useCallback(async () => {
+    if (refreshingRef.current) return;
+    refreshingRef.current = true;
     setRefreshing(true);
     try {
       const res = await fetch("/api/workspace", { cache: "no-store" });
@@ -208,6 +211,7 @@ export function ErpWorkspace({
       const json = (await res.json()) as WorkspaceSnapshotDto;
       setData(json);
     } finally {
+      refreshingRef.current = false;
       setRefreshing(false);
     }
   }, [router]);
@@ -217,7 +221,7 @@ export function ErpWorkspace({
     const timer = setInterval(() => {
       if (typeof document !== "undefined" && document.hidden) return;
       void refreshWorkspace();
-    }, 15000);
+    }, 5000);
     return () => clearInterval(timer);
   }, [dbError, refreshWorkspace]);
 
@@ -429,7 +433,7 @@ export function ErpWorkspace({
           },
           {
             id: "inventory",
-            label: "Estoque & Caixa",
+            label: "Produtos, Estoque & Caixa",
             icon: Boxes,
             badge: data.metrics.lowStockAlerts || undefined,
           },
@@ -1514,6 +1518,7 @@ export function ErpWorkspace({
               products={data.products}
               ingredients={data.ingredients}
               openCashSession={data.openCashSession}
+              operatorRole={operatorSession.role}
               onRefresh={refreshWorkspace}
               onError={(msg) => showToast("err", msg)}
             />

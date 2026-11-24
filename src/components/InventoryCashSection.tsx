@@ -7,8 +7,11 @@ import {
   BookOpen,
   Boxes,
   Download,
+  ImagePlus,
   Pencil,
   Plus,
+  Search,
+  Sparkles,
   Trash2,
   Utensils,
   X,
@@ -23,13 +26,16 @@ import type {
   CategoryDto,
   IngredientDto,
   ProductDto,
+  StaffRole,
 } from "@/types/erp";
+import { compressImageFileToDataUrl, ProductPhoto } from "./ProductPhoto";
 
 interface InventoryCashSectionProps {
   categories: CategoryDto[];
   products: ProductDto[];
   ingredients: IngredientDto[];
   openCashSession: CashSessionDto | null;
+  operatorRole?: StaffRole;
   onRefresh: () => Promise<void>;
   onError: (msg: string) => void;
 }
@@ -39,12 +45,18 @@ export function InventoryCashSection({
   products,
   ingredients,
   openCashSession,
+  operatorRole = "ADMIN",
   onRefresh,
   onError,
 }: InventoryCashSectionProps) {
+  const canManageCatalog = operatorRole === "ADMIN" || operatorRole === "GERENTE";
+
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
+  const [newImageUrl, setNewImageUrl] = useState("");
   const [newPrice, setNewPrice] = useState("18");
+  const [newPrepTime, setNewPrepTime] = useState("8");
+  const [newFeatured, setNewFeatured] = useState(false);
   const [newUnit, setNewUnit] = useState<"UN" | "KG" | "FATIA" | "PORCAO">("UN");
   const [newStation, setNewStation] = useState<
     "BALCAO" | "FORNO" | "CONFEITARIA" | "COZINHA" | "BAR"
@@ -52,6 +64,8 @@ export function InventoryCashSection({
   const [newCategoryId, setNewCategoryId] = useState<number>(
     categories[0]?.id ?? 1,
   );
+  const [productSearch, setProductSearch] = useState("");
+  const [productCatFilter, setProductCatFilter] = useState<number | "ALL">("ALL");
 
   const [showNewCat, setShowNewCat] = useState(false);
   const [catName, setCatName] = useState("");
@@ -77,6 +91,7 @@ export function InventoryCashSection({
   const [editForm, setEditForm] = useState({
     name: "",
     description: "",
+    imageUrl: "",
     price: "",
     unit: "UN",
     prepStation: "COZINHA",
@@ -87,6 +102,32 @@ export function InventoryCashSection({
     isFeatured: false,
     isAvailable: true,
   });
+
+  const filteredProducts = useMemo(() => {
+    const q = productSearch.trim().toLowerCase();
+    return products.filter((p) => {
+      const matchesCat = productCatFilter === "ALL" || p.categoryId === productCatFilter;
+      const matchesQuery =
+        !q ||
+        p.name.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        p.sku.toLowerCase().includes(q);
+      return matchesCat && matchesQuery;
+    });
+  }, [products, productSearch, productCatFilter]);
+
+  async function handlePhotoUpload(
+    file: File | undefined,
+    onResult: (dataUrl: string) => void,
+  ) {
+    if (!file) return;
+    try {
+      const dataUrl = await compressImageFileToDataUrl(file);
+      onResult(dataUrl);
+    } catch (err) {
+      onError(err instanceof Error ? err.message : "Erro ao processar foto.");
+    }
+  }
 
   // Recipe Modal
   const [recipeProduct, setRecipeProduct] = useState<ProductDto | null>(null);
@@ -111,6 +152,7 @@ export function InventoryCashSection({
     setEditForm({
       name: p.name,
       description: p.description,
+      imageUrl: p.imageUrl ?? "",
       price: String(p.price),
       unit: p.unit,
       prepStation: p.prepStation,
@@ -156,6 +198,7 @@ export function InventoryCashSection({
           id: editingProduct.id,
           name: editForm.name.trim(),
           description: editForm.description.trim(),
+          imageUrl: editForm.imageUrl.trim() || null,
           price: Number(editForm.price) || editingProduct.price,
           unit: editForm.unit,
           prepStation: editForm.prepStation,
@@ -340,7 +383,10 @@ export function InventoryCashSection({
         body: JSON.stringify({
           name: newName,
           description: newDesc,
+          imageUrl: newImageUrl.trim() || null,
           price: Number(newPrice) || 10,
+          prepTimeMinutes: Math.max(1, Number(newPrepTime) || 8),
+          isFeatured: newFeatured,
           unit: newUnit,
           prepStation: newStation,
           categoryId: Number(newCategoryId),
@@ -353,6 +399,8 @@ export function InventoryCashSection({
       }
       setNewName("");
       setNewDesc("");
+      setNewImageUrl("");
+      setNewFeatured(false);
       await onRefresh();
     } finally {
       setBusy(false);
@@ -761,88 +809,200 @@ export function InventoryCashSection({
           </form>
         )}
 
-        <form onSubmit={createProduct} className="mb-5 grid gap-2.5 sm:grid-cols-6">
-          <input
-            type="text"
-            required
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="Nome do produto"
-            className="input-field py-2 text-xs sm:col-span-2"
-          />
-          <input
-            type="text"
-            required
-            value={newDesc}
-            onChange={(e) => setNewDesc(e.target.value)}
-            placeholder="Descrição curta"
-            className="input-field py-2 text-xs sm:col-span-2"
-          />
-          <input
-            type="number"
-            step="0.5"
-            min="0.5"
-            value={newPrice}
-            onChange={(e) => setNewPrice(e.target.value)}
-            placeholder="Preço"
-            className="input-field py-2 text-xs"
-          />
-          <select
-            value={newCategoryId}
-            onChange={(e) => setNewCategoryId(Number(e.target.value))}
-            className="input-field py-2 text-xs"
+        {canManageCatalog && (
+          <form
+            onSubmit={createProduct}
+            className="mb-5 space-y-3 rounded-2xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-4"
           >
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                Adicionar Novo Produto (Admin / Gerente)
+              </p>
+              <label className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-[var(--text-primary)]">
+                <input
+                  type="checkbox"
+                  checked={newFeatured}
+                  onChange={(e) => setNewFeatured(e.target.checked)}
+                />
+                <Sparkles className="h-3.5 w-3.5 text-[var(--accent-primary)]" />
+                Destaque no cardápio
+              </label>
+            </div>
+
+            <div className="grid gap-2.5 sm:grid-cols-6">
+              <input
+                type="text"
+                required
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="Nome do produto"
+                className="input-field py-2 text-xs sm:col-span-2"
+              />
+              <input
+                type="text"
+                required
+                value={newDesc}
+                onChange={(e) => setNewDesc(e.target.value)}
+                placeholder="Descrição completa para os clientes"
+                className="input-field py-2 text-xs sm:col-span-3"
+              />
+              <input
+                type="number"
+                step="0.5"
+                min="0.5"
+                value={newPrice}
+                onChange={(e) => setNewPrice(e.target.value)}
+                placeholder="Preço (R$)"
+                className="input-field py-2 text-xs"
+              />
+              <select
+                value={newCategoryId}
+                onChange={(e) => setNewCategoryId(Number(e.target.value))}
+                className="input-field py-2 text-xs"
+              >
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={newUnit}
+                onChange={(e) => setNewUnit(e.target.value as typeof newUnit)}
+                className="input-field py-2 text-xs"
+              >
+                <option value="UN">Unidade (UN)</option>
+                <option value="KG">Quilo (KG)</option>
+                <option value="FATIA">Fatia</option>
+                <option value="PORCAO">Porção</option>
+              </select>
+              <select
+                value={newStation}
+                onChange={(e) => setNewStation(e.target.value as typeof newStation)}
+                className="input-field py-2 text-xs"
+              >
+                <option value="COZINHA">Estação: Cozinha</option>
+                <option value="FORNO">Estação: Forno</option>
+                <option value="CONFEITARIA">Estação: Confeitaria</option>
+                <option value="BAR">Estação: Bar / Café</option>
+                <option value="BALCAO">Estação: Balcão</option>
+              </select>
+              <input
+                type="number"
+                min="1"
+                value={newPrepTime}
+                onChange={(e) => setNewPrepTime(e.target.value)}
+                placeholder="Preparo (min)"
+                title="Tempo estimado de preparo em minutos"
+                className="input-field py-2 text-xs"
+              />
+              <button
+                type="submit"
+                disabled={busy}
+                className="btn-primary flex items-center justify-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold sm:col-span-2"
+              >
+                <Plus className="h-4 w-4" /> Adicionar ao Cardápio
+              </button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 border-t border-[var(--border-warm)] pt-3">
+              <ProductPhoto
+                imageUrl={newImageUrl}
+                name={newName || "Preview"}
+                sector={categories.find((c) => c.id === newCategoryId)?.sector}
+                size="sm"
+              />
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:border-[var(--accent-primary)]">
+                  <ImagePlus className="h-3.5 w-3.5 text-[var(--accent-primary)]" />
+                  Enviar foto
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      void handlePhotoUpload(file, setNewImageUrl);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                <input
+                  type="text"
+                  value={newImageUrl.startsWith("data:") ? "" : newImageUrl}
+                  onChange={(e) => setNewImageUrl(e.target.value)}
+                  placeholder="Ou cole o link (https://...) da foto do produto"
+                  className="input-field min-w-[200px] flex-1 py-1.5 text-xs"
+                />
+                {newImageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setNewImageUrl("")}
+                    className="text-xs font-semibold text-red-700 hover:underline"
+                  >
+                    Remover foto
+                  </button>
+                )}
+              </div>
+            </div>
+          </form>
+        )}
+
+        <div className="mb-4 flex flex-wrap items-center gap-2.5">
+          <div className="relative min-w-[220px] flex-1">
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-secondary)]" />
+            <input
+              type="text"
+              value={productSearch}
+              onChange={(e) => setProductSearch(e.target.value)}
+              placeholder="Buscar produto por nome, descrição ou SKU..."
+              className="input-field py-2 pl-9 text-xs"
+            />
+          </div>
+          <select
+            value={productCatFilter}
+            onChange={(e) =>
+              setProductCatFilter(
+                e.target.value === "ALL" ? "ALL" : Number(e.target.value),
+              )
+            }
+            className="input-field w-auto py-2 text-xs font-semibold"
+          >
+            <option value="ALL">Todas categorias ({products.length})</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>
             ))}
           </select>
-          <select
-            value={newUnit}
-            onChange={(e) => setNewUnit(e.target.value as typeof newUnit)}
-            className="input-field py-2 text-xs"
-          >
-            <option value="UN">Unidade (UN)</option>
-            <option value="KG">Quilo (KG)</option>
-            <option value="FATIA">Fatia</option>
-            <option value="PORCAO">Porção</option>
-          </select>
-          <select
-            value={newStation}
-            onChange={(e) => setNewStation(e.target.value as typeof newStation)}
-            className="input-field py-2 text-xs"
-          >
-            <option value="COZINHA">Estação: Cozinha</option>
-            <option value="FORNO">Estação: Forno</option>
-            <option value="CONFEITARIA">Estação: Confeitaria</option>
-            <option value="BAR">Estação: Bar / Café</option>
-            <option value="BALCAO">Estação: Balcão</option>
-          </select>
-          <button
-            type="submit"
-            disabled={busy}
-            className="btn-primary flex items-center justify-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold sm:col-span-2"
-          >
-            <Plus className="h-4 w-4" /> Adicionar ao Cardápio
-          </button>
-        </form>
+        </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <div
               key={product.id}
               className="flex flex-col justify-between gap-2 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-3"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="truncate text-xs font-bold text-[var(--text-primary)]">
-                    {product.name}
-                  </p>
-                  <p className="font-mono-num text-[11px] text-[var(--text-secondary)]">
-                    {formatBRL(product.price)}/{product.unit} · {product.prepStation}{" "}
-                    · Estq: {product.stockQty}
-                  </p>
+              <div className="flex items-start justify-between gap-2.5">
+                <div className="flex min-w-0 items-start gap-2.5">
+                  <ProductPhoto
+                    imageUrl={product.imageUrl}
+                    name={product.name}
+                    sector={product.category.sector}
+                    size="sm"
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-bold text-[var(--text-primary)]">
+                      {product.name}
+                    </p>
+                    <p className="line-clamp-2 text-[11px] text-[var(--text-secondary)]">
+                      {product.description}
+                    </p>
+                    <p className="font-mono-num mt-0.5 text-[11px] font-semibold text-[var(--accent-primary)]">
+                      {formatBRL(product.price)}/{product.unit} · {product.prepStation}{" "}
+                      · Estq: {product.stockQty}
+                    </p>
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -893,30 +1053,34 @@ export function InventoryCashSection({
                   >
                     +R$1
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => openEditProduct(product)}
-                    className="icon-btn p-1"
-                    title="Editar produto"
-                  >
-                    <Pencil className="h-3 w-3" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openRecipeEditor(product)}
-                    className="icon-btn p-1"
-                    title="Ficha Técnica / Receita"
-                  >
-                    <BookOpen className="h-3 w-3" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteEntity("product", product.id)}
-                    className="icon-btn p-1 text-red-700"
-                    title="Excluir produto"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
+                  {canManageCatalog && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => openEditProduct(product)}
+                        className="icon-btn inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold"
+                        title="Editar produto (nome, descrição, foto, preço)"
+                      >
+                        <Pencil className="h-3 w-3" /> Editar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openRecipeEditor(product)}
+                        className="icon-btn p-1"
+                        title="Ficha Técnica / Receita"
+                      >
+                        <BookOpen className="h-3 w-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteEntity("product", product.id)}
+                        className="icon-btn p-1 text-red-700"
+                        title="Excluir produto"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -962,6 +1126,65 @@ export function InventoryCashSection({
               </button>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-3 sm:col-span-2">
+                <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                  Foto do Produto
+                </p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <ProductPhoto
+                    imageUrl={editForm.imageUrl}
+                    name={editForm.name || editingProduct.name}
+                    sector={
+                      categories.find((c) => c.id === Number(editForm.categoryId))
+                        ?.sector ?? editingProduct.category.sector
+                    }
+                    size="md"
+                  />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:border-[var(--accent-primary)]">
+                        <ImagePlus className="h-3.5 w-3.5 text-[var(--accent-primary)]" />
+                        Enviar nova foto
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            void handlePhotoUpload(file, (url) =>
+                              setEditForm((f) => ({ ...f, imageUrl: url })),
+                            );
+                            e.target.value = "";
+                          }}
+                        />
+                      </label>
+                      {editForm.imageUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setEditForm((f) => ({ ...f, imageUrl: "" }))}
+                          className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700 hover:bg-red-100"
+                        >
+                          Remover foto
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      value={editForm.imageUrl.startsWith("data:") ? "" : editForm.imageUrl}
+                      onChange={(e) =>
+                        setEditForm((f) => ({ ...f, imageUrl: e.target.value }))
+                      }
+                      placeholder={
+                        editForm.imageUrl.startsWith("data:")
+                          ? "Foto enviada do aparelho (cole uma URL para substituir)"
+                          : "Ou cole o link da foto (https://...)"
+                      }
+                      className="input-field py-1.5 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <label className="field-label sm:col-span-2">
                 Nome
                 <input
@@ -974,14 +1197,14 @@ export function InventoryCashSection({
               </label>
               <label className="field-label sm:col-span-2">
                 Descrição
-                <input
-                  type="text"
+                <textarea
+                  rows={2}
                   required
                   value={editForm.description}
                   onChange={(e) =>
                     setEditForm((f) => ({ ...f, description: e.target.value }))
                   }
-                  className="input-field"
+                  className="input-field resize-none"
                 />
               </label>
               <label className="field-label">

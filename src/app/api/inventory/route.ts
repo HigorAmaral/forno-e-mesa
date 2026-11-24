@@ -5,6 +5,7 @@ import {
   recordAuditLog,
 } from "@/lib/access-guard";
 import { prisma } from "@/lib/prisma";
+import { hasAnyRole } from "@/lib/rbac";
 import {
   CreateCategorySchema,
   CreateIngredientSchema,
@@ -112,6 +113,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ ingredient }, { status: 201 });
     }
 
+    if (!hasAnyRole(session?.role, ["ADMIN", "GERENTE"])) {
+      return NextResponse.json(
+        { error: "Apenas administradores ou gerentes podem cadastrar produtos no cardápio." },
+        { status: 403 },
+      );
+    }
+
     const parsed = CreateProductSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: "Dados do produto inválidos." }, { status: 400 });
@@ -128,15 +136,17 @@ export async function POST(request: Request) {
         sku,
         name: parsed.data.name.trim(),
         description: parsed.data.description.trim(),
+        imageUrl: parsed.data.imageUrl?.trim() || null,
         price: parsed.data.price,
         unit: parsed.data.unit,
         prepStation: parsed.data.prepStation,
         prepTimeMinutes: parsed.data.prepTimeMinutes,
         categoryId: parsed.data.categoryId,
+        isFeatured: parsed.data.isFeatured ?? false,
         stockQty: parsed.data.stockQty,
         minStockQty: parsed.data.minStockQty,
       },
-      include: { category: true },
+      include: { category: true, recipeItems: { include: { ingredient: true } } },
     });
 
     await recordAuditLog({
@@ -179,15 +189,54 @@ export async function PATCH(request: Request) {
     }
 
     if (body.kind === "product" && Number.isInteger(body.id)) {
+      const session = await getServerOperatorSession();
       const parsed = ToggleProductSchema.safeParse(body);
       if (!parsed.success) {
         return NextResponse.json({ error: "Atualização de produto inválida." }, { status: 400 });
       }
+      const touchesCatalog =
+        parsed.data.name !== undefined ||
+        parsed.data.description !== undefined ||
+        parsed.data.imageUrl !== undefined ||
+        parsed.data.price !== undefined ||
+        parsed.data.categoryId !== undefined ||
+        parsed.data.unit !== undefined ||
+        parsed.data.prepStation !== undefined ||
+        parsed.data.prepTimeMinutes !== undefined ||
+        parsed.data.isFeatured !== undefined;
+
+      if (touchesCatalog && !hasAnyRole(session?.role, ["ADMIN", "GERENTE"])) {
+        return NextResponse.json(
+          { error: "Apenas administradores ou gerentes podem alterar dados de catálogo do produto." },
+          { status: 403 },
+        );
+      }
+
+      const updateData = {
+        ...parsed.data,
+        ...(parsed.data.name !== undefined ? { name: parsed.data.name.trim() } : {}),
+        ...(parsed.data.description !== undefined
+          ? { description: parsed.data.description.trim() }
+          : {}),
+        ...(parsed.data.imageUrl !== undefined
+          ? { imageUrl: parsed.data.imageUrl?.trim() || null }
+          : {}),
+      };
+
       const updated = await prisma.product.update({
         where: { id: body.id },
-        data: parsed.data,
+        data: updateData,
         include: { category: true, recipeItems: { include: { ingredient: true } } },
       });
+
+      await recordAuditLog({
+        actorName: session?.name ?? "Operador",
+        actorRole: session?.role ?? "ADMIN",
+        action: "EDITAR_PRODUTO",
+        entity: "Product",
+        details: `${updated.name} (${updated.sku})`,
+      });
+
       return NextResponse.json({ product: updated });
     }
 

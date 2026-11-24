@@ -6,12 +6,10 @@ import { useRouter } from "next/navigation";
 import {
   Award,
   Bike,
-  CakeSlice,
   CheckCircle2,
   ChevronDown,
   Clock,
   Coffee,
-  Croissant,
   ExternalLink,
   Heart,
   History,
@@ -28,10 +26,10 @@ import {
   Tag,
   Trash2,
   User,
-  UtensilsCrossed,
   X,
 } from "lucide-react";
 import { CafeFloatingToast, CoffeeSteamEmblem } from "./CafeAtmosphere";
+import { ProductPhoto } from "./ProductPhoto";
 import {
   calculateOrderTotals,
   estimateDeliveryMinutes,
@@ -52,6 +50,7 @@ interface StoreProduct {
   id: number;
   name: string;
   description: string;
+  imageUrl?: string | null;
   price: number;
   unit: string;
   prepTimeMinutes: number;
@@ -101,46 +100,25 @@ interface RecentOrderEntry {
 const FAVS_STORAGE_KEY = "forno_mesa_favs";
 const RECENT_ORDERS_KEY = "forno_mesa_recent_orders";
 
-function SectorThumb({ sector }: { sector: string }) {
-  const s = sector.toUpperCase();
-  const icon = s.includes("PADARIA") || s.includes("PAO") ? (
-    <Croissant className="h-7 w-7 text-[var(--accent-primary)]" />
-  ) : s.includes("CONFEITARIA") || s.includes("BOLO") || s.includes("DOCE") ? (
-    <CakeSlice className="h-7 w-7 text-[var(--accent-primary)]" />
-  ) : s.includes("CAFE") || s.includes("BEBIDA") ? (
-    <Coffee className="h-7 w-7 text-[var(--accent-primary)]" />
-  ) : (
-    <UtensilsCrossed className="h-7 w-7 text-[var(--accent-primary)]" />
-  );
-
-  const label = s.includes("PADARIA") || s.includes("PAO")
-    ? "Padaria"
-    : s.includes("CONFEITARIA") || s.includes("BOLO") || s.includes("DOCE")
-      ? "Doces"
-      : s.includes("CAFE") || s.includes("BEBIDA")
-        ? "Cafeteria"
-        : "Bistrô";
-
-  return (
-    <div className="flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] text-[var(--text-primary)]">
-      {icon}
-      <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">
-        {label}
-      </span>
-    </div>
-  );
-}
-
 export function DeliveryStorefrontClient({
-  categories,
-  zones,
-  storeSettings,
-  coupons = [],
-  averageRating = 4.9,
-  reviewsCount = 0,
+  categories: initialCategories,
+  zones: initialZones,
+  storeSettings: initialStoreSettings,
+  coupons: initialCoupons = [],
+  averageRating: initialAverageRating = 4.9,
+  reviewsCount: initialReviewsCount = 0,
   loggedCustomer = null,
 }: DeliveryStorefrontClientProps) {
   const router = useRouter();
+  const [categories, setCategories] = useState<StoreCategory[]>(initialCategories);
+  const [zones, setZones] = useState<DeliveryZoneDto[]>(initialZones);
+  const [storeSettings, setStoreSettings] = useState<StoreSettingsDto | null | undefined>(
+    initialStoreSettings,
+  );
+  const [coupons, setCoupons] = useState<PromoCouponDto[]>(initialCoupons);
+  const [averageRating, setAverageRating] = useState<number>(initialAverageRating);
+  const [reviewsCount, setReviewsCount] = useState<number>(initialReviewsCount);
+
   const isDeliveryOpen = storeSettings?.isDeliveryOpen ?? true;
   const freeAboveThreshold = storeSettings?.freeDeliveryAbove ?? FREE_DELIVERY_ABOVE;
 
@@ -228,6 +206,37 @@ export function DeliveryStorefrontClient({
       }
     });
     return () => cancelAnimationFrame(rafId);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const timer = setInterval(async () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      try {
+        const res = await fetch("/api/menu", { cache: "no-store" });
+        if (!res.ok || cancelled) return;
+        const json = await res.json();
+        if (cancelled) return;
+        if (Array.isArray(json.categories)) setCategories(json.categories);
+        if (Array.isArray(json.zones)) setZones(json.zones);
+        if (Array.isArray(json.coupons)) setCoupons(json.coupons);
+        if (json.storeSettings) {
+          setStoreSettings((prev) =>
+            prev
+              ? { ...prev, ...json.storeSettings }
+              : (json.storeSettings as StoreSettingsDto),
+          );
+        }
+        if (typeof json.averageRating === "number") setAverageRating(json.averageRating);
+        if (typeof json.reviewsCount === "number") setReviewsCount(json.reviewsCount);
+      } catch {
+        // Silent 5s polling failure
+      }
+    }, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
   }, []);
 
   useEffect(() => {
@@ -791,7 +800,12 @@ export function DeliveryStorefrontClient({
                         </p>
                       </div>
                       <div className="transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-2">
-                        <SectorThumb sector={sector} />
+                        <ProductPhoto
+                          imageUrl={product.imageUrl}
+                          name={product.name}
+                          sector={sector}
+                          size="md"
+                        />
                       </div>
                     </div>
                     <div className="mt-3 flex items-center justify-between border-t border-[var(--border-warm)] pt-2.5">
@@ -952,7 +966,12 @@ export function DeliveryStorefrontClient({
 
                         <div className="relative shrink-0">
                           <div className="transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-2">
-                            <SectorThumb sector={cat.sector} />
+                            <ProductPhoto
+                              imageUrl={prod.imageUrl}
+                              name={prod.name}
+                              sector={cat.sector}
+                              size="md"
+                            />
                           </div>
                           <button
                             type="button"
@@ -1183,7 +1202,12 @@ export function DeliveryStorefrontClient({
           >
             <div className="flex items-start justify-between gap-3 border-b border-[var(--border-warm)] pb-4">
               <div className="flex items-start gap-3">
-                <SectorThumb sector={selectedProduct.sector} />
+                <ProductPhoto
+                  imageUrl={selectedProduct.product.imageUrl}
+                  name={selectedProduct.product.name}
+                  sector={selectedProduct.sector}
+                  size="md"
+                />
                 <div>
                   <h3 className="font-display text-base font-bold">
                     {selectedProduct.product.name}

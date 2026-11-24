@@ -682,3 +682,21 @@ export function getKdsUrgencyLevel(
   return "normal";
 }
 
+/**
+ * Validates product image URLs (relative paths, HTTP/HTTPS URLs, or compressed raster data URIs).
+ */
+export function isSafeProductImageUrl(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return true;
+  if (trimmed.length > 450_000) return false;
+  if (trimmed.startsWith("/")) {
+    return !trimmed.startsWith("//");
+  }
+  if (/^https?:\/\//i.test(trimmed)) {
+    return true;
+  }
+  return /^data:image\/(?:jpeg|jpg|png|webp|gif);base64,[a-z0-9+/=]+$/i.test(
+    trimmed,
+  );
+}
+

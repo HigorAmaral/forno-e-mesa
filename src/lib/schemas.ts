@@ -1,4 +1,14 @@
 import { z } from "zod";
+import { isSafeProductImageUrl } from "./domain";
+
+export { isSafeProductImageUrl };
+
+export const ProductImageUrlSchema = z
+  .string()
+  .max(450_000)
+  .refine(isSafeProductImageUrl, "URL ou formato de imagem inválido.")
+  .nullable()
+  .optional();
 
 export const PaymentMethodEnum = z.enum([
   "DINHEIRO",
@@ -119,11 +129,13 @@ export const IngredientAdjustSchema = z.object({
 export const CreateProductSchema = z.object({
   name: z.string().min(2).max(120),
   description: z.string().min(2).max(300),
+  imageUrl: ProductImageUrlSchema,
   price: z.number().positive().max(50000),
   unit: z.enum(["UN", "KG", "FATIA", "PORCAO"]),
   prepStation: z.enum(["BALCAO", "FORNO", "CONFEITARIA", "COZINHA", "BAR"]),
   prepTimeMinutes: z.number().int().min(1).max(180).default(8),
   categoryId: z.number().int().positive(),
+  isFeatured: z.boolean().optional(),
   stockQty: z.number().min(0).max(10000).default(20),
   minStockQty: z.number().min(0).max(1000).default(5),
 });
@@ -131,6 +143,7 @@ export const CreateProductSchema = z.object({
 export const ToggleProductSchema = z.object({
   name: z.string().min(2).max(120).optional(),
   description: z.string().min(2).max(300).optional(),
+  imageUrl: ProductImageUrlSchema,
   price: z.number().positive().max(50000).optional(),
   unit: z.enum(["UN", "KG", "FATIA", "PORCAO"]).optional(),
   prepStation: z.enum(["BALCAO", "FORNO", "CONFEITARIA", "COZINHA", "BAR"]).optional(),

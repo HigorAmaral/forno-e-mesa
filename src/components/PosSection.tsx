@@ -40,6 +40,7 @@ import type {
   StoreSettingsDto,
   TableWithOrdersDto,
 } from "@/types/erp";
+import { ProductPhoto } from "./ProductPhoto";
 
 interface PosSectionProps {
   products: ProductDto[];
@@ -537,12 +538,24 @@ export function PosSection({
                       </span>
                     )}
                   </div>
-                  <h3 className="mt-2.5 font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)]">
-                    {product.name}
-                  </h3>
-                  <p className="mt-1 line-clamp-2 text-xs text-[var(--text-secondary)]">
-                    {product.description}
-                  </p>
+                  <div className="mt-2.5 flex items-start gap-2.5">
+                    {product.imageUrl && (
+                      <ProductPhoto
+                        imageUrl={product.imageUrl}
+                        name={product.name}
+                        sector={product.category.sector}
+                        size="sm"
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)]">
+                        {product.name}
+                      </h3>
+                      <p className="mt-1 line-clamp-2 text-xs text-[var(--text-secondary)]">
+                        {product.description}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="mt-3 flex items-end justify-between border-t border-[var(--border-warm)] pt-2.5">

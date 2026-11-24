@@ -113,7 +113,7 @@ export function DeliveryTrackerClient({
     const timer = setInterval(() => {
       if (typeof document !== "undefined" && document.hidden) return;
       void refresh();
-    }, 8000);
+    }, 5000);
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFinished, order.code, token]);

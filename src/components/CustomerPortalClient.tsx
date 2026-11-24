@@ -128,6 +128,30 @@ export function CustomerPortalClient({
     };
   }, []);
 
+  useEffect(() => {
+    if (!customer) return;
+    let cancelled = false;
+    const timer = setInterval(async () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      try {
+        const res = await fetch("/api/auth/customer", { cache: "no-store" });
+        if (!res.ok || cancelled) return;
+        const json = await res.json();
+        if (cancelled) return;
+        if (json.authenticated && json.customer) {
+          setCustomer(json.customer);
+          setOrders(json.orders ?? []);
+        }
+      } catch {
+        // Silent polling error
+      }
+    }, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [customer]);
+
   async function handleAuth(e: React.FormEvent) {
     e.preventDefault();
     if (busy) return;

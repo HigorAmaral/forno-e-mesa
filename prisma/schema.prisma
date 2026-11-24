@@ -24,6 +24,7 @@ model Product {
   sku             String       @unique
   name            String
   description     String
+  imageUrl        String?
   price           Float
   unit            String       @default("UN") // UN | KG | FATIA | PORCAO
   prepStation     String       @default("BALCAO") // BALCAO | FORNO | CONFEITARIA | COZINHA | BAR

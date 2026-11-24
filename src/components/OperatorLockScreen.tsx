@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { type CSSProperties, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
   Award,
   Clock,
-  Coffee,
   Delete,
   KeyRound,
   Lock,
@@ -16,6 +15,7 @@ import {
   ShieldCheck,
   Truck,
 } from "lucide-react";
+import { CoffeeSteamEmblem } from "./CafeAtmosphere";
 
 interface OperatorLockScreenProps {
   storeName?: string;
@@ -88,13 +88,11 @@ export function OperatorLockScreen({
     <main className="flex min-h-screen w-full items-center justify-center bg-[var(--bg-canvas)] p-4 text-[var(--text-primary)] sm:p-6">
       <div className="w-full max-w-2xl space-y-4">
         {/* Main Access Card */}
-        <div className="card-bistro overflow-hidden shadow-xl">
-          <div className="bg-[var(--bg-shell)] px-6 py-6 text-[#FAF3E8]">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3.5">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent-primary)] text-white shadow-md">
-                  <Coffee className="h-6 w-6" />
-                </div>
+        <div className="card-bistro animate-cafe-rise overflow-hidden shadow-xl">
+          <div className="cafe-hero-surface px-6 py-6 text-[#FAF3E8]">
+            <div className="relative z-10 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-4">
+                <CoffeeSteamEmblem size="lg" />
                 <div>
                   <h1 className="font-display text-2xl font-bold leading-tight text-white">
                     {storeName}
@@ -105,15 +103,15 @@ export function OperatorLockScreen({
               <span
                 className={`chip ${
                   isDeliveryOpen
-                    ? "bg-emerald-500/20 text-emerald-200"
-                    : "bg-amber-500/20 text-amber-200"
+                    ? "bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-400/30"
+                    : "bg-amber-500/20 text-amber-200 ring-1 ring-amber-400/30"
                 }`}
               >
                 <Clock className="h-3 w-3" />
                 {isDeliveryOpen ? "Aberto para pedidos" : "Delivery pausado"}
               </span>
             </div>
-            <p className="mt-3 text-[11px] text-[#E6CCB2]/85">{openingHours}</p>
+            <p className="relative z-10 mt-3 text-[11px] text-[#E6CCB2]/85">{openingHours}</p>
           </div>
 
           <div className="p-5 sm:p-7 space-y-6">
@@ -125,10 +123,11 @@ export function OperatorLockScreen({
               <div className="grid gap-3 sm:grid-cols-2">
                 <Link
                   href="/delivery"
-                  className="group flex items-center justify-between rounded-2xl border border-[var(--border-warm)] bg-[var(--bg-elevated)] p-4 transition hover:border-[var(--accent-primary)] hover:shadow-md"
+                  style={{ "--stagger": 1 } as CSSProperties}
+                  className="cafe-card-hover cafe-stagger group flex items-center justify-between rounded-2xl border border-[var(--border-warm)] bg-[var(--bg-elevated)] p-4"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--accent-primary)] text-white">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--accent-primary)] text-white transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3">
                       <Truck className="h-5 w-5" />
                     </div>
                     <div>
@@ -140,15 +139,16 @@ export function OperatorLockScreen({
                       </p>
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-[var(--text-secondary)] transition group-hover:translate-x-0.5" />
+                  <ArrowRight className="h-4 w-4 text-[var(--text-secondary)] transition-transform duration-200 group-hover:translate-x-1" />
                 </Link>
 
                 <Link
                   href="/conta"
-                  className="group flex items-center justify-between rounded-2xl border border-[var(--border-warm)] bg-[var(--bg-elevated)] p-4 transition hover:border-[var(--accent-primary)] hover:shadow-md"
+                  style={{ "--stagger": 2 } as CSSProperties}
+                  className="cafe-card-hover cafe-stagger group flex items-center justify-between rounded-2xl border border-[var(--border-warm)] bg-[var(--bg-elevated)] p-4"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-700 text-white">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-700 text-white transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3">
                       <Award className="h-5 w-5" />
                     </div>
                     <div>
@@ -160,7 +160,7 @@ export function OperatorLockScreen({
                       </p>
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-[var(--text-secondary)] transition group-hover:translate-x-0.5" />
+                  <ArrowRight className="h-4 w-4 text-[var(--text-secondary)] transition-transform duration-200 group-hover:translate-x-1" />
                 </Link>
               </div>
             </div>
@@ -231,7 +231,7 @@ export function OperatorLockScreen({
                   </button>
                 </div>
               ) : (
-                <div className="animate-fade-in space-y-4 rounded-2xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-4 sm:p-5">
+                <div className="animate-scale-in space-y-4 rounded-2xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-4 sm:p-5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="h-4 w-4 text-[var(--accent-primary)]" />

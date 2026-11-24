@@ -1,12 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
   Award,
   CheckCircle2,
-  Coffee,
   ExternalLink,
   KeyRound,
   LogOut,
@@ -18,6 +17,7 @@ import {
 } from "lucide-react";
 import { channelLabel, formatBRL, getLoyaltyTier } from "@/lib/domain";
 import type { DeliveryZoneDto } from "@/types/erp";
+import { CoffeeSteamEmblem } from "./CafeAtmosphere";
 
 interface CustomerSessionData {
   id: number;
@@ -207,9 +207,7 @@ export function CustomerPortalClient({
       <header className="cafe-sidebar text-white shadow-md">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3.5">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent-primary)] text-white">
-              <Coffee className="h-4 w-4" />
-            </div>
+            <CoffeeSteamEmblem size="sm" />
             <div>
               <p className="font-display text-base font-bold">{storeName}</p>
               <p className="text-[11px] text-[#E6CCB2]">
@@ -246,20 +244,27 @@ export function CustomerPortalClient({
             Carregando sua conta...
           </div>
         ) : !customer ? (
-          <div className="mx-auto max-w-md space-y-4">
-            <div className="card-bistro p-6 shadow-xl">
-              <div className="mb-5 flex items-center justify-between">
-                <div>
-                  <h1 className="font-display text-xl font-bold">
-                    Clube {storeName}
-                  </h1>
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    Acumule pontos a cada R$ 10 e resgate R$ 15 OFF no delivery.
-                  </p>
+          <div className="animate-cafe-rise mx-auto max-w-md space-y-4">
+            <div className="card-bistro overflow-hidden shadow-xl">
+              <div className="cafe-hero-surface px-6 py-5 text-[#FAF3E8]">
+                <div className="relative z-10 flex items-center justify-between gap-3">
+                  <div>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-200">
+                      <Sparkles className="h-3 w-3 text-[#D48D64]" />
+                      Clube de Pontos
+                    </span>
+                    <h1 className="font-display mt-2 text-xl font-bold text-white">
+                      Clube {storeName}
+                    </h1>
+                    <p className="mt-0.5 text-xs text-[#E6CCB2]/90">
+                      Acumule pontos a cada R$ 10 e resgate R$ 15 OFF no delivery.
+                    </p>
+                  </div>
+                  <CoffeeSteamEmblem size="md" />
                 </div>
-                <Award className="h-7 w-7 text-[var(--accent-primary)]" />
               </div>
 
+              <div className="p-6">
               <div className="segmented mb-5 w-full">
                 <button
                   type="button"
@@ -374,6 +379,7 @@ export function CustomerPortalClient({
                   Demo cliente: <code>(11) 98812-3401</code> · PIN <code>1234</code>
                 </p>
               </form>
+              </div>
             </div>
 
             <Link
@@ -386,11 +392,19 @@ export function CustomerPortalClient({
         ) : (
           <div className="space-y-6">
             {/* Loyalty Hero */}
-            <section className="rounded-2xl bg-[var(--bg-shell)] p-6 text-white shadow-xl">
-              <div className="flex flex-wrap items-start justify-between gap-4">
+            <section className="cafe-hero-surface animate-cafe-rise rounded-2xl p-6 text-white shadow-xl">
+              <div className="relative z-10 flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold text-amber-300">
-                    <Sparkles className="h-3.5 w-3.5" />
+                  <span
+                    className={`cafe-shimmer inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold ${
+                      tier === "OURO"
+                        ? "bg-amber-400/20 text-amber-200 ring-1 ring-amber-300/40"
+                        : tier === "PRATA"
+                          ? "bg-stone-200/20 text-stone-100 ring-1 ring-stone-200/35"
+                          : "bg-[#D48D64]/20 text-[#F4D5BA] ring-1 ring-[#D48D64]/40"
+                    }`}
+                  >
+                    <Award className="h-3.5 w-3.5" />
                     NÍVEL {tier}
                   </span>
                   <h1 className="font-display mt-3 text-2xl font-bold">
@@ -402,7 +416,7 @@ export function CustomerPortalClient({
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-white/10 px-5 py-3 text-right">
+                <div className="rounded-2xl border border-[#E6CCB2]/20 bg-white/10 px-5 py-3 text-right backdrop-blur-xs">
                   <p className="text-[11px] text-[#E6CCB2]">Saldo de Pontos</p>
                   <p className="font-mono-num text-3xl font-bold text-amber-300">
                     {customer.loyaltyPoints} pts
@@ -415,16 +429,16 @@ export function CustomerPortalClient({
                 </div>
               </div>
 
-              <div className="mt-4">
+              <div className="relative z-10 mt-4">
                 <div className="mb-1 flex justify-between text-[11px] text-[#E6CCB2]">
                   <span>Progresso de fidelidade</span>
                   <span>
                     {customer.loyaltyPoints} / {nextGoal} pts
                   </span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-[#D48D64] to-emerald-400 transition-all"
+                    className="cafe-shimmer h-full rounded-full bg-gradient-to-r from-[#D48D64] to-emerald-400 transition-all duration-700 ease-out"
                     style={{ width: `${tierPct}%` }}
                   />
                 </div>
@@ -550,10 +564,11 @@ export function CustomerPortalClient({
                   </p>
                 ) : (
                   <div className="space-y-2.5">
-                    {orders.map((ord) => (
+                    {orders.map((ord, idx) => (
                       <div
                         key={ord.id}
-                        className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-3 text-xs"
+                        style={{ "--stagger": Math.min(idx, 10) } as CSSProperties}
+                        className="cafe-card-hover cafe-stagger flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-3 text-xs"
                       >
                         <div>
                           <div className="flex items-center gap-2">

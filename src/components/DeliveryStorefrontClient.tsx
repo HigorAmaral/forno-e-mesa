@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -21,6 +21,7 @@ import {
   Plus,
   Search,
   ShoppingBag,
+  Sparkles,
   Star,
   Store,
   Sun,
@@ -30,6 +31,7 @@ import {
   UtensilsCrossed,
   X,
 } from "lucide-react";
+import { CafeFloatingToast, CoffeeSteamEmblem } from "./CafeAtmosphere";
 import {
   calculateOrderTotals,
   estimateDeliveryMinutes,
@@ -192,6 +194,25 @@ export function DeliveryStorefrontClient({
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [bagPopKey, setBagPopKey] = useState(0);
+  const [poppingFavId, setPoppingFavId] = useState<number | null>(null);
+  const [quickToast, setQuickToast] = useState<string | null>(null);
+
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const favTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function showQuickToast(msg: string) {
+    setQuickToast(msg);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setQuickToast(null), 2400);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      if (favTimerRef.current) clearTimeout(favTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const rafId = requestAnimationFrame(() => {
@@ -234,6 +255,7 @@ export function DeliveryStorefrontClient({
   }
 
   function toggleFavorite(productId: number) {
+    const willFav = !favorites.includes(productId);
     setFavorites((prev) => {
       const next = prev.includes(productId)
         ? prev.filter((id) => id !== productId)
@@ -245,6 +267,10 @@ export function DeliveryStorefrontClient({
       }
       return next;
     });
+    setPoppingFavId(productId);
+    if (favTimerRef.current) clearTimeout(favTimerRef.current);
+    favTimerRef.current = setTimeout(() => setPoppingFavId(null), 400);
+    showQuickToast(willFav ? "Salvo nos seus favoritos" : "Removido dos favoritos");
   }
 
   const selectedZone = useMemo(
@@ -413,6 +439,8 @@ export function DeliveryStorefrontClient({
       }
       return [...prev, { product, qty: step, notes: itemNotes.trim() }];
     });
+    setBagPopKey((k) => k + 1);
+    showQuickToast(`${product.name} adicionado à sacola`);
   }
 
   function updateQty(productId: number, nextQty: number) {
@@ -590,9 +618,12 @@ export function DeliveryStorefrontClient({
             )}
 
             <button
+              key={bagPopKey}
               type="button"
               onClick={() => setBagOpen(true)}
-              className="btn-primary inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold"
+              className={`btn-primary inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold transition ${
+                bagPopKey > 0 ? "animate-cart-pop" : ""
+              }`}
             >
               <ShoppingBag className="h-4 w-4" />
               <span className="font-mono-num rounded bg-black/20 px-1.5 py-0.5 text-[11px]">
@@ -612,50 +643,56 @@ export function DeliveryStorefrontClient({
         )}
 
         {/* Store Info Banner */}
-        <section className="card-bistro p-4 sm:p-6">
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <section className="cafe-hero-surface animate-cafe-rise rounded-2xl p-5 text-[#FAF3E8] sm:p-7">
+          <div className="relative z-10 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
             <div className="flex items-start gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[var(--bg-shell)] text-[#FAF3E8] sm:h-20 sm:w-20">
-                <Coffee className="h-8 w-8 sm:h-10 sm:w-10 text-[#E6CCB2]" />
+              <div className="pt-1">
+                <CoffeeSteamEmblem size="lg" />
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="font-display text-xl font-bold tracking-tight text-[var(--text-primary)] sm:text-2xl">
-                    {storeSettings?.storeName ?? "Forno & Mesa"} — Padaria & Bistrô
-                  </h1>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#E6CCB2]">
+                    <Sparkles className="h-3 w-3 text-[#D48D64]" />
+                    Fornada artesanal do dia
+                  </span>
                   <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
                       isDeliveryOpen
-                        ? "bg-emerald-100 text-emerald-800"
-                        : "bg-amber-100 text-amber-900"
+                        ? "bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-400/30"
+                        : "bg-amber-500/20 text-amber-200 ring-1 ring-amber-400/30"
                     }`}
                   >
                     <span
                       className={`h-1.5 w-1.5 rounded-full ${
-                        isDeliveryOpen ? "bg-emerald-600" : "bg-amber-600"
+                        isDeliveryOpen
+                          ? "animate-pulse bg-emerald-400"
+                          : "bg-amber-400"
                       }`}
                     />
                     {isDeliveryOpen ? "Aberto agora" : "Pausado"}
                   </span>
                 </div>
-                <p className="mt-1 text-xs text-[var(--text-secondary)] sm:text-sm">
+                <h1 className="font-display mt-2 text-xl font-bold tracking-tight text-white sm:text-2xl">
+                  {storeSettings?.storeName ?? "Forno & Mesa"} — Padaria & Bistrô
+                </h1>
+                <p className="mt-1 text-xs text-[#E6CCB2]/90 sm:text-sm">
                   {storeSettings?.slogan ??
                     "Pães de fermentação natural, doces artesanais, cafés especiais e pratos do bistrô."}
                 </p>
-                <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-[var(--text-secondary)]">
-                  <span className="inline-flex items-center gap-1 font-semibold text-[var(--accent-primary)]">
-                    <Star className="h-3.5 w-3.5 fill-[var(--accent-primary)]" />
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-[#E6CCB2]">
+                  <span className="inline-flex items-center gap-1 font-semibold text-amber-300">
+                    <Star className="h-3.5 w-3.5 fill-amber-300" />
                     {averageRating.toFixed(1)}
                     {reviewsCount > 0 ? ` (${reviewsCount})` : ""}
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5" />
+                    <Clock className="h-3.5 w-3.5 text-[#D48D64]" />
                     {mode === "RETIRADA"
                       ? "~15-20 min (Retirada)"
                       : `${selectedZone?.etaMinutes ?? 35} min`}
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <Bike className="h-3.5 w-3.5" />
+                    <Bike className="h-3.5 w-3.5 text-[#D48D64]" />
                     {mode === "RETIRADA"
                       ? "Retirada grátis"
                       : deliveryFee === 0
@@ -670,11 +707,12 @@ export function DeliveryStorefrontClient({
             </div>
 
             <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
-              <div className="segmented">
+              <div className="segmented border border-[#E6CCB2]/20 bg-black/25">
                 <button
                   type="button"
                   data-active={mode === "DELIVERY"}
                   onClick={() => setMode("DELIVERY")}
+                  className="text-[#FAF3E8]/85"
                 >
                   <span className="inline-flex items-center gap-1.5">
                     <Bike className="h-3.5 w-3.5" /> Entrega
@@ -684,16 +722,17 @@ export function DeliveryStorefrontClient({
                   type="button"
                   data-active={mode === "RETIRADA"}
                   onClick={() => setMode("RETIRADA")}
+                  className="text-[#FAF3E8]/85"
                 >
                   <span className="inline-flex items-center gap-1.5">
                     <Store className="h-3.5 w-3.5" /> Retirada
                   </span>
                 </button>
               </div>
-              <p className="text-[11px] font-semibold text-[var(--text-secondary)]">
+              <p className="text-[11px] font-semibold text-[#E6CCB2]/90">
                 Cupons:{" "}
                 {displayedCoupons.slice(0, 3).map((c, idx) => (
-                  <span key={c.code} className="text-[var(--accent-primary)]">
+                  <span key={c.code} className="text-amber-300">
                     {idx > 0 ? " · " : ""}
                     {c.code}
                   </span>
@@ -708,14 +747,15 @@ export function DeliveryStorefrontClient({
           <section className="space-y-3">
             <h2 className="font-display text-lg font-bold">Destaques da Casa</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {featuredProducts.slice(0, 4).map(({ product, sector }) => {
+              {featuredProducts.slice(0, 4).map(({ product, sector }, idx) => {
                 const inCart = cart.find((c) => c.product.id === product.id);
                 const isFav = favorites.includes(product.id);
                 return (
                   <div
                     key={product.id}
                     onClick={() => openProductModal(product, sector)}
-                    className="card-bistro card-bistro-interactive flex cursor-pointer flex-col justify-between p-4"
+                    style={{ "--stagger": idx } as CSSProperties}
+                    className="card-bistro cafe-card-hover cafe-stagger group flex cursor-pointer flex-col justify-between p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -730,13 +770,15 @@ export function DeliveryStorefrontClient({
                               toggleFavorite(product.id);
                             }}
                             aria-label="Favoritar"
-                            className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)]"
+                            className={`text-[var(--text-secondary)] transition hover:text-[var(--accent-primary)] ${
+                              poppingFavId === product.id ? "animate-heart-pop" : ""
+                            }`}
                           >
                             <Heart
-                              className={`h-3.5 w-3.5 ${
+                              className={`h-3.5 w-3.5 transition-transform ${
                                 isFav
                                   ? "fill-[var(--accent-primary)] text-[var(--accent-primary)]"
-                                  : ""
+                                  : "group-hover:scale-110"
                               }`}
                             />
                           </button>
@@ -748,7 +790,9 @@ export function DeliveryStorefrontClient({
                           {product.description}
                         </p>
                       </div>
-                      <SectorThumb sector={sector} />
+                      <div className="transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-2">
+                        <SectorThumb sector={sector} />
+                      </div>
                     </div>
                     <div className="mt-3 flex items-center justify-between border-t border-[var(--border-warm)] pt-2.5">
                       <span className="font-mono-num text-sm font-bold">
@@ -763,7 +807,7 @@ export function DeliveryStorefrontClient({
                           e.stopPropagation();
                           addProductDirect(product);
                         }}
-                        className="inline-flex items-center gap-1 rounded-lg border border-[var(--accent-primary)] bg-[var(--bg-canvas)] px-2.5 py-1 text-xs font-bold text-[var(--accent-primary)] transition hover:bg-[var(--accent-primary)] hover:text-white"
+                        className="inline-flex items-center gap-1 rounded-lg border border-[var(--accent-primary)] bg-[var(--bg-canvas)] px-2.5 py-1 text-xs font-bold text-[var(--accent-primary)] transition duration-200 hover:scale-105 hover:bg-[var(--accent-primary)] hover:text-white active:scale-95"
                       >
                         <Plus className="h-3.5 w-3.5" />
                         {inCart ? inCart.qty : "Adicionar"}
@@ -855,14 +899,15 @@ export function DeliveryStorefrontClient({
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-2">
-                  {cat.products.map((prod) => {
+                  {cat.products.map((prod, idx) => {
                     const inCart = cart.find((c) => c.product.id === prod.id);
                     const isFav = favorites.includes(prod.id);
                     return (
                       <div
                         key={prod.id}
                         onClick={() => openProductModal(prod, cat.sector)}
-                        className="card-bistro card-bistro-interactive flex cursor-pointer items-center justify-between gap-4 p-4"
+                        style={{ "--stagger": Math.min(idx, 10) } as CSSProperties}
+                        className="card-bistro cafe-card-hover cafe-stagger group flex cursor-pointer items-center justify-between gap-4 p-4"
                       >
                         <div className="flex min-w-0 flex-1 flex-col justify-between">
                           <div>
@@ -875,13 +920,15 @@ export function DeliveryStorefrontClient({
                                   toggleFavorite(prod.id);
                                 }}
                                 aria-label="Favoritar"
-                                className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)]"
+                                className={`text-[var(--text-secondary)] transition hover:text-[var(--accent-primary)] ${
+                                  poppingFavId === prod.id ? "animate-heart-pop" : ""
+                                }`}
                               >
                                 <Heart
-                                  className={`h-3.5 w-3.5 ${
+                                  className={`h-3.5 w-3.5 transition-transform ${
                                     isFav
                                       ? "fill-[var(--accent-primary)] text-[var(--accent-primary)]"
-                                      : ""
+                                      : "group-hover:scale-110"
                                   }`}
                                 />
                               </button>
@@ -904,7 +951,9 @@ export function DeliveryStorefrontClient({
                         </div>
 
                         <div className="relative shrink-0">
-                          <SectorThumb sector={cat.sector} />
+                          <div className="transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-2">
+                            <SectorThumb sector={cat.sector} />
+                          </div>
                           <button
                             type="button"
                             onClick={(e) => {
@@ -912,7 +961,7 @@ export function DeliveryStorefrontClient({
                               addProductDirect(prod);
                             }}
                             aria-label={`Adicionar ${prod.name}`}
-                            className={`absolute -right-1.5 -bottom-1.5 flex h-7 items-center justify-center rounded-full border px-2 text-xs font-bold shadow-xs transition ${
+                            className={`absolute -right-1.5 -bottom-1.5 flex h-7 items-center justify-center rounded-full border px-2 text-xs font-bold shadow-xs transition duration-200 hover:scale-110 active:scale-95 ${
                               inCart
                                 ? "border-[var(--accent-primary)] bg-[var(--accent-primary)] text-white"
                                 : "border-[var(--border-warm)] bg-[var(--bg-surface)] text-[var(--accent-primary)] hover:border-[var(--accent-primary)]"
@@ -963,11 +1012,14 @@ export function DeliveryStorefrontClient({
 
       {/* Mobile Floating Sacola Bar */}
       {cart.length > 0 && !bagOpen && (
-        <div className="cafe-topbar safe-bottom fixed inset-x-0 bottom-0 z-30 border-t p-3 shadow-lg lg:hidden">
+        <div className="cafe-topbar safe-bottom animate-sheet-up fixed inset-x-0 bottom-0 z-30 border-t p-3 shadow-lg lg:hidden">
           <button
+            key={bagPopKey}
             type="button"
             onClick={() => setBagOpen(true)}
-            className="btn-primary flex w-full items-center justify-between rounded-lg px-4 py-3 text-sm font-bold"
+            className={`btn-primary flex w-full items-center justify-between rounded-lg px-4 py-3 text-sm font-bold ${
+              bagPopKey > 0 ? "animate-cart-pop" : ""
+            }`}
           >
             <span className="inline-flex items-center gap-2">
               <ShoppingBag className="h-4 w-4" />
@@ -981,7 +1033,7 @@ export function DeliveryStorefrontClient({
       {/* Recent Orders Modal */}
       {historyModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
+          className="animate-backdrop-fade fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-xs"
           role="dialog"
           aria-modal="true"
           onClick={() => setHistoryModalOpen(false)}
@@ -1031,7 +1083,7 @@ export function DeliveryStorefrontClient({
       {/* Location / Neighborhood Modal */}
       {locationModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
+          className="animate-backdrop-fade fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-xs"
           role="dialog"
           aria-modal="true"
           onClick={() => setLocationModalOpen(false)}
@@ -1120,13 +1172,13 @@ export function DeliveryStorefrontClient({
       {/* Item Detail Modal */}
       {selectedProduct && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 sm:items-center sm:p-4"
+          className="animate-backdrop-fade fixed inset-0 z-50 flex items-end justify-center bg-black/55 backdrop-blur-xs sm:items-center sm:p-4"
           role="dialog"
           aria-modal="true"
           onClick={() => setSelectedProduct(null)}
         >
           <div
-            className="card-bistro animate-scale-in w-full max-w-lg rounded-t-2xl p-5 shadow-xl sm:rounded-2xl"
+            className="card-bistro animate-sheet-up sm:animate-scale-in w-full max-w-lg rounded-t-2xl p-5 shadow-xl sm:rounded-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3 border-b border-[var(--border-warm)] pb-4">
@@ -1217,13 +1269,13 @@ export function DeliveryStorefrontClient({
       {/* Slide-Over "Sua Sacola" Checkout Drawer */}
       {bagOpen && (
         <div
-          className="fixed inset-0 z-50 flex justify-end bg-black/55"
+          className="animate-backdrop-fade fixed inset-0 z-50 flex justify-end bg-black/55 backdrop-blur-xs"
           role="dialog"
           aria-modal="true"
           onClick={() => setBagOpen(false)}
         >
           <div
-            className="flex h-full w-full max-w-md flex-col border-l border-[var(--border-warm)] bg-[var(--bg-surface)] shadow-2xl"
+            className="animate-drawer-left flex h-full w-full max-w-md flex-col border-l border-[var(--border-warm)] bg-[var(--bg-surface)] shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-[var(--border-warm)] px-5 py-4">
@@ -1284,9 +1336,9 @@ export function DeliveryStorefrontClient({
                         {freeShippingPct}%
                       </span>
                     </div>
-                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--bg-subtle)]">
+                    <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[var(--bg-subtle)]">
                       <div
-                        className="h-full rounded-full bg-[var(--accent-primary)] transition-all"
+                        className="cafe-shimmer h-full rounded-full bg-[var(--accent-primary)] transition-all duration-500 ease-out"
                         style={{ width: `${freeShippingPct}%` }}
                       />
                     </div>
@@ -1674,6 +1726,10 @@ export function DeliveryStorefrontClient({
           </div>
         </div>
       )}
+      <CafeFloatingToast
+        message={quickToast}
+        offsetBottom={cart.length > 0 && !bagOpen}
+      />
     </div>
   );
 }

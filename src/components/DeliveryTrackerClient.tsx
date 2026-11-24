@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   ChefHat,
   Clock,
-  Coffee,
   MapPin,
   MessageCircle,
   Package,
@@ -24,6 +23,7 @@ import {
   getDeliveryFlow,
   type DeliveryStatus,
 } from "@/lib/domain";
+import { CoffeeSteamEmblem } from "./CafeAtmosphere";
 
 export interface TrackedOrderDto {
   code: string;
@@ -155,9 +155,7 @@ export function DeliveryTrackerClient({
       <header className="cafe-sidebar text-white shadow-md">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3.5">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent-primary)] text-white">
-              <Coffee className="h-4 w-4" />
-            </div>
+            <CoffeeSteamEmblem size="sm" />
             <div>
               <p className="font-display text-base font-bold">{storeName}</p>
               <p className="text-[11px] text-[#E6CCB2]">Acompanhamento em tempo real</p>
@@ -188,7 +186,7 @@ export function DeliveryTrackerClient({
       </header>
 
       <main className="mx-auto max-w-3xl space-y-5 px-4 py-6">
-        <div className="card-bistro p-5 sm:p-6">
+        <div className="card-bistro animate-cafe-rise p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <span className="chip bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
@@ -224,38 +222,55 @@ export function DeliveryTrackerClient({
           </div>
 
           {current !== "CANCELADO" && (
-            <ol className="mt-6 grid gap-3 sm:grid-cols-5">
-              {flow.map((step, idx) => {
-                const Icon = STEP_ICONS[step];
-                const done = idx <= currentIdx;
-                const isCurrent = idx === currentIdx;
-                return (
-                  <li
-                    key={step}
-                    className={`flex items-center gap-2.5 rounded-2xl border p-3 sm:flex-col sm:text-center ${
-                      isCurrent
-                        ? "border-[var(--accent-primary)] bg-amber-50/70 text-[#3E2723] ring-2 ring-[var(--accent-primary)]/20"
-                        : done
-                          ? "border-emerald-200 bg-emerald-50/70 text-[#3E2723]"
-                          : "border-[var(--border-warm)] bg-[var(--bg-canvas)] opacity-60"
-                    }`}
-                  >
-                    <div
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+            <div className="mt-6 space-y-3">
+              {/* Barra contínua de progresso */}
+              <div className="relative h-2 overflow-hidden rounded-full bg-[var(--bg-subtle)]">
+                <div
+                  className="cafe-shimmer h-full rounded-full bg-gradient-to-r from-[var(--accent-primary)] to-emerald-600 transition-all duration-700 ease-out"
+                  style={{
+                    width: `${
+                      currentIdx <= 0
+                        ? 12
+                        : Math.min(100, Math.round(((currentIdx + 1) / flow.length) * 100))
+                    }%`,
+                  }}
+                />
+              </div>
+
+              <ol className="grid gap-3 sm:grid-cols-5">
+                {flow.map((step, idx) => {
+                  const Icon = STEP_ICONS[step];
+                  const done = idx <= currentIdx;
+                  const isCurrent = idx === currentIdx;
+                  return (
+                    <li
+                      key={step}
+                      style={{ "--stagger": idx } as CSSProperties}
+                      className={`cafe-stagger flex items-center gap-2.5 rounded-2xl border p-3 transition-all duration-300 sm:flex-col sm:text-center ${
                         isCurrent
-                          ? "bg-[var(--accent-primary)] text-white"
+                          ? "border-[var(--accent-primary)] bg-amber-50/80 text-[#3E2723] shadow-sm ring-2 ring-[var(--accent-primary)]/25"
                           : done
-                            ? "bg-emerald-700 text-white"
-                            : "bg-[var(--bg-subtle)] text-[var(--text-secondary)]"
+                            ? "border-emerald-200 bg-emerald-50/70 text-[#3E2723]"
+                            : "border-[var(--border-warm)] bg-[var(--bg-canvas)] opacity-60"
                       }`}
                     >
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <span className="text-xs font-bold">{DELIVERY_STATUS_LABELS[step]}</span>
-                  </li>
-                );
-              })}
-            </ol>
+                      <div
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-transform ${
+                          isCurrent
+                            ? "animate-tracker-pulse animate-cafe-float bg-[var(--accent-primary)] text-white"
+                            : done
+                              ? "bg-emerald-700 text-white"
+                              : "bg-[var(--bg-subtle)] text-[var(--text-secondary)]"
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <span className="text-xs font-bold">{DELIVERY_STATUS_LABELS[step]}</span>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
           )}
 
           {order.courierName && !isPickup && (
@@ -315,13 +330,13 @@ export function DeliveryTrackerClient({
                       key={n}
                       type="button"
                       onClick={() => setRating(n)}
-                      className="rounded-xl p-1.5 transition hover:scale-110"
+                      className="rounded-xl p-1.5 transition duration-200 hover:scale-125 active:scale-95"
                       aria-label={`${n} estrelas`}
                     >
                       <Star
-                        className={`h-7 w-7 ${
+                        className={`h-7 w-7 transition-all duration-200 ${
                           n <= rating
-                            ? "fill-amber-500 text-amber-500"
+                            ? "scale-105 fill-amber-500 text-amber-500 drop-shadow-xs"
                             : "text-[var(--border-warm)]"
                         }`}
                       />
@@ -350,11 +365,15 @@ export function DeliveryTrackerClient({
           </div>
         )}
 
-        <div className="card-bistro p-5">
+        <div className="card-bistro animate-cafe-rise p-5">
           <h2 className="font-display text-lg font-bold">Resumo dos itens</h2>
           <ul className="mt-3 divide-y divide-[var(--border-warm)] text-xs">
-            {order.items.map((it) => (
-              <li key={it.id} className="flex items-center justify-between py-2.5">
+            {order.items.map((it, idx) => (
+              <li
+                key={it.id}
+                style={{ "--stagger": Math.min(idx, 10) } as CSSProperties}
+                className="cafe-stagger flex items-center justify-between py-2.5"
+              >
                 <div>
                   <span className="font-mono-num font-bold">{it.qty}×</span>{" "}
                   <span className="font-semibold">{it.productName}</span>

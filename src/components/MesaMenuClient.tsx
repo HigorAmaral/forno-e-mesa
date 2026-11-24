@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   BellRing,
   CheckCircle2,
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { formatBRL, splitBillAmount } from "@/lib/domain";
 import type { CategoryDto, OrderItemDto, ProductDto } from "@/types/erp";
+import { CafeFloatingToast, CoffeeSteamEmblem } from "./CafeAtmosphere";
 
 interface MesaMenuCategory extends CategoryDto {
   products: Array<Omit<ProductDto, "category">>;
@@ -72,6 +73,21 @@ export function MesaMenuClient({
   const [requestingBill, setRequestingBill] = useState(false);
   const [callingWaiter, setCallingWaiter] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [floatingToast, setFloatingToast] = useState<string | null>(null);
+  const [cartPopKey, setCartPopKey] = useState(0);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function showToast(msg: string) {
+    setFloatingToast(msg);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setFloatingToast(null), 2600);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
 
   const refreshTable = useCallback(async () => {
     const res = await fetch(
@@ -123,6 +139,8 @@ export function MesaMenuClient({
       }
       return [...prev, { product, qty: 1, notes: "" }];
     });
+    setCartPopKey((k) => k + 1);
+    showToast(`${product.name} adicionado ao pedido`);
   }
 
   function updateQty(productId: number, delta: number) {
@@ -156,7 +174,9 @@ export function MesaMenuClient({
         setFeedback("Não foi possível chamar o garçom no momento.");
         return;
       }
-      setFeedback("Garçom chamado! Em instantes alguém atenderá sua mesa.");
+      const msg = "Garçom chamado! Em instantes alguém atenderá sua mesa.";
+      setFeedback(msg);
+      showToast(msg);
     } finally {
       setCallingWaiter(false);
     }
@@ -175,7 +195,9 @@ export function MesaMenuClient({
         setFeedback("Não foi possível chamar o garçom no momento.");
         return;
       }
-      setFeedback("Garçom notificado! Sua conta foi solicitada para a mesa.");
+      const msg = "Garçom notificado! Sua conta foi solicitada para a mesa.";
+      setFeedback(msg);
+      showToast(msg);
       await refreshTable();
     } finally {
       setRequestingBill(false);
@@ -284,10 +306,33 @@ export function MesaMenuClient({
       </header>
 
       <main className="mx-auto max-w-2xl space-y-6 px-4 pt-5">
+        <section className="cafe-hero-surface animate-cafe-rise rounded-2xl p-4 text-[#FAF3E8] sm:p-5">
+          <div className="relative z-10 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <CoffeeSteamEmblem size="md" />
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#E6CCB2]">
+                  {area} · Cardápio à Mesa
+                </p>
+                <h2 className="font-display text-lg font-bold text-white sm:text-xl">
+                  Bem-vindo à {tableName}
+                </h2>
+                <p className="text-xs text-[#E6CCB2]/85">
+                  Peça direto para a cozinha ou confeitaria com preparo artesanal na hora.
+                </p>
+              </div>
+            </div>
+            <span className="hidden rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold text-amber-200 sm:inline-flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+              Mesa conectada
+            </span>
+          </div>
+        </section>
+
         {feedback && (
           <div
             role="status"
-            className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900"
+            className="animate-scale-in flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900"
           >
             <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-700" />
             {feedback}
@@ -336,7 +381,12 @@ export function MesaMenuClient({
                         </p>
                       )}
                     </div>
-                    <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${st.badge}`}>
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${st.badge}`}
+                    >
+                      {(item.itemStatus === "PENDENTE" || item.itemStatus === "PREPARANDO") && (
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
+                      )}
                       {st.label}
                     </span>
                   </div>
@@ -383,12 +433,13 @@ export function MesaMenuClient({
             </div>
 
             <div className="space-y-2.5">
-              {category.products.map((product) => {
+              {category.products.map((product, idx) => {
                 const inCart = cart.find((c) => c.product.id === product.id);
                 return (
                   <div
                     key={product.id}
-                    className="card-bistro p-4"
+                    style={{ "--stagger": Math.min(idx, 10) } as CSSProperties}
+                    className="card-bistro cafe-card-hover cafe-stagger p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="space-y-1">
@@ -467,7 +518,7 @@ export function MesaMenuClient({
       </main>
 
       {cart.length > 0 && (
-        <div className="cafe-topbar safe-bottom fixed inset-x-0 bottom-0 z-30 border-t p-4 shadow-2xl">
+        <div className="cafe-topbar safe-bottom animate-sheet-up fixed inset-x-0 bottom-0 z-30 border-t p-4 shadow-2xl">
           <div className="mx-auto flex max-w-2xl flex-col gap-2.5 sm:flex-row sm:items-center">
             <input
               type="text"
@@ -477,10 +528,13 @@ export function MesaMenuClient({
               className="input-field py-2 text-xs sm:w-44"
             />
             <button
+              key={cartPopKey}
               type="button"
               onClick={submitQrOrder}
               disabled={submitting}
-              className="btn-primary flex flex-1 items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-60"
+              className={`btn-primary flex flex-1 items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-60 ${
+                cartPopKey > 0 ? "animate-cart-pop" : ""
+              }`}
             >
               <span className="flex items-center gap-2">
                 <ShoppingBag className="h-4 w-4" />
@@ -493,6 +547,8 @@ export function MesaMenuClient({
           </div>
         </div>
       )}
+
+      <CafeFloatingToast message={floatingToast} offsetBottom={cart.length > 0} />
     </div>
   );
 }

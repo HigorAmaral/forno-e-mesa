@@ -62,17 +62,17 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
 
         <div
           id="thermal-receipt-print"
-          className="font-mono-num mx-auto rounded-lg border border-dashed border-[#cbbba7] bg-[#fffdf7] p-4 text-xs text-[#3E2723]"
+          className="font-mono-num mx-auto rounded-lg border border-dashed border-stone-300 bg-[#FAF9F6] p-4 text-xs text-stone-900"
         >
-          <div className="border-b border-dashed border-[#cbbba7] pb-2 text-center">
-            <p className="text-sm font-bold tracking-wide">FORNO & MESA GASTRONOMIA</p>
-            <p className="text-[11px] text-[#8C5A3C]">
+          <div className="border-b border-dashed border-stone-300 pb-2 text-center">
+            <p className="text-sm font-bold tracking-wide">FORNO &amp; MESA GASTRONOMIA</p>
+            <p className="text-[11px] text-stone-600">
               Padaria · Confeitaria · Restaurante
             </p>
             <p className="mt-1 text-[11px]">DOCUMENTO NÃO FISCAL</p>
           </div>
 
-          <div className="my-2 space-y-0.5 border-b border-dashed border-[#cbbba7] pb-2 text-[11px]">
+          <div className="my-2 space-y-0.5 border-b border-dashed border-stone-300 pb-2 text-[11px]">
             <div className="flex justify-between">
               <span>Pedido:</span>
               <span className="font-bold">{order.code}</span>
@@ -115,7 +115,7 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
                   {order.deliveryNeighborhood ? ` · ${order.deliveryNeighborhood}` : ""}
                 </span>
                 {order.deliveryReference && (
-                  <p className="text-[#8C5A3C]">Ref: {order.deliveryReference}</p>
+                  <p className="text-stone-600">Ref: {order.deliveryReference}</p>
                 )}
               </div>
             )}
@@ -131,8 +131,8 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
             </div>
           </div>
 
-          <div className="my-2 space-y-1.5 border-b border-dashed border-[#cbbba7] pb-2">
-            <div className="flex justify-between text-[10px] font-bold uppercase text-[#8C5A3C]">
+          <div className="my-2 space-y-1.5 border-b border-dashed border-stone-300 pb-2">
+            <div className="flex justify-between text-[10px] font-bold uppercase text-stone-600">
               <span>Item / Qtd</span>
               <span>Total</span>
             </div>
@@ -142,7 +142,7 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
                   <span className="truncate font-medium">{item.productName}</span>
                   <span>{formatBRL(item.totalPrice)}</span>
                 </div>
-                <div className="text-[10px] text-[#8C5A3C]">
+                <div className="text-[10px] text-stone-600">
                   {item.qty} × {formatBRL(item.unitPrice)}
                   {item.notes ? ` · Obs: ${item.notes}` : ""}
                 </div>
@@ -156,7 +156,7 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
               <span>{formatBRL(order.subtotal)}</span>
             </div>
             {order.discount > 0 && (
-              <div className="flex justify-between text-[#15803d]">
+              <div className="flex justify-between text-emerald-700">
                 <span>Desconto{order.couponCode ? ` (${order.couponCode})` : ""}</span>
                 <span>- {formatBRL(order.discount)}</span>
               </div>
@@ -173,16 +173,16 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
                 <span>{formatBRL(order.deliveryFee)}</span>
               </div>
             )}
-            <div className="flex justify-between border-t border-dashed border-[#cbbba7] pt-1.5 text-sm font-bold">
+            <div className="flex justify-between border-t border-dashed border-stone-300 pt-1.5 text-sm font-bold">
               <span>TOTAL</span>
               <span>{formatBRL(order.total)}</span>
             </div>
-            <div className="flex justify-between pt-1 text-[11px] text-[#8C5A3C]">
+            <div className="flex justify-between pt-1 text-[11px] text-stone-600">
               <span>Pagamento:</span>
               <span>{order.paymentMethod ?? order.status}</span>
             </div>
             {splitParts.length > 0 && (
-              <div className="space-y-0.5 rounded bg-[#FAF3E8] p-1.5 text-[10px] text-[#6E442B]">
+              <div className="space-y-0.5 rounded bg-stone-100 p-1.5 text-[10px] text-stone-700">
                 {splitParts.map((part, idx) => (
                   <div key={`${part.method}-${idx}`} className="flex justify-between">
                     <span>{part.method}</span>
@@ -192,14 +192,14 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
               </div>
             )}
             {order.changeFor && (
-              <div className="flex justify-between text-[11px] text-[#8C5A3C]">
+              <div className="flex justify-between text-[11px] text-stone-600">
                 <span>Troco para:</span>
                 <span>{formatBRL(order.changeFor)}</span>
               </div>
             )}
           </div>
 
-          <p className="mt-3 border-t border-dashed border-[#cbbba7] pt-2 text-center text-[10px] text-[#8C5A3C]">
+          <p className="mt-3 border-t border-dashed border-stone-300 pt-2 text-center text-[10px] text-stone-600">
             Obrigado pela preferência! Volte sempre.
           </p>
         </div>

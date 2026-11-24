@@ -7,7 +7,9 @@ import {
   Award,
   CheckCircle2,
   ExternalLink,
+  Home,
   KeyRound,
+  Lock,
   LogOut,
   MapPin,
   Phone,
@@ -229,24 +231,31 @@ export function CustomerPortalClient({
   return (
     <div className="min-h-screen bg-[var(--bg-canvas)] text-[var(--text-primary)] pb-12">
       <header className="cafe-sidebar text-white shadow-md">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3.5">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2 px-4 py-3.5">
+          <Link href="/" className="flex items-center gap-3 transition hover:opacity-90">
             <CoffeeSteamEmblem size="sm" />
             <div>
-              <p className="font-display text-base font-bold">{storeName}</p>
-              <p className="text-[11px] text-[#E6CCB2]">
-                Minha Conta & Clube de Fidelidade
+              <p className="font-display text-base font-bold text-white">{storeName}</p>
+              <p className="text-[11px] text-stone-300">
+                Minha Conta &amp; Clube de Fidelidade
               </p>
             </div>
-          </div>
+          </Link>
 
           <div className="flex items-center gap-2">
             <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-stone-100 hover:bg-white/20"
+            >
+              <Home className="h-3.5 w-3.5" />
+              Início
+            </Link>
+            <Link
               href="/delivery"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold hover:bg-white/20"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-primary)] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[var(--accent-primary-dark)]"
             >
               <ShoppingBag className="h-3.5 w-3.5" />
-              Cardápio Delivery
+              Delivery
             </Link>
             {customer && (
               <button
@@ -270,17 +279,17 @@ export function CustomerPortalClient({
         ) : !customer ? (
           <div className="animate-cafe-rise mx-auto max-w-md space-y-4">
             <div className="card-bistro overflow-hidden shadow-xl">
-              <div className="cafe-hero-surface px-6 py-5 text-[#FAF3E8]">
+              <div className="cafe-hero-surface px-6 py-5 text-[#F5F3EF]">
                 <div className="relative z-10 flex items-center justify-between gap-3">
                   <div>
                     <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-200">
-                      <Sparkles className="h-3 w-3 text-[#D48D64]" />
+                      <Sparkles className="h-3 w-3 text-[#E8643C]" />
                       Clube de Pontos
                     </span>
                     <h1 className="font-display mt-2 text-xl font-bold text-white">
                       Clube {storeName}
                     </h1>
-                    <p className="mt-0.5 text-xs text-[#E6CCB2]/90">
+                    <p className="mt-0.5 text-xs text-stone-300">
                       Acumule pontos a cada R$ 10 e resgate R$ 15 OFF no delivery.
                     </p>
                   </div>
@@ -379,8 +388,8 @@ export function CustomerPortalClient({
                   <p
                     className={`rounded-xl border px-3 py-2 text-xs font-semibold ${
                       feedback.type === "err"
-                        ? "border-red-300 bg-red-50 text-red-800"
-                        : "border-emerald-300 bg-emerald-50 text-emerald-800"
+                        ? "border-red-500/35 bg-red-500/10 text-red-800 dark:text-red-200"
+                        : "border-emerald-500/35 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200"
                     }`}
                   >
                     {feedback.text}
@@ -425,7 +434,7 @@ export function CustomerPortalClient({
                         ? "bg-amber-400/20 text-amber-200 ring-1 ring-amber-300/40"
                         : tier === "PRATA"
                           ? "bg-stone-200/20 text-stone-100 ring-1 ring-stone-200/35"
-                          : "bg-[#D48D64]/20 text-[#F4D5BA] ring-1 ring-[#D48D64]/40"
+                          : "bg-[#E8643C]/20 text-[#FDE6D8] ring-1 ring-[#E8643C]/40"
                     }`}
                   >
                     <Award className="h-3.5 w-3.5" />
@@ -434,14 +443,14 @@ export function CustomerPortalClient({
                   <h1 className="font-display mt-3 text-2xl font-bold">
                     Olá, {customer.name}!
                   </h1>
-                  <p className="text-xs text-[#E6CCB2]">
+                  <p className="text-xs text-stone-300">
                     {customer.phone} · {customer.visitsCount} pedidos realizados ·{" "}
                     {formatBRL(customer.totalSpent)} acumulados
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-[#E6CCB2]/20 bg-white/10 px-5 py-3 text-right backdrop-blur-xs">
-                  <p className="text-[11px] text-[#E6CCB2]">Saldo de Pontos</p>
+                <div className="rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-right backdrop-blur-xs">
+                  <p className="text-[11px] text-stone-300">Saldo de Pontos</p>
                   <p className="font-mono-num text-3xl font-bold text-amber-300">
                     {customer.loyaltyPoints} pts
                   </p>
@@ -454,7 +463,7 @@ export function CustomerPortalClient({
               </div>
 
               <div className="relative z-10 mt-4">
-                <div className="mb-1 flex justify-between text-[11px] text-[#E6CCB2]">
+                <div className="mb-1 flex justify-between text-[11px] text-stone-300">
                   <span>Progresso de fidelidade</span>
                   <span>
                     {customer.loyaltyPoints} / {nextGoal} pts
@@ -462,7 +471,7 @@ export function CustomerPortalClient({
                 </div>
                 <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
                   <div
-                    className="cafe-shimmer h-full rounded-full bg-gradient-to-r from-[#D48D64] to-emerald-400 transition-all duration-700 ease-out"
+                    className="cafe-shimmer h-full rounded-full bg-gradient-to-r from-[#E8643C] to-emerald-400 transition-all duration-700 ease-out"
                     style={{ width: `${tierPct}%` }}
                   />
                 </div>
@@ -473,8 +482,8 @@ export function CustomerPortalClient({
               <div
                 className={`rounded-xl border px-4 py-2.5 text-xs font-semibold ${
                   feedback.type === "ok"
-                    ? "border-emerald-300 bg-emerald-50 text-emerald-900"
-                    : "border-red-300 bg-red-50 text-red-900"
+                    ? "border-emerald-500/35 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200"
+                    : "border-red-500/35 bg-red-500/10 text-red-800 dark:text-red-200"
                 }`}
               >
                 {feedback.text}
@@ -600,7 +609,7 @@ export function CustomerPortalClient({
                             <span className="chip bg-[var(--bg-surface)] text-[var(--text-secondary)]">
                               {channelLabel(ord.channel)}
                             </span>
-                            <span className="chip bg-amber-100 text-amber-900">
+                            <span className="chip bg-amber-500/15 text-amber-800 dark:text-amber-300">
                               {ord.deliveryStatus ?? ord.status}
                             </span>
                           </div>
@@ -632,6 +641,16 @@ export function CustomerPortalClient({
           </div>
         )}
       </main>
+
+      <footer className="mx-auto mt-6 flex max-w-4xl flex-wrap items-center justify-between gap-2 border-t border-[var(--border-warm)] px-4 pt-4 text-xs text-[var(--text-secondary)]">
+        <span>{storeName} · Clube Fidelidade</span>
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-1 font-semibold text-[var(--accent-primary)] hover:underline"
+        >
+          <Lock className="h-3 w-3" /> Área da Equipe
+        </Link>
+      </footer>
     </div>
   );
 }

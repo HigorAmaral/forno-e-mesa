@@ -365,7 +365,7 @@ export function FinanceSection({
             <span className="text-xs font-semibold text-[var(--text-secondary)]">
               Lucro Líquido Estimado (DRE)
             </span>
-            <span className="rounded-lg bg-amber-100 p-1.5 text-[#C07F5A]">
+            <span className="rounded-lg bg-[var(--accent-primary-soft)] p-1.5 text-[var(--accent-primary)]">
               <Calculator className="h-4 w-4" />
             </span>
           </div>
@@ -494,7 +494,7 @@ export function FinanceSection({
                 <span className="font-display text-sm font-bold">
                   (=) Resultado Líquido Estimado
                 </span>
-                <p className="text-[10px] text-[#E6CCB2]">
+                <p className="text-[10px] text-stone-300">
                   Descontos concedidos: {formatBRL(dre.discountsTotal)} · Taxas de serviço:{" "}
                   {formatBRL(dre.serviceFeesTotal)}
                 </p>
@@ -822,8 +822,8 @@ export function FinanceSection({
                       onClick={() => toggleEntryStatus(entry)}
                       className={`inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-[11px] font-bold transition ${
                         isPaid
-                          ? "bg-emerald-100 text-emerald-900 hover:bg-emerald-200"
-                          : "bg-[var(--bg-shell)] text-[#FAF3E8] hover:opacity-90"
+                          ? "bg-emerald-500/15 text-emerald-800 hover:bg-emerald-500/25 dark:text-emerald-300"
+                          : "bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary-dark)]"
                       }`}
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" />

@@ -13,6 +13,8 @@ import {
   ExternalLink,
   Heart,
   History,
+  Home,
+  Lock,
   MapPin,
   Minus,
   Moon,
@@ -547,17 +549,32 @@ export function DeliveryStorefrontClient({
       <header className="cafe-topbar sticky top-0 z-30">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2.5 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--accent-primary)] text-white">
-              <Coffee className="h-5 w-5" />
-            </div>
-            <div className="hidden sm:block">
-              <p className="font-display text-base font-bold leading-tight text-[var(--text-primary)]">
-                {storeSettings?.storeName ?? "Forno & Mesa"}
-              </p>
-              <p className="text-[11px] text-[var(--text-secondary)]">
-                Padaria & Bistrô
-              </p>
-            </div>
+            <Link
+              href="/"
+              title="Voltar ao início"
+              className="group flex items-center gap-2.5 rounded-xl pr-1 transition hover:opacity-90"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--accent-primary)] text-white shadow-xs transition-transform group-hover:scale-105">
+                <Coffee className="h-5 w-5" />
+              </div>
+              <div className="hidden sm:block">
+                <p className="font-display text-base font-bold leading-tight text-[var(--text-primary)]">
+                  {storeSettings?.storeName ?? "Forno & Mesa"}
+                </p>
+                <p className="text-[11px] text-[var(--text-secondary)]">
+                  Padaria &amp; Bistrô
+                </p>
+              </div>
+            </Link>
+
+            <Link
+              href="/"
+              className="btn-secondary hidden items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold md:inline-flex"
+              title="Portal Inicial"
+            >
+              <Home className="h-3.5 w-3.5 text-[var(--accent-primary)]" />
+              Início
+            </Link>
 
             <button
               type="button"
@@ -646,13 +663,13 @@ export function DeliveryStorefrontClient({
 
       <main className="mx-auto w-full max-w-6xl flex-1 space-y-6 px-4 py-5 sm:px-6">
         {!isDeliveryOpen && (
-          <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs font-semibold text-amber-950">
+          <div className="rounded-2xl border border-amber-500/35 bg-amber-500/10 p-4 text-xs font-semibold text-amber-900 dark:text-amber-200">
             Pedidos online estão temporariamente pausados pela loja no momento. Você ainda pode consultar o cardápio e sua conta fidelidade.
           </div>
         )}
 
         {/* Store Info Banner */}
-        <section className="cafe-hero-surface animate-cafe-rise rounded-2xl p-5 text-[#FAF3E8] sm:p-7">
+        <section className="cafe-hero-surface animate-cafe-rise rounded-2xl p-5 text-[#F5F3EF] sm:p-7">
           <div className="relative z-10 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
             <div className="flex items-start gap-4">
               <div className="pt-1">
@@ -660,8 +677,8 @@ export function DeliveryStorefrontClient({
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#E6CCB2]">
-                    <Sparkles className="h-3 w-3 text-[#D48D64]" />
+                  <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#FDE6D8]">
+                    <Sparkles className="h-3 w-3 text-[#E8643C]" />
                     Fornada artesanal do dia
                   </span>
                   <span
@@ -682,26 +699,26 @@ export function DeliveryStorefrontClient({
                   </span>
                 </div>
                 <h1 className="font-display mt-2 text-xl font-bold tracking-tight text-white sm:text-2xl">
-                  {storeSettings?.storeName ?? "Forno & Mesa"} — Padaria & Bistrô
+                  {storeSettings?.storeName ?? "Forno & Mesa"} — Padaria &amp; Bistrô
                 </h1>
-                <p className="mt-1 text-xs text-[#E6CCB2]/90 sm:text-sm">
+                <p className="mt-1 text-xs text-stone-300 sm:text-sm">
                   {storeSettings?.slogan ??
                     "Pães de fermentação natural, doces artesanais, cafés especiais e pratos do bistrô."}
                 </p>
-                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-[#E6CCB2]">
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-stone-300">
                   <span className="inline-flex items-center gap-1 font-semibold text-amber-300">
                     <Star className="h-3.5 w-3.5 fill-amber-300" />
                     {averageRating.toFixed(1)}
                     {reviewsCount > 0 ? ` (${reviewsCount})` : ""}
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5 text-[#D48D64]" />
+                    <Clock className="h-3.5 w-3.5 text-[#E8643C]" />
                     {mode === "RETIRADA"
                       ? "~15-20 min (Retirada)"
                       : `${selectedZone?.etaMinutes ?? 35} min`}
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <Bike className="h-3.5 w-3.5 text-[#D48D64]" />
+                    <Bike className="h-3.5 w-3.5 text-[#E8643C]" />
                     {mode === "RETIRADA"
                       ? "Retirada grátis"
                       : deliveryFee === 0
@@ -716,12 +733,12 @@ export function DeliveryStorefrontClient({
             </div>
 
             <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
-              <div className="segmented border border-[#E6CCB2]/20 bg-black/25">
+              <div className="segmented border border-white/15 bg-black/30">
                 <button
                   type="button"
                   data-active={mode === "DELIVERY"}
                   onClick={() => setMode("DELIVERY")}
-                  className="text-[#FAF3E8]/85"
+                  className={mode === "DELIVERY" ? "" : "!text-stone-300 hover:!text-white"}
                 >
                   <span className="inline-flex items-center gap-1.5">
                     <Bike className="h-3.5 w-3.5" /> Entrega
@@ -731,14 +748,14 @@ export function DeliveryStorefrontClient({
                   type="button"
                   data-active={mode === "RETIRADA"}
                   onClick={() => setMode("RETIRADA")}
-                  className="text-[#FAF3E8]/85"
+                  className={mode === "RETIRADA" ? "" : "!text-stone-300 hover:!text-white"}
                 >
                   <span className="inline-flex items-center gap-1.5">
                     <Store className="h-3.5 w-3.5" /> Retirada
                   </span>
                 </button>
               </div>
-              <p className="text-[11px] font-semibold text-[#E6CCB2]/90">
+              <p className="text-[11px] font-semibold text-stone-300">
                 Cupons:{" "}
                 {displayedCoupons.slice(0, 3).map((c, idx) => (
                   <span key={c.code} className="text-amber-300">
@@ -1004,27 +1021,41 @@ export function DeliveryStorefrontClient({
       </main>
 
       {/* Footer */}
-      <footer className="cafe-sidebar mt-12 border-t text-[#FAF3E8] pb-20 lg:pb-8">
+      <footer className="cafe-sidebar mt-12 border-t pb-20 text-stone-100 lg:pb-8">
         <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:grid-cols-3 sm:px-6">
           <div>
-            <p className="font-display text-base font-bold">
-              {storeSettings?.storeName ?? "Forno & Mesa"} — Padaria & Bistrô
+            <p className="font-display text-base font-bold text-white">
+              {storeSettings?.storeName ?? "Forno & Mesa"} — Padaria &amp; Bistrô
             </p>
-            <p className="mt-1 text-xs text-[#E6CCB2]">
+            <p className="mt-1 text-xs text-stone-300">
               {storeSettings?.address ?? "Rua das Flores, 240 — Centro"}
             </p>
           </div>
-          <div className="text-xs text-[#E6CCB2]">
-            <p className="font-semibold text-[#FAF3E8]">Horário de Atendimento</p>
+          <div className="text-xs text-stone-300">
+            <p className="font-semibold text-white">Horário de Atendimento</p>
             <p className="mt-1">
               {storeSettings?.openingHours ?? "Ter–Dom · 07:00 às 22:00"}
             </p>
             <p className="mt-1">Tel: {storeSettings?.phone ?? "(11) 99999-0000"}</p>
           </div>
-          <div className="text-xs text-[#E6CCB2]">
-            <p className="font-semibold text-[#FAF3E8]">Clube & Pagamento</p>
+          <div className="text-xs text-stone-300">
+            <p className="font-semibold text-white">Clube &amp; Pagamento</p>
             <p className="mt-1">PIX, Cartão de Crédito/Débito e Dinheiro na entrega.</p>
             <p className="mt-1">Frete grátis acima de {formatBRL(freeAboveThreshold)}.</p>
+            <div className="mt-3 flex flex-wrap gap-3 border-t border-white/10 pt-2.5 text-[11px]">
+              <Link href="/" className="text-stone-300 transition hover:text-white">
+                Início
+              </Link>
+              <Link href="/conta" className="text-stone-300 transition hover:text-white">
+                Clube Fidelidade
+              </Link>
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-1 text-[#E8643C] transition hover:underline"
+              >
+                <Lock className="h-3 w-3" /> Área da Equipe
+              </Link>
+            </div>
           </div>
         </div>
       </footer>
@@ -1478,7 +1509,7 @@ export function DeliveryStorefrontClient({
                       <button
                         type="button"
                         onClick={() => handleApplyCoupon()}
-                        className="shrink-0 rounded-lg bg-[var(--bg-shell)] px-3 py-1.5 text-xs font-bold text-[#FAF3E8]"
+                        className="shrink-0 rounded-lg bg-[var(--accent-primary)] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[var(--accent-primary-dark)]"
                       >
                         Aplicar
                       </button>
@@ -1511,16 +1542,16 @@ export function DeliveryStorefrontClient({
                 )}
 
                 {canRedeemLoyalty && (
-                  <label className="flex cursor-pointer items-center justify-between rounded-xl border border-emerald-300 bg-emerald-50 p-3 text-xs font-bold text-emerald-900">
+                  <label className="flex cursor-pointer items-center justify-between rounded-xl border border-emerald-500/35 bg-emerald-500/10 p-3 text-xs font-bold text-emerald-900 dark:text-emerald-200">
                     <span className="inline-flex items-center gap-1.5">
-                      <Award className="h-4 w-4 text-emerald-700" />
+                      <Award className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                       Usar 10 pontos fidelidade (-R$ 15,00)
                     </span>
                     <input
                       type="checkbox"
                       checked={redeemPoints}
                       onChange={(e) => setRedeemPoints(e.target.checked)}
-                      className="h-4 w-4 accent-emerald-700"
+                      className="h-4 w-4 accent-emerald-600"
                     />
                   </label>
                 )}
@@ -1599,9 +1630,9 @@ export function DeliveryStorefrontClient({
                         <button
                           type="button"
                           onClick={() => setScheduleChoice("NOW")}
-                          className={`rounded-lg py-1.5 text-xs font-bold ${
+                          className={`rounded-lg py-1.5 text-xs font-bold transition ${
                             scheduleChoice === "NOW"
-                              ? "bg-[var(--bg-shell)] text-[#FAF3E8]"
+                              ? "bg-[var(--accent-primary)] text-white"
                               : "border border-[var(--border-warm)] bg-[var(--bg-canvas)] text-[var(--text-secondary)]"
                           }`}
                         >
@@ -1610,9 +1641,9 @@ export function DeliveryStorefrontClient({
                         <button
                           type="button"
                           onClick={() => setScheduleChoice("SCHEDULED")}
-                          className={`rounded-lg py-1.5 text-xs font-bold ${
+                          className={`rounded-lg py-1.5 text-xs font-bold transition ${
                             scheduleChoice === "SCHEDULED"
-                              ? "bg-[var(--bg-shell)] text-[#FAF3E8]"
+                              ? "bg-[var(--accent-primary)] text-white"
                               : "border border-[var(--border-warm)] bg-[var(--bg-canvas)] text-[var(--text-secondary)]"
                           }`}
                         >
@@ -1640,7 +1671,7 @@ export function DeliveryStorefrontClient({
                               onClick={() => setPaymentMethod(pm)}
                               className={`rounded-lg py-1.5 text-[11px] font-bold transition ${
                                 paymentMethod === pm
-                                  ? "bg-[var(--bg-shell)] text-[#FAF3E8]"
+                                  ? "bg-[var(--accent-primary)] text-white"
                                   : "border border-[var(--border-warm)] bg-[var(--bg-canvas)] text-[var(--text-secondary)]"
                               }`}
                             >
@@ -1717,7 +1748,7 @@ export function DeliveryStorefrontClient({
                   </div>
 
                   {minMissing > 0 && (
-                    <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
+                    <p className="rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-900 dark:text-amber-200">
                       Pedido mínimo para {selectedZone?.name}:{" "}
                       {formatBRL(selectedZone?.minOrder ?? 0)} (faltam{" "}
                       {formatBRL(minMissing)}).
@@ -1725,7 +1756,7 @@ export function DeliveryStorefrontClient({
                   )}
 
                   {error && (
-                    <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-900">
+                    <p className="rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-900 dark:text-red-200">
                       {error}
                     </p>
                   )}

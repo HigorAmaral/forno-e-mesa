@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
       "Sistema unificado para Cafeteria, Padaria, Confeitaria e Restaurante: ERP, PDV, KDS, Mesas QR, Delivery e Clube de Fidelidade.",
     start_url: "/",
     display: "standalone",
-    background_color: "#FAF3E8",
-    theme_color: "#3E2723",
+    background_color: "#F7F6F3",
+    theme_color: "#181615",
     lang: "pt-BR",
     shortcuts: [
       {

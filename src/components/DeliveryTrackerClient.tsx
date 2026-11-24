@@ -158,7 +158,7 @@ export function DeliveryTrackerClient({
             <CoffeeSteamEmblem size="sm" />
             <div>
               <p className="font-display text-base font-bold">{storeName}</p>
-              <p className="text-[11px] text-[#E6CCB2]">Acompanhamento em tempo real</p>
+              <p className="text-[11px] text-stone-300">Acompanhamento em tempo real</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -211,10 +211,10 @@ export function DeliveryTrackerClient({
             <span
               className={`chip px-3 py-1.5 text-xs ${
                 current === "CANCELADO"
-                  ? "bg-red-100 text-red-900"
+                  ? "bg-red-500/15 text-red-800 dark:text-red-300"
                   : current === "ENTREGUE"
-                    ? "bg-emerald-100 text-emerald-900"
-                    : "bg-amber-100 text-amber-900"
+                    ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
+                    : "bg-amber-500/15 text-amber-800 dark:text-amber-300"
               }`}
             >
               {DELIVERY_STATUS_LABELS[current]}
@@ -248,9 +248,9 @@ export function DeliveryTrackerClient({
                       style={{ "--stagger": idx } as CSSProperties}
                       className={`cafe-stagger flex items-center gap-2.5 rounded-2xl border p-3 transition-all duration-300 sm:flex-col sm:text-center ${
                         isCurrent
-                          ? "border-[var(--accent-primary)] bg-amber-50/80 text-[#3E2723] shadow-sm ring-2 ring-[var(--accent-primary)]/25"
+                          ? "border-[var(--accent-primary)] bg-[var(--accent-primary-soft)] text-[var(--text-primary)] shadow-sm ring-2 ring-[var(--accent-primary)]/25"
                           : done
-                            ? "border-emerald-200 bg-emerald-50/70 text-[#3E2723]"
+                            ? "border-emerald-500/35 bg-emerald-500/10 text-[var(--text-primary)]"
                             : "border-[var(--border-warm)] bg-[var(--bg-canvas)] opacity-60"
                       }`}
                     >
@@ -274,8 +274,8 @@ export function DeliveryTrackerClient({
           )}
 
           {order.courierName && !isPickup && (
-            <div className="mt-4 flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-3.5 py-2.5 text-xs font-semibold text-orange-950">
-              <Bike className="h-4 w-4 text-orange-700" />
+            <div className="mt-4 flex items-center gap-2 rounded-xl border border-orange-500/35 bg-orange-500/10 px-3.5 py-2.5 text-xs font-semibold text-orange-900 dark:text-orange-200">
+              <Bike className="h-4 w-4 text-orange-600 dark:text-orange-400" />
               Entregador: <strong>{order.courierName}</strong>
             </div>
           )}

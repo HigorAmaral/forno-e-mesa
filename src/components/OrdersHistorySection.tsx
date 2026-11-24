@@ -70,17 +70,17 @@ export function OrdersHistorySection({
       <div className="card-bistro flex flex-wrap items-center justify-between gap-3 p-4">
         <div className="flex flex-1 flex-wrap items-center gap-3">
           <div className="relative min-w-56 flex-1">
-            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#8C5A3C]" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar por código (PED-0001), cliente ou mesa..."
-              className="w-full rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] py-2 pr-3 pl-9 text-xs outline-none focus:border-[#C07F5A]"
+              className="input-field rounded-xl py-2 pr-3 pl-9 text-xs"
             />
           </div>
 
-          <div className="flex flex-wrap gap-1 rounded-xl bg-[#E6CCB2] p-1">
+          <div className="segmented">
             {[
               { id: "ALL", label: "Todos" },
               { id: "OPEN", label: "Em Aberto" },
@@ -91,12 +91,8 @@ export function OrdersHistorySection({
               <button
                 key={st.id}
                 type="button"
+                data-active={statusFilter === st.id}
                 onClick={() => setStatusFilter(st.id)}
-                className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${
-                  statusFilter === st.id
-                    ? "bg-[#3E2723] text-white"
-                    : "text-[#8C5A3C]"
-                }`}
               >
                 {st.label}
               </button>
@@ -106,7 +102,7 @@ export function OrdersHistorySection({
 
         <a
           href="/api/reports/export"
-          className="inline-flex items-center gap-1.5 rounded-xl bg-[#15803d] px-3.5 py-2 text-xs font-semibold text-white hover:bg-[#22523d]"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-emerald-800"
         >
           <Download className="h-3.5 w-3.5" />
           Exportar CSV (Excel)
@@ -115,68 +111,68 @@ export function OrdersHistorySection({
 
       <div className="card-bistro overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-[#E6CCB2] bg-[#FAF3E8] text-[11px] font-bold uppercase text-[#8C5A3C]">
+          <table className="data-table">
+            <thead>
               <tr>
-                <th className="px-4 py-3">Pedido</th>
-                <th className="px-4 py-3">Canal / Origem</th>
-                <th className="px-4 py-3">Cliente</th>
-                <th className="px-4 py-3">Itens</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Pagamento</th>
-                <th className="px-4 py-3 text-right">Total</th>
-                <th className="px-4 py-3 text-right">Ações</th>
+                <th>Pedido</th>
+                <th>Canal / Origem</th>
+                <th>Cliente</th>
+                <th>Itens</th>
+                <th>Status</th>
+                <th>Pagamento</th>
+                <th className="text-right">Total</th>
+                <th className="text-right">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E6CCB2]">
+            <tbody>
               {filtered.map((order) => (
-                <tr key={order.id} className="hover:bg-[#FAF3E8]/60">
-                  <td className="px-4 py-3">
-                    <span className="font-mono-num font-bold text-[#3E2723]">
+                <tr key={order.id}>
+                  <td>
+                    <span className="font-mono-num font-bold text-[var(--text-primary)]">
                       {order.code}
                     </span>
-                    <p className="text-[10px] text-[#8C5A3C]">
+                    <p className="text-[10px] text-[var(--text-secondary)]">
                       {new Date(order.createdAt).toLocaleString("pt-BR")}
                     </p>
                   </td>
-                  <td className="px-4 py-3">
-                    <span className="rounded-md bg-[#E6CCB2] px-2 py-0.5 text-[10px] font-bold">
+                  <td>
+                    <span className="rounded-md bg-[var(--bg-subtle)] px-2 py-0.5 text-[10px] font-bold text-[var(--text-primary)]">
                       {order.table ? order.table.name : channelLabel(order.channel)}
                     </span>
                   </td>
-                  <td className="px-4 py-3 font-medium">
+                  <td className="font-medium">
                     {order.customerName ?? "-"}
                   </td>
-                  <td className="max-w-56 truncate px-4 py-3 text-[#8C5A3C]">
+                  <td className="max-w-56 truncate text-[var(--text-secondary)]">
                     {order.items
                       .map((i) => `${i.qty}× ${i.productName}`)
                       .join(", ")}
                   </td>
-                  <td className="px-4 py-3">
+                  <td>
                     <span
                       className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
                         order.status === "PAGO"
-                          ? "bg-emerald-100 text-emerald-800"
+                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
                           : order.status === "CANCELADO"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-amber-100 text-amber-900"
+                            ? "bg-red-500/15 text-red-700 dark:text-red-300"
+                            : "bg-amber-500/15 text-amber-800 dark:text-amber-300"
                       }`}
                     >
                       {order.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-[#8C5A3C]">
+                  <td className="text-[var(--text-secondary)]">
                     {order.paymentMethod ?? "Em aberto"}
                   </td>
-                  <td className="font-mono-num px-4 py-3 text-right font-bold text-[#3E2723]">
+                  <td className="font-mono-num text-right font-bold text-[var(--text-primary)]">
                     {formatBRL(order.total)}
                   </td>
-                  <td className="px-4 py-3">
+                  <td>
                     <div className="flex justify-end gap-1.5">
                       <button
                         type="button"
                         onClick={() => onOpenReceipt(order)}
-                        className="rounded-lg border border-[#E6CCB2] bg-white p-1.5 hover:bg-[#E6CCB2]"
+                        className="icon-btn"
                         title="Imprimir cupom"
                       >
                         <Receipt className="h-3.5 w-3.5" />
@@ -186,7 +182,7 @@ export function OrdersHistorySection({
                           type="button"
                           disabled={busyId === order.id}
                           onClick={() => cancelOrder(order.id)}
-                          className="rounded-lg border border-red-200 bg-red-50 p-1.5 text-red-700 hover:bg-red-100"
+                          className="icon-btn border-red-500/35 bg-red-500/10 text-red-600 hover:bg-red-500/20 dark:text-red-400"
                           title="Cancelar pedido"
                         >
                           <Ban className="h-3.5 w-3.5" />

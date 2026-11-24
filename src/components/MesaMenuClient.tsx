@@ -51,10 +51,22 @@ interface CartLine {
 }
 
 const STATUS_LABELS: Record<string, { label: string; badge: string }> = {
-  PENDENTE: { label: "Na fila", badge: "bg-amber-100 text-amber-800" },
-  PREPARANDO: { label: "Preparando", badge: "bg-orange-100 text-orange-800" },
-  PRONTO: { label: "Pronto!", badge: "bg-emerald-100 text-emerald-800" },
-  ENTREGUE: { label: "Entregue", badge: "bg-stone-100 text-stone-700" },
+  PENDENTE: {
+    label: "Na fila",
+    badge: "bg-amber-500/15 text-amber-800 dark:text-amber-300",
+  },
+  PREPARANDO: {
+    label: "Preparando",
+    badge: "bg-orange-500/15 text-orange-800 dark:text-orange-300",
+  },
+  PRONTO: {
+    label: "Pronto!",
+    badge: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300",
+  },
+  ENTREGUE: {
+    label: "Entregue",
+    badge: "bg-stone-500/15 text-stone-700 dark:text-stone-300",
+  },
 };
 
 export function MesaMenuClient({
@@ -306,9 +318,9 @@ export function MesaMenuClient({
             type="button"
             disabled={callingWaiter}
             onClick={callWaiter}
-            className="inline-flex items-center gap-1.5 rounded-full border border-orange-300 bg-orange-50 px-3 py-1.5 text-xs font-bold text-orange-900 hover:bg-orange-100 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/35 bg-orange-500/10 px-3 py-1.5 text-xs font-bold text-orange-800 transition hover:bg-orange-500/20 disabled:opacity-50 dark:text-orange-200"
           >
-            <BellRing className="h-3.5 w-3.5 text-orange-700" />
+            <BellRing className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400" />
             {callingWaiter ? "Chamando..." : "Chamar Garçom"}
           </button>
         </div>
@@ -331,7 +343,7 @@ export function MesaMenuClient({
               onClick={() => setSelectedCategoryId("ALL")}
               className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
                 selectedCategoryId === "ALL"
-                  ? "bg-[var(--bg-shell)] text-[#FAF3E8]"
+                  ? "bg-[var(--accent-primary)] text-white"
                   : "bg-[var(--bg-subtle)] text-[var(--text-secondary)]"
               }`}
             >
@@ -356,23 +368,23 @@ export function MesaMenuClient({
       </header>
 
       <main className="mx-auto max-w-2xl space-y-6 px-4 pt-5">
-        <section className="cafe-hero-surface animate-cafe-rise rounded-2xl p-4 text-[#FAF3E8] sm:p-5">
+        <section className="cafe-hero-surface animate-cafe-rise rounded-2xl p-4 text-[#F5F3EF] sm:p-5">
           <div className="relative z-10 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
               <CoffeeSteamEmblem size="md" />
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-[#E6CCB2]">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#FDE6D8]">
                   {area} · Cardápio à Mesa
                 </p>
                 <h2 className="font-display text-lg font-bold text-white sm:text-xl">
                   Bem-vindo à {tableName}
                 </h2>
-                <p className="text-xs text-[#E6CCB2]/85">
+                <p className="text-xs text-stone-300">
                   Peça direto para a cozinha ou confeitaria com preparo artesanal na hora.
                 </p>
               </div>
             </div>
-            <span className="hidden rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold text-amber-200 sm:inline-flex items-center gap-1.5">
+            <span className="hidden items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold text-amber-200 sm:inline-flex">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
               Mesa conectada
             </span>
@@ -382,9 +394,9 @@ export function MesaMenuClient({
         {feedback && (
           <div
             role="status"
-            className="animate-scale-in flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900"
+            className="animate-scale-in flex items-center gap-2 rounded-2xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-900 dark:text-emerald-200"
           >
-            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-700" />
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
             {feedback}
           </div>
         )}
@@ -406,7 +418,7 @@ export function MesaMenuClient({
                   type="button"
                   disabled={requestingBill}
                   onClick={requestTableBill}
-                  className="rounded-xl border border-orange-300 bg-orange-50 px-2.5 py-1 text-[11px] font-bold text-orange-900 hover:bg-orange-100 disabled:opacity-50"
+                  className="rounded-xl border border-orange-500/35 bg-orange-500/10 px-2.5 py-1 text-[11px] font-bold text-orange-800 transition hover:bg-orange-500/20 disabled:opacity-50 dark:text-orange-200"
                 >
                   {requestingBill ? "Chamando..." : "Pedir a Conta"}
                 </button>
@@ -503,7 +515,7 @@ export function MesaMenuClient({
                           <div className="flex flex-wrap items-center gap-2">
                             <h3 className="font-semibold">{product.name}</h3>
                             {product.isFeatured && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300">
                                 <Sparkles className="h-3 w-3" /> Destaque
                               </span>
                             )}
@@ -664,7 +676,7 @@ export function MesaMenuClient({
                       <button
                         type="button"
                         onClick={() => removeFromCart(line.product.id)}
-                        className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-red-700 hover:bg-red-50"
+                        className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-red-600 hover:bg-red-500/10 dark:text-red-400"
                         aria-label={`Remover ${line.product.name}`}
                       >
                         <Trash2 className="h-3.5 w-3.5" /> Remover

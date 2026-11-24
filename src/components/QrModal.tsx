@@ -237,7 +237,7 @@ function QrModalInner({
                     }}
                     className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold ${
                       data.targetUrl.startsWith(data.lanOrigin)
-                        ? "bg-[var(--bg-shell)] text-[#FAF3E8]"
+                        ? "bg-[var(--accent-primary)] text-white"
                         : "bg-[var(--bg-surface)] text-[var(--text-secondary)]"
                     }`}
                   >
@@ -252,7 +252,7 @@ function QrModalInner({
                   }}
                   className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold ${
                     data.targetUrl.startsWith(data.requestOrigin)
-                      ? "bg-[var(--bg-shell)] text-[#FAF3E8]"
+                      ? "bg-[var(--accent-primary)] text-white"
                       : "bg-[var(--bg-surface)] text-[var(--text-secondary)]"
                   }`}
                 >
@@ -285,7 +285,7 @@ function QrModalInner({
                 />
                 <button
                   type="submit"
-                  className="rounded-lg bg-[var(--bg-shell)] px-2.5 py-1 text-[11px] font-semibold text-[#FAF3E8]"
+                  className="btn-primary rounded-lg px-2.5 py-1 text-[11px] font-semibold"
                 >
                   Aplicar
                 </button>

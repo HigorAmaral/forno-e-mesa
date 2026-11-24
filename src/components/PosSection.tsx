@@ -485,7 +485,7 @@ export function PosSection({
                   onClick={() => setSector(s.id)}
                   className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
                     sector === s.id
-                      ? "bg-[var(--bg-shell)] text-[#FAF3E8]"
+                      ? "bg-[var(--accent-primary)] text-white shadow-xs"
                       : "bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                   }`}
                 >
@@ -629,7 +629,7 @@ export function PosSection({
                     }}
                     className={`flex flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 text-[10px] font-bold transition ${
                       active
-                        ? "bg-[var(--bg-shell)] text-[#FAF3E8] shadow"
+                        ? "bg-[var(--accent-primary)] text-white shadow-xs"
                         : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                     }`}
                   >
@@ -698,15 +698,15 @@ export function PosSection({
             </div>
 
             {isDelivery && (
-              <div className="mb-3 space-y-2 rounded-xl border border-orange-300 bg-orange-50/70 p-3 text-xs text-orange-950">
+              <div className="mb-3 space-y-2 rounded-xl border border-orange-500/35 bg-orange-500/10 p-3 text-xs text-[var(--text-primary)]">
                 <div>
-                  <label className="mb-1 block text-[10px] font-bold uppercase">
+                  <label className="mb-1 block text-[10px] font-bold uppercase text-[var(--text-secondary)]">
                     Bairro / Região de Entrega
                   </label>
                   <select
                     value={selectedZone?.id ?? ""}
                     onChange={(e) => setDeliveryZoneId(Number(e.target.value))}
-                    className="w-full rounded-lg border border-[#E6CCB2] bg-white px-2.5 py-1.5 text-xs font-medium text-[#3E2723]"
+                    className="input-field py-1.5 text-xs font-medium"
                   >
                     {activeZones.map((z) => (
                       <option key={z.id} value={z.id}>
@@ -720,7 +720,7 @@ export function PosSection({
                   value={deliveryAddress}
                   onChange={(e) => setDeliveryAddress(e.target.value)}
                   placeholder="Rua, número e complemento *"
-                  className="w-full rounded-lg border border-[#E6CCB2] bg-white px-2.5 py-1.5 text-xs text-[#3E2723]"
+                  className="input-field py-1.5 text-xs"
                 />
                 <div className="grid grid-cols-2 gap-2">
                   <input
@@ -728,7 +728,7 @@ export function PosSection({
                     value={deliveryReference}
                     onChange={(e) => setDeliveryReference(e.target.value)}
                     placeholder="Ponto de referência"
-                    className="w-full rounded-lg border border-[#E6CCB2] bg-white px-2.5 py-1.5 text-xs text-[#3E2723]"
+                    className="input-field py-1.5 text-xs"
                   />
                   {paymentMethod === "DINHEIRO" && (
                     <input
@@ -738,7 +738,7 @@ export function PosSection({
                       value={changeFor}
                       onChange={(e) => setChangeFor(e.target.value)}
                       placeholder="Troco p/ (R$)"
-                      className="w-full rounded-lg border border-[#E6CCB2] bg-white px-2.5 py-1.5 text-xs text-[#3E2723]"
+                      className="input-field py-1.5 text-xs"
                     />
                   )}
                 </div>
@@ -776,13 +776,13 @@ export function PosSection({
                 ))}
               </select>
               {canRedeemLoyalty && (
-                <label className="mt-2 flex cursor-pointer items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 font-semibold text-emerald-900">
+                <label className="mt-2 flex cursor-pointer items-center justify-between rounded-lg border border-emerald-500/35 bg-emerald-500/10 px-2.5 py-1.5 font-semibold text-emerald-900 dark:text-emerald-200">
                   <span>Resgatar 10 pts (-R$ 15,00)</span>
                   <input
                     type="checkbox"
                     checked={effectiveRedeem}
                     onChange={(e) => setRedeemLoyaltyPoints(e.target.checked)}
-                    className="accent-[#15803d]"
+                    className="accent-emerald-600"
                   />
                 </label>
               )}
@@ -1037,7 +1037,7 @@ export function PosSection({
                             }}
                             className={`rounded-xl py-1.5 text-[10px] font-bold transition ${
                               paymentMethod === pm
-                                ? "bg-[var(--bg-shell)] text-[#FAF3E8]"
+                                ? "bg-[var(--accent-primary)] text-white"
                                 : "border border-[var(--border-warm)] bg-[var(--bg-canvas)] text-[var(--text-secondary)]"
                             }`}
                           >
@@ -1132,7 +1132,7 @@ export function PosSection({
                 )}
 
                 {!isDeliveryChannel && paymentMethod === "DINHEIRO" && totals.total > 0 && (
-                  <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-2.5 text-xs text-emerald-950">
+                  <div className="rounded-xl border border-emerald-500/35 bg-emerald-500/10 p-2.5 text-xs text-emerald-950 dark:text-emerald-100">
                     <div className="flex items-center justify-between gap-2">
                       <span className="inline-flex items-center gap-1 font-semibold">
                         <Banknote className="h-3.5 w-3.5" /> Recebido (R$)
@@ -1144,7 +1144,7 @@ export function PosSection({
                         value={cashReceived}
                         onChange={(e) => setCashReceived(e.target.value)}
                         placeholder={totals.total.toFixed(2)}
-                        className="font-mono-num w-24 rounded-lg border border-emerald-300 bg-white px-2 py-1 text-right text-xs font-bold text-[#3E2723]"
+                        className="input-field font-mono-num w-24 py-1 text-right text-xs font-bold"
                       />
                     </div>
                     <div className="mt-1.5 flex items-center justify-between font-bold">

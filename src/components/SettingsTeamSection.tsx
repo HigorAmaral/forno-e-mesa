@@ -313,7 +313,7 @@ export function SettingsTeamSection({
                 onChange={(e) =>
                   setStoreForm((f) => ({ ...f, isDeliveryOpen: e.target.checked }))
                 }
-                className="h-4 w-4 accent-[#C07F5A]"
+                className="h-4 w-4 accent-[var(--accent-primary)]"
               />
               {storeForm.isDeliveryOpen
                 ? "Delivery & Retirada ABERTOS"
@@ -582,7 +582,7 @@ export function SettingsTeamSection({
                         }`}
                       >
                         {ALL_STAFF_ROLES.map((r) => (
-                          <option key={r} value={r} className="bg-white text-[#3E2723]">
+                          <option key={r} value={r} className="bg-[var(--bg-surface)] text-[var(--text-primary)]">
                             {ROLE_LABELS[r]}
                           </option>
                         ))}

@@ -755,9 +755,9 @@ export function TablesSection({
                                 ]);
                               }
                             }}
-                            className={`rounded-lg py-1 text-[9px] font-bold ${
+                            className={`rounded-lg py-1 text-[9px] font-bold transition ${
                               paymentMethod === pm
-                                ? "bg-[var(--bg-shell)] text-[#FAF3E8]"
+                                ? "bg-[var(--accent-primary)] text-white"
                                 : "bg-[var(--bg-subtle)] text-[var(--text-secondary)]"
                             }`}
                           >
@@ -869,7 +869,7 @@ export function TablesSection({
                         onClick={() =>
                           handleOrderAction(activeOrder.id, "TRANSFER")
                         }
-                        className="flex-1 rounded-lg bg-[var(--bg-shell)] py-1.5 text-xs font-semibold text-[#FAF3E8] disabled:opacity-50"
+                        className="btn-primary flex-1 rounded-lg py-1.5 text-xs font-semibold disabled:opacity-50"
                       >
                         Transferir
                       </button>
@@ -918,7 +918,7 @@ export function TablesSection({
                           onClick={() =>
                             handleOrderAction(activeOrder.id, "CANCEL")
                           }
-                          className="rounded-xl border border-red-200 bg-red-50 px-2.5 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
+                          className="rounded-xl border border-red-500/35 bg-red-500/10 px-2.5 py-2 text-xs font-semibold text-red-700 hover:bg-red-500/20 dark:text-red-300"
                           title="Cancelar comanda"
                         >
                           <Ban className="h-3.5 w-3.5" />
@@ -928,7 +928,7 @@ export function TablesSection({
                             type="button"
                             disabled={busyId === table.number}
                             onClick={() => setTableStatus(table.number, "CONTA")}
-                            className="rounded-xl border border-orange-300 bg-orange-50 px-2.5 py-2 text-xs font-semibold text-orange-900 hover:bg-orange-100"
+                            className="rounded-xl border border-orange-500/35 bg-orange-500/10 px-2.5 py-2 text-xs font-semibold text-orange-800 hover:bg-orange-500/20 dark:text-orange-200"
                           >
                             Conta
                           </button>
@@ -941,7 +941,7 @@ export function TablesSection({
                             setApplyServiceFee(true);
                             setCheckoutDiscount(String(activeOrder.discount || 0));
                           }}
-                          className="rounded-xl bg-[var(--bg-shell)] px-3 py-2 text-xs font-semibold text-[#FAF3E8] hover:opacity-90"
+                          className="btn-primary rounded-xl px-3 py-2 text-xs font-semibold"
                         >
                           Receber
                         </button>

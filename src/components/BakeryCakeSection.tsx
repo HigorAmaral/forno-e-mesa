@@ -154,14 +154,14 @@ export function BakeryCakeSection({
     <div className="grid gap-6 xl:grid-cols-2">
       {/* Padaria: Fornadas */}
       <section className="space-y-4">
-        <div className="rounded-2xl border border-[#E6CCB2] bg-white p-5 shadow-xs">
+        <div className="card-bistro p-5">
           <div className="mb-4 flex items-center gap-2">
-            <Croissant className="h-5 w-5 text-[#C07F5A]" />
+            <Croissant className="h-5 w-5 text-[var(--accent-primary)]" />
             <div>
-              <h2 className="font-display text-lg font-bold text-[#3E2723]">
-                Fornadas de Padaria & Vitrine
+              <h2 className="font-display text-lg font-bold text-[var(--text-primary)]">
+                Fornadas de Padaria &amp; Vitrine
               </h2>
-              <p className="text-xs text-[#8C5A3C]">
+              <p className="text-xs text-[var(--text-secondary)]">
                 Ao finalizar uma fornada, o estoque do produto sobe automaticamente no PDV.
               </p>
             </div>
@@ -171,7 +171,7 @@ export function BakeryCakeSection({
             <select
               value={batchProductId}
               onChange={(e) => setBatchProductId(Number(e.target.value))}
-              className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs font-medium sm:col-span-2"
+              className="input-field font-medium sm:col-span-2"
             >
               {bakeryProducts.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -186,25 +186,25 @@ export function BakeryCakeSection({
               value={plannedQty}
               onChange={(e) => setPlannedQty(e.target.value)}
               placeholder="Qtd"
-              className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs"
+              className="input-field"
             />
             <input
               type="time"
               value={bakeTime}
               onChange={(e) => setBakeTime(e.target.value)}
-              className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs"
+              className="input-field"
             />
             <input
               type="text"
               value={batchNotes}
               onChange={(e) => setBatchNotes(e.target.value)}
               placeholder="Observação da fornada (opcional)"
-              className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs sm:col-span-3"
+              className="input-field sm:col-span-3"
             />
             <button
               type="submit"
               disabled={busy}
-              className="flex items-center justify-center gap-1.5 rounded-xl bg-[#C07F5A] px-3 py-2 text-xs font-semibold text-white hover:bg-[#A66844]"
+              className="btn-primary flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold"
             >
               <Plus className="h-3.5 w-3.5" /> Agendar
             </button>
@@ -216,29 +216,29 @@ export function BakeryCakeSection({
               return (
                 <div
                   key={batch.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] p-3"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-3"
                 >
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono-num rounded bg-white px-2 py-0.5 text-xs font-bold text-[#3E2723]">
+                      <span className="font-mono-num rounded bg-[var(--bg-surface)] px-2 py-0.5 text-xs font-bold text-[var(--text-primary)]">
                         {batch.bakeTime}
                       </span>
-                      <p className="text-sm font-bold text-[#3E2723]">
+                      <p className="text-sm font-bold text-[var(--text-primary)]">
                         {batch.productName}
                       </p>
                       <span
                         className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
                           batch.status === "PRONTA"
-                            ? "bg-emerald-100 text-emerald-800"
+                            ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
                             : batch.status === "NO_FORNO"
-                              ? "bg-orange-100 text-orange-800"
-                              : "bg-amber-100 text-amber-800"
+                              ? "bg-orange-500/15 text-orange-700 dark:text-orange-300"
+                              : "bg-amber-500/15 text-amber-800 dark:text-amber-300"
                         }`}
                       >
                         {batch.status}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-[#8C5A3C]">
+                    <p className="mt-1 text-xs text-[var(--text-secondary)]">
                       Previsto: {batch.plannedQty} · Produzido: {batch.producedQty}
                       {batch.notes ? ` · ${batch.notes}` : ""}
                     </p>
@@ -247,9 +247,9 @@ export function BakeryCakeSection({
                     <button
                       type="button"
                       onClick={() => advanceBatch(batch.id, next.next)}
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#3E2723] px-3 py-1.5 text-xs font-semibold text-white hover:bg-black"
+                      className="btn-secondary inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold"
                     >
-                      <Flame className="h-3.5 w-3.5 text-amber-400" />
+                      <Flame className="h-3.5 w-3.5 text-[var(--accent-primary)]" />
                       {next.label}
                     </button>
                   )}
@@ -262,14 +262,14 @@ export function BakeryCakeSection({
 
       {/* Confeitaria: Encomendas Personalizadas */}
       <section className="space-y-4">
-        <div className="rounded-2xl border border-[#E6CCB2] bg-white p-5 shadow-xs">
+        <div className="card-bistro p-5">
           <div className="mb-4 flex items-center gap-2">
-            <CakeSlice className="h-5 w-5 text-[#C07F5A]" />
+            <CakeSlice className="h-5 w-5 text-[var(--accent-primary)]" />
             <div>
-              <h2 className="font-display text-lg font-bold text-[#3E2723]">
-                Encomendas de Confeitaria & Eventos
+              <h2 className="font-display text-lg font-bold text-[var(--text-primary)]">
+                Encomendas de Confeitaria &amp; Eventos
               </h2>
-              <p className="text-xs text-[#8C5A3C]">
+              <p className="text-xs text-[var(--text-secondary)]">
                 Bolos sob medida, tortas festivas e kits com controle de sinal e saldo restante.
               </p>
             </div>
@@ -282,7 +282,7 @@ export function BakeryCakeSection({
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder="Cliente (ex: Juliana Mendes)"
-              className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs"
+              className="input-field"
             />
             <input
               type="text"
@@ -290,7 +290,7 @@ export function BakeryCakeSection({
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
               placeholder="WhatsApp (ex: (11) 99999-0000)"
-              className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs"
+              className="input-field"
             />
             <input
               type="text"
@@ -298,7 +298,7 @@ export function BakeryCakeSection({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Descrição (ex: Bolo Pistache & Frutas Vermelhas)"
-              className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs sm:col-span-2"
+              className="input-field sm:col-span-2"
             />
             <input
               type="text"
@@ -306,7 +306,7 @@ export function BakeryCakeSection({
               value={flavor}
               onChange={(e) => setFlavor(e.target.value)}
               placeholder="Massa / Sabor"
-              className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs"
+              className="input-field"
             />
             <input
               type="text"
@@ -314,7 +314,7 @@ export function BakeryCakeSection({
               value={filling}
               onChange={(e) => setFilling(e.target.value)}
               placeholder="Recheio"
-              className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs"
+              className="input-field"
             />
             <div className="grid grid-cols-2 gap-2">
               <input
@@ -324,13 +324,13 @@ export function BakeryCakeSection({
                 value={weightKg}
                 onChange={(e) => setWeightKg(e.target.value)}
                 placeholder="Peso (kg)"
-                className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs"
+                className="input-field"
               />
               <input
                 type="date"
                 value={deliveryDate}
                 onChange={(e) => setDeliveryDate(e.target.value)}
-                className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs"
+                className="input-field"
               />
             </div>
             <div className="grid grid-cols-3 gap-2">
@@ -338,7 +338,7 @@ export function BakeryCakeSection({
                 type="time"
                 value={deliverySlot}
                 onChange={(e) => setDeliverySlot(e.target.value)}
-                className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-2 py-2 text-xs"
+                className="input-field px-2"
               />
               <input
                 type="number"
@@ -346,7 +346,7 @@ export function BakeryCakeSection({
                 value={totalPrice}
                 onChange={(e) => setTotalPrice(e.target.value)}
                 placeholder="Total R$"
-                className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-2.5 py-2 text-xs"
+                className="input-field px-2.5"
               />
               <input
                 type="number"
@@ -354,7 +354,7 @@ export function BakeryCakeSection({
                 value={depositPaid}
                 onChange={(e) => setDepositPaid(e.target.value)}
                 placeholder="Sinal R$"
-                className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-2.5 py-2 text-xs"
+                className="input-field px-2.5"
               />
             </div>
             <input
@@ -362,12 +362,12 @@ export function BakeryCakeSection({
               value={themeNotes}
               onChange={(e) => setThemeNotes(e.target.value)}
               placeholder="Decoração / Escrita no topo (opcional)"
-              className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs sm:col-span-2"
+              className="input-field sm:col-span-2"
             />
             <button
               type="submit"
               disabled={busy}
-              className="flex items-center justify-center gap-1.5 rounded-xl bg-[#C07F5A] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#A66844] sm:col-span-2"
+              className="btn-primary flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-semibold sm:col-span-2"
             >
               <Plus className="h-4 w-4" /> Registrar Encomenda
             </button>
@@ -380,37 +380,37 @@ export function BakeryCakeSection({
               return (
                 <div
                   key={cake.id}
-                  className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] p-3.5"
+                  className="rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-3.5"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono-num text-xs font-bold text-[#C07F5A]">
+                        <span className="font-mono-num text-xs font-bold text-[var(--accent-primary)]">
                           {cake.code}
                         </span>
-                        <h3 className="text-sm font-bold text-[#3E2723]">
+                        <h3 className="text-sm font-bold text-[var(--text-primary)]">
                           {cake.title} ({cake.weightKg}kg)
                         </h3>
-                        <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-[#3E2723]">
+                        <span className="rounded-full bg-[var(--bg-surface)] px-2 py-0.5 text-[10px] font-bold text-[var(--text-primary)]">
                           {cake.status}
                         </span>
                       </div>
-                      <p className="mt-0.5 text-xs text-[#8C5A3C]">
+                      <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
                         {cake.customerName} · {cake.customerPhone} · Entrega: {cake.deliveryDate} às {cake.deliverySlot}
                       </p>
-                      <p className="mt-1 text-xs text-[#3E2723]">
+                      <p className="mt-1 text-xs text-[var(--text-primary)]">
                         Massa: {cake.flavor} | Recheio: {cake.filling}
                         {cake.themeNotes ? ` | Tema: ${cake.themeNotes}` : ""}
                       </p>
                     </div>
 
                     <div className="text-right">
-                      <p className="font-mono-num text-xs font-bold text-[#3E2723]">
+                      <p className="font-mono-num text-xs font-bold text-[var(--text-primary)]">
                         Total: {formatBRL(cake.totalPrice)}
                       </p>
-                      <p className="font-mono-num text-[11px] text-[#8C5A3C]">
+                      <p className="font-mono-num text-[11px] text-[var(--text-secondary)]">
                         Sinal: {formatBRL(cake.depositPaid)} · Saldo:{" "}
-                        <span className={balanceDue > 0 ? "font-bold text-[#C07F5A]" : "text-[#15803d]"}>
+                        <span className={balanceDue > 0 ? "font-bold text-[var(--accent-primary)]" : "text-emerald-600 dark:text-emerald-400"}>
                           {formatBRL(balanceDue)}
                         </span>
                       </p>
@@ -418,7 +418,7 @@ export function BakeryCakeSection({
                         <button
                           type="button"
                           onClick={() => advanceCake(cake.id, next.next)}
-                          className="mt-2 rounded-lg bg-[#3E2723] px-3 py-1 text-[11px] font-semibold text-white hover:bg-black"
+                          className="btn-secondary mt-2 rounded-lg px-3 py-1 text-[11px] font-semibold"
                         >
                           {next.label}
                         </button>

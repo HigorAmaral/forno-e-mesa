@@ -229,8 +229,8 @@ export function DeliverySection({
     return (
       <article
         key={order.id}
-        className={`animate-fade-in rounded-2xl border bg-white p-3.5 text-xs shadow-sm ${
-          late ? "border-red-300 ring-2 ring-red-100" : "border-[#E6CCB2]"
+        className={`animate-fade-in rounded-2xl border bg-[var(--bg-surface)] p-3.5 text-xs shadow-sm ${
+          late ? "border-red-500/50 ring-2 ring-red-500/20" : "border-[var(--border-warm)]"
         }`}
       >
         <header className="flex items-start justify-between gap-2">
@@ -238,22 +238,32 @@ export function DeliverySection({
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="font-mono-num text-sm font-bold">{order.code}</span>
               <span
-                className={`chip ${isPickup ? "bg-teal-100 text-teal-900" : "bg-orange-100 text-orange-900"}`}
+                className={`chip ${
+                  isPickup
+                    ? "bg-teal-500/15 text-teal-800 dark:text-teal-300"
+                    : "bg-orange-500/15 text-orange-800 dark:text-orange-300"
+                }`}
               >
                 {isPickup ? <Store className="h-3 w-3" /> : <Truck className="h-3 w-3" />}
                 {isPickup ? "Retirada" : "Delivery"}
               </span>
               <span
-                className={`chip ${order.status === "PAGO" ? "bg-emerald-100 text-emerald-900" : "bg-[#E6CCB2] text-[#8C5A3C]"}`}
+                className={`chip ${
+                  order.status === "PAGO"
+                    ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
+                    : "bg-[var(--bg-subtle)] text-[var(--text-secondary)]"
+                }`}
               >
                 {order.status === "PAGO" ? "Pago" : `A cobrar · ${order.paymentMethod ?? "—"}`}
               </span>
             </div>
-            <p className="mt-1 truncate font-semibold text-[#3E2723]">{order.customerName}</p>
+            <p className="mt-1 truncate font-semibold text-[var(--text-primary)]">{order.customerName}</p>
           </div>
           <span
             className={`font-mono-num shrink-0 rounded-lg px-2 py-1 text-[11px] font-bold ${
-              late ? "bg-red-100 text-red-800" : "bg-[#E6CCB2] text-[#8C5A3C]"
+              late
+                ? "bg-red-500/15 text-red-700 dark:text-red-300"
+                : "bg-[var(--bg-subtle)] text-[var(--text-secondary)]"
             }`}
             title="Tempo desde o pedido / previsão"
           >
@@ -261,16 +271,18 @@ export function DeliverySection({
           </span>
         </header>
 
-        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#E6CCB2]">
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--bg-subtle)]">
           <div
-            className={`h-full rounded-full transition-all ${late ? "bg-red-500" : "bg-gradient-to-r from-[#C07F5A] to-[#15803d]"}`}
+            className={`h-full rounded-full transition-all ${
+              late ? "bg-red-500" : "bg-gradient-to-r from-[var(--accent-primary)] to-emerald-600"
+            }`}
             style={{ width: `${pct}%` }}
           />
         </div>
 
         {!isPickup && (
-          <p className="mt-2 flex items-start gap-1.5 text-[#8C5A3C]">
-            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#C07F5A]" />
+          <p className="mt-2 flex items-start gap-1.5 text-[var(--text-secondary)]">
+            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--accent-primary)]" />
             <span>
               {order.deliveryAddress}
               {order.deliveryNeighborhood ? ` · ${order.deliveryNeighborhood}` : ""}
@@ -281,34 +293,42 @@ export function DeliverySection({
           </p>
         )}
 
-        <ul className="mt-2 space-y-0.5 rounded-xl bg-[#FAF3E8] p-2">
+        <ul className="mt-2 space-y-0.5 rounded-xl bg-[var(--bg-canvas)] p-2">
           {order.items.map((it) => (
             <li key={it.id} className="flex justify-between gap-2">
               <span className="truncate">
                 <strong className="font-mono-num">{it.qty}×</strong> {it.productName}
-                {it.notes ? <em className="text-[#8c6f5a]"> · {it.notes}</em> : null}
+                {it.notes ? <em className="text-[var(--text-muted)]"> · {it.notes}</em> : null}
               </span>
               <span
-                className={`shrink-0 text-[10px] font-bold ${it.itemStatus === "PRONTO" || it.itemStatus === "ENTREGUE" ? "text-emerald-700" : "text-amber-700"}`}
+                className={`shrink-0 text-[10px] font-bold ${
+                  it.itemStatus === "PRONTO" || it.itemStatus === "ENTREGUE"
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-amber-600 dark:text-amber-400"
+                }`}
               >
                 {it.itemStatus}
               </span>
             </li>
           ))}
         </ul>
-        {order.notes && <p className="mt-1.5 rounded-lg bg-amber-50 px-2 py-1 text-amber-900">📝 {order.notes}</p>}
+        {order.notes && (
+          <p className="mt-1.5 rounded-lg bg-amber-500/15 px-2 py-1 text-amber-900 dark:text-amber-200">
+            📝 {order.notes}
+          </p>
+        )}
 
         <div className="mt-2 flex items-center justify-between font-semibold">
-          <span className="text-[#8C5A3C]">
+          <span className="text-[var(--text-secondary)]">
             {order.deliveryFee > 0 ? `Taxa ${formatBRL(order.deliveryFee)}` : isPickup ? "Sem taxa" : "Frete grátis"}
             {order.changeFor ? ` · Troco p/ ${formatBRL(order.changeFor)}` : ""}
           </span>
-          <span className="font-mono-num text-sm text-[#C07F5A]">{formatBRL(order.total)}</span>
+          <span className="font-mono-num text-sm text-[var(--accent-primary)]">{formatBRL(order.total)}</span>
         </div>
 
         {(needsCourier || order.courierName) && !isPickup && (
           <div className="mt-2 flex items-center gap-1.5">
-            <Bike className="h-3.5 w-3.5 text-[#8C5A3C]" />
+            <Bike className="h-3.5 w-3.5 text-[var(--text-secondary)]" />
             <input
               list="courier-list"
               value={courierDraft[order.id] ?? order.courierName ?? ""}
@@ -400,11 +420,11 @@ export function DeliverySection({
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h2 className="font-display flex items-center gap-2 text-2xl font-bold">
-            <Truck className="h-6 w-6 text-[#C07F5A]" /> Central de Delivery
+            <Truck className="h-6 w-6 text-[var(--accent-primary)]" /> Central de Delivery
           </h2>
-          <p className="text-xs text-[#8C5A3C]">
+          <p className="text-xs text-[var(--text-secondary)]">
             Pedidos online, telefone e retirada · frete grátis acima de {formatBRL(FREE_DELIVERY_ABOVE)} ·
-            cardápio público em <a href="/delivery" target="_blank" className="font-semibold text-[#C07F5A] underline">/delivery</a>
+            cardápio público em <a href="/delivery" target="_blank" className="font-semibold text-[var(--accent-primary)] underline">/delivery</a>
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -427,14 +447,18 @@ export function DeliverySection({
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
         {[
-          { label: "Em andamento", value: String(active.length), tone: "text-[#C07F5A]" },
-          { label: "Atrasados", value: String(stats.late), tone: stats.late ? "text-red-700" : "text-[#15803d]" },
-          { label: "Entregues", value: String(stats.delivered), tone: "text-[#15803d]" },
-          { label: "Tempo médio", value: stats.avg ? `${stats.avg} min` : "—", tone: "text-[#3E2723]" },
-          { label: "A receber na entrega", value: formatBRL(stats.toCollect), tone: "text-amber-700" },
+          { label: "Em andamento", value: String(active.length), tone: "text-[var(--accent-primary)]" },
+          {
+            label: "Atrasados",
+            value: String(stats.late),
+            tone: stats.late ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400",
+          },
+          { label: "Entregues", value: String(stats.delivered), tone: "text-emerald-600 dark:text-emerald-400" },
+          { label: "Tempo médio", value: stats.avg ? `${stats.avg} min` : "—", tone: "text-[var(--text-primary)]" },
+          { label: "A receber na entrega", value: formatBRL(stats.toCollect), tone: "text-amber-600 dark:text-amber-400" },
         ].map((k) => (
           <div key={k.label} className="card-bistro p-3.5">
-            <p className="text-[11px] font-semibold text-[#8C5A3C]">{k.label}</p>
+            <p className="text-[11px] font-semibold text-[var(--text-secondary)]">{k.label}</p>
             <p className={`font-mono-num mt-1 text-xl font-bold ${k.tone}`}>{k.value}</p>
           </div>
         ))}
@@ -485,7 +509,7 @@ export function DeliverySection({
             <tbody>
               {finished.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-6 text-center text-[#8C5A3C]">
+                  <td colSpan={7} className="py-6 text-center text-[var(--text-secondary)]">
                     Nenhuma entrega finalizada ainda.
                   </td>
                 </tr>
@@ -516,7 +540,7 @@ export function DeliverySection({
               ))}
             </tbody>
           </table>
-          <p className="border-t border-[#E6CCB2] px-4 py-2 text-[11px] text-[#8C5A3C]">
+          <p className="border-t border-[var(--border-warm)] px-4 py-2 text-[11px] text-[var(--text-secondary)]">
             Taxas de entrega arrecadadas: <strong className="font-mono-num">{formatBRL(stats.fees)}</strong>
           </p>
         </div>

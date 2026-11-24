@@ -32,11 +32,16 @@ export const ROLE_LABELS: Record<StaffRole, string> = {
 };
 
 export const ROLE_BADGE_CLASSES: Record<StaffRole, string> = {
-  ADMIN: "bg-[#3E2723] text-[#FAF3E8] border-[#C07F5A]/50",
-  GERENTE: "bg-amber-100 text-amber-950 border-amber-300",
-  CAIXA: "bg-emerald-100 text-emerald-900 border-emerald-300",
-  GARCOM: "bg-sky-100 text-sky-900 border-sky-300",
-  COZINHA: "bg-orange-100 text-orange-900 border-orange-300",
+  ADMIN:
+    "bg-[#C84B28]/15 text-[#C84B28] border-[#C84B28]/30 dark:bg-[#E8643C]/20 dark:text-[#FF9E80] dark:border-[#E8643C]/40",
+  GERENTE:
+    "bg-amber-500/15 text-amber-800 border-amber-500/30 dark:bg-amber-400/20 dark:text-amber-300 dark:border-amber-400/35",
+  CAIXA:
+    "bg-emerald-500/15 text-emerald-800 border-emerald-500/30 dark:bg-emerald-400/20 dark:text-emerald-300 dark:border-emerald-400/35",
+  GARCOM:
+    "bg-sky-500/15 text-sky-800 border-sky-500/30 dark:bg-sky-400/20 dark:text-sky-300 dark:border-sky-400/35",
+  COZINHA:
+    "bg-orange-500/15 text-orange-800 border-orange-500/30 dark:bg-orange-400/20 dark:text-orange-300 dark:border-orange-400/35",
 };
 
 export const ROLE_ALLOWED_TABS: Record<StaffRole, ErpTabId[]> = {

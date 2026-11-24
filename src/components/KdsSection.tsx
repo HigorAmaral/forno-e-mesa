@@ -46,7 +46,7 @@ const NEXT_STAGE: Record<
   PRONTO: {
     next: "ENTREGUE",
     label: "Entregar",
-    color: "bg-[var(--bg-shell)] text-[#FAF3E8] hover:opacity-90",
+    color: "bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary-dark)]",
   },
 };
 
@@ -369,7 +369,7 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
                     }
                     className={`flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition disabled:opacity-50 ${
                       allReady
-                        ? "bg-[var(--bg-shell)] text-[#FAF3E8] hover:opacity-90"
+                        ? "bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary-dark)]"
                         : "bg-emerald-700 text-white hover:bg-emerald-800"
                     }`}
                   >

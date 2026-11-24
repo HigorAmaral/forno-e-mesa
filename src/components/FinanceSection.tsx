@@ -11,6 +11,7 @@ import {
   Landmark,
   Percent,
   Plus,
+  Printer,
   Search,
   Trash2,
   TrendingUp,
@@ -38,6 +39,8 @@ interface FinanceSectionProps {
   cakeOrders: CakeOrderDto[];
   cashSessions: CashSessionDto[];
   financialEntries: FinancialEntryDto[];
+  creditCardFeePct?: number;
+  debitCardFeePct?: number;
   onRefresh: () => Promise<void>;
   onError: (msg: string) => void;
 }
@@ -58,16 +61,20 @@ export function FinanceSection({
   cakeOrders,
   cashSessions,
   financialEntries,
+  creditCardFeePct = 3.2,
+  debitCardFeePct = 1.6,
   onRefresh,
   onError,
 }: FinanceSectionProps) {
+  const [periodFilter, setPeriodFilter] = useState<"TODAY" | "7D" | "30D" | "ALL">(
+    "ALL",
+  );
   const [filterType, setFilterType] = useState<
     "ALL" | "DESPESA" | "RECEITA" | "PENDENTE" | "PAGO"
   >("ALL");
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Novo lançamento
   const [type, setType] = useState<"DESPESA" | "RECEITA">("DESPESA");
   const [category, setCategory] = useState<
     | "FORNECEDOR"
@@ -89,6 +96,21 @@ export function FinanceSection({
   >("PIX");
   const [status, setStatus] = useState<"PENDENTE" | "PAGO">("PENDENTE");
 
+  const [nowTs] = useState(() => Date.now());
+
+  const periodOrders = useMemo(() => {
+    if (periodFilter === "ALL") return orders;
+    const todayStr = new Date(nowTs).toISOString().slice(0, 10);
+    return orders.filter((o) => {
+      const ref = o.paidAt ?? o.createdAt;
+      if (periodFilter === "TODAY") {
+        return ref.slice(0, 10) === todayStr;
+      }
+      const days = periodFilter === "7D" ? 7 : 30;
+      return nowTs - new Date(ref).getTime() <= days * 86400000;
+    });
+  }, [orders, periodFilter, nowTs]);
+
   const productCostById = useMemo(() => {
     const map = new Map<number, number>();
     for (const product of products) {
@@ -108,12 +130,21 @@ export function FinanceSection({
   const dre = useMemo(
     () =>
       computeFinancialDre({
-        orders,
+        orders: periodOrders,
         productCostById,
         cakeOrders,
         entries: financialEntries,
+        creditCardFeeRate: creditCardFeePct / 100,
+        debitCardFeeRate: debitCardFeePct / 100,
       }),
-    [orders, productCostById, cakeOrders, financialEntries],
+    [
+      periodOrders,
+      productCostById,
+      cakeOrders,
+      financialEntries,
+      creditCardFeePct,
+      debitCardFeePct,
+    ],
   );
 
   const paymentBreakdown = useMemo(() => {
@@ -121,10 +152,16 @@ export function FinanceSection({
       string,
       { gross: number; fee: number; net: number; count: number }
     >();
-    for (const order of orders) {
+    for (const order of periodOrders) {
       if (order.status !== "PAGO") continue;
       const pm = order.paymentMethod ?? "OUTRO";
-      const fee = roundMoney(order.total * calculateCardFeeRate(pm));
+      const rate =
+        pm === "CREDITO"
+          ? creditCardFeePct / 100
+          : pm === "DEBITO"
+            ? debitCardFeePct / 100
+            : calculateCardFeeRate(pm);
+      const fee = roundMoney(order.total * rate);
       const cur = groups.get(pm) ?? { gross: 0, fee: 0, net: 0, count: 0 };
       cur.gross = roundMoney(cur.gross + order.total);
       cur.fee = roundMoney(cur.fee + fee);
@@ -133,7 +170,7 @@ export function FinanceSection({
       groups.set(pm, cur);
     }
     return [...groups.entries()].sort((a, b) => b[1].gross - a[1].gross);
-  }, [orders]);
+  }, [periodOrders, creditCardFeePct, debitCardFeePct]);
 
   const productMargins = useMemo(() => {
     return products
@@ -262,21 +299,62 @@ export function FinanceSection({
 
   return (
     <div className="animate-fade-in space-y-6">
+      {/* Period Selector */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="segmented">
+          {(
+            [
+              { id: "TODAY", label: "Hoje" },
+              { id: "7D", label: "7 dias" },
+              { id: "30D", label: "30 dias" },
+              { id: "ALL", label: "Todo período" },
+            ] as const
+          ).map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              data-active={periodFilter === p.id}
+              onClick={() => setPeriodFilter(p.id)}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:border-[var(--accent-primary)]"
+          >
+            <Printer className="h-3.5 w-3.5" />
+            Imprimir DRE
+          </button>
+          <a
+            href="/api/reports/export?scope=finance"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:border-[var(--accent-primary)]"
+          >
+            <Download className="h-3.5 w-3.5 text-emerald-600" />
+            Exportar Financeiro CSV
+          </a>
+        </div>
+      </div>
+
       {/* KPI Bento Header */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="card-bistro p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#8C5A3C]">
+            <span className="text-xs font-semibold text-[var(--text-secondary)]">
               Receita Bruta Realizada
             </span>
-            <span className="rounded-lg bg-emerald-100 p-1.5 text-[#15803d]">
+            <span className="rounded-lg bg-emerald-100 p-1.5 text-emerald-700">
               <TrendingUp className="h-4 w-4" />
             </span>
           </div>
-          <p className="font-mono-num mt-2 text-2xl font-bold text-[#15803d]">
+          <p className="font-mono-num mt-2 text-2xl font-bold text-emerald-600">
             {formatBRL(dre.grossRevenue)}
           </p>
-          <p className="mt-1 text-[11px] text-[#8C5A3C]">
+          <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
             Vendas {formatBRL(dre.ordersRevenue)} · Sinais/Extras{" "}
             {formatBRL(dre.cakeDepositsReceived + dre.extraRevenuePaid)}
           </p>
@@ -284,7 +362,7 @@ export function FinanceSection({
 
         <div className="card-bistro p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#8C5A3C]">
+            <span className="text-xs font-semibold text-[var(--text-secondary)]">
               Lucro Líquido Estimado (DRE)
             </span>
             <span className="rounded-lg bg-amber-100 p-1.5 text-[#C07F5A]">
@@ -293,14 +371,14 @@ export function FinanceSection({
           </div>
           <p
             className={`font-mono-num mt-2 text-2xl font-bold ${
-              dre.netProfit >= 0 ? "text-[#3E2723]" : "text-red-700"
+              dre.netProfit >= 0 ? "text-[var(--text-primary)]" : "text-red-700"
             }`}
           >
             {formatBRL(dre.netProfit)}
           </p>
-          <p className="mt-1 text-[11px] text-[#8C5A3C]">
+          <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
             Margem líquida:{" "}
-            <strong className="font-mono-num text-[#C07F5A]">
+            <strong className="font-mono-num text-[var(--accent-primary)]">
               {dre.netMarginPct}%
             </strong>{" "}
             (já descontando CMV e taxas)
@@ -309,17 +387,17 @@ export function FinanceSection({
 
         <div className="card-bistro p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#8C5A3C]">
+            <span className="text-xs font-semibold text-[var(--text-secondary)]">
               Contas a Pagar (Pendentes)
             </span>
             <span className="rounded-lg bg-red-100 p-1.5 text-red-700">
               <ArrowDownRight className="h-4 w-4" />
             </span>
           </div>
-          <p className="font-mono-num mt-2 text-2xl font-bold text-red-700">
+          <p className="font-mono-num mt-2 text-2xl font-bold text-red-600">
             {formatBRL(dre.operatingExpensesPending)}
           </p>
-          <p className="mt-1 text-[11px] text-[#8C5A3C]">
+          <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
             {pendingPayableCount} títulos em aberto · Já pago:{" "}
             {formatBRL(dre.operatingExpensesPaid)}
           </p>
@@ -327,17 +405,17 @@ export function FinanceSection({
 
         <div className="card-bistro p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#8C5A3C]">
+            <span className="text-xs font-semibold text-[var(--text-secondary)]">
               A Receber (Mesas, Bolos & Extra)
             </span>
-            <span className="rounded-lg bg-emerald-100 p-1.5 text-[#15803d]">
+            <span className="rounded-lg bg-emerald-100 p-1.5 text-emerald-700">
               <ArrowUpRight className="h-4 w-4" />
             </span>
           </div>
-          <p className="font-mono-num mt-2 text-2xl font-bold text-[#C07F5A]">
+          <p className="font-mono-num mt-2 text-2xl font-bold text-[var(--accent-primary)]">
             {formatBRL(dre.receivablesPending)}
           </p>
-          <p className="mt-1 text-[11px] text-[#8C5A3C]">
+          <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
             Comandas abertas + saldo encomendas + recebíveis
           </p>
         </div>
@@ -345,93 +423,80 @@ export function FinanceSection({
 
       {/* DRE + Meios de Pagamento & Caixa */}
       <div className="grid gap-5 lg:grid-cols-12">
-        {/* DRE Gerencial */}
-        <section className="card-bistro p-5 lg:col-span-7">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-[#E6CCB2] pb-3">
+        <section id="dre-report-print" className="card-bistro p-5 lg:col-span-7">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-warm)] pb-3">
             <div className="flex items-center gap-2">
-              <Landmark className="h-5 w-5 text-[#C07F5A]" />
+              <Landmark className="h-5 w-5 text-[var(--accent-primary)]" />
               <div>
-                <h2 className="font-display text-lg font-bold text-[#3E2723]">
+                <h2 className="font-display text-lg font-bold text-[var(--text-primary)]">
                   DRE Gerencial — Demonstrativo de Resultados
                 </h2>
-                <p className="text-xs text-[#8C5A3C]">
-                  Consolidado automático entre PDV, Mesas, Encomendas, CMV das
-                  fichas técnicas e despesas.
+                <p className="text-xs text-[var(--text-secondary)]">
+                  Consolidado automático entre PDV, Mesas, Encomendas, CMV das fichas técnicas e despesas.
                 </p>
               </div>
             </div>
-            <a
-              href="/api/reports/export?scope=finance"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-1.5 text-xs font-semibold text-[#3E2723] hover:bg-[#E6CCB2]"
-            >
-              <Download className="h-3.5 w-3.5 text-[#15803d]" />
-              Exportar Financeiro CSV
-            </a>
           </div>
 
           <div className="space-y-2 text-xs">
-            <div className="flex items-center justify-between rounded-xl bg-[#FAF3E8] px-3.5 py-2.5">
-              <span className="font-semibold text-[#3E2723]">
-                (+) Receita de Pedidos Pagos (PDV, Mesas & QR)
+            <div className="flex items-center justify-between rounded-xl bg-[var(--bg-canvas)] px-3.5 py-2.5">
+              <span className="font-semibold text-[var(--text-primary)]">
+                (+) Receita de Pedidos Pagos (PDV, Mesas & Delivery)
               </span>
-              <span className="font-mono-num font-bold text-[#15803d]">
+              <span className="font-mono-num font-bold text-emerald-600">
                 {formatBRL(dre.ordersRevenue)}
               </span>
             </div>
-            <div className="flex items-center justify-between rounded-xl bg-[#FAF3E8] px-3.5 py-2.5">
-              <span className="font-semibold text-[#3E2723]">
+            <div className="flex items-center justify-between rounded-xl bg-[var(--bg-canvas)] px-3.5 py-2.5">
+              <span className="font-semibold text-[var(--text-primary)]">
                 (+) Sinais de Bolos & Receitas Extras Recebidas
               </span>
-              <span className="font-mono-num font-bold text-[#15803d]">
+              <span className="font-mono-num font-bold text-emerald-600">
                 {formatBRL(dre.cakeDepositsReceived + dre.extraRevenuePaid)}
               </span>
             </div>
-            <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/70 px-3.5 py-2.5">
-              <span className="font-bold text-emerald-950">
-                (=) Receita Bruta Total Realizada
-              </span>
+            <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/80 px-3.5 py-2.5 text-emerald-950">
+              <span className="font-bold">(=) Receita Bruta Total Realizada</span>
               <span className="font-mono-num text-sm font-bold text-emerald-900">
                 {formatBRL(dre.grossRevenue)}
               </span>
             </div>
-            <div className="flex items-center justify-between px-3.5 py-1.5 text-[#8C5A3C]">
+            <div className="flex items-center justify-between px-3.5 py-1.5 text-[var(--text-secondary)]">
               <span>
-                (-) Taxas de Adquirência Estimadas (Crédito 3,2% · Débito 1,6%)
+                (-) Taxas de Adquirência Estimadas (Crédito {creditCardFeePct}% · Débito {debitCardFeePct}%)
               </span>
-              <span className="font-mono-num font-semibold text-red-700">
+              <span className="font-mono-num font-semibold text-red-600">
                 - {formatBRL(dre.cardFeesEstimated)}
               </span>
             </div>
-            <div className="flex items-center justify-between px-3.5 py-1.5 text-[#8C5A3C]">
-              <span>
-                (-) CMV Estimado (Custo de Insumos das Fichas Técnicas)
-              </span>
-              <span className="font-mono-num font-semibold text-red-700">
+            <div className="flex items-center justify-between px-3.5 py-1.5 text-[var(--text-secondary)]">
+              <span>(-) CMV Estimado (Custo de Insumos das Fichas Técnicas)</span>
+              <span className="font-mono-num font-semibold text-red-600">
                 - {formatBRL(dre.estimatedCmv)}
               </span>
             </div>
-            <div className="flex items-center justify-between rounded-xl bg-[#E6CCB2] px-3.5 py-2.5">
-              <span className="font-bold text-[#3E2723]">
+            <div className="flex items-center justify-between rounded-xl bg-[var(--bg-subtle)] px-3.5 py-2.5">
+              <span className="font-bold text-[var(--text-primary)]">
                 (=) Margem de Contribuição
               </span>
-              <span className="font-mono-num font-bold text-[#3E2723]">
+              <span className="font-mono-num font-bold text-[var(--text-primary)]">
                 {formatBRL(dre.contributionMargin)}
               </span>
             </div>
-            <div className="flex items-center justify-between px-3.5 py-1.5 text-[#8C5A3C]">
+            <div className="flex items-center justify-between px-3.5 py-1.5 text-[var(--text-secondary)]">
               <span>(-) Despesas Operacionais Pagas (Fornecedores/Custos)</span>
-              <span className="font-mono-num font-semibold text-red-700">
+              <span className="font-mono-num font-semibold text-red-600">
                 - {formatBRL(dre.operatingExpensesPaid)}
               </span>
             </div>
-            <div className="flex items-center justify-between rounded-xl bg-gradient-to-r from-[#3E2723] to-[#3a251a] px-4 py-3 text-white">
+            <div className="flex items-center justify-between rounded-xl bg-[var(--bg-shell)] px-4 py-3 text-white">
               <div>
                 <span className="font-display text-sm font-bold">
                   (=) Resultado Líquido Estimado
                 </span>
-                <p className="text-[10px] text-[#9ca3af]">
-                  Descontos concedidos: {formatBRL(dre.discountsTotal)} · Taxas
-                  de serviço 10%: {formatBRL(dre.serviceFeesTotal)}
+                <p className="text-[10px] text-[#E6CCB2]">
+                  Descontos concedidos: {formatBRL(dre.discountsTotal)} · Taxas de serviço:{" "}
+                  {formatBRL(dre.serviceFeesTotal)}
                 </p>
               </div>
               <div className="text-right">
@@ -450,34 +515,34 @@ export function FinanceSection({
         <section className="space-y-5 lg:col-span-5">
           <div className="card-bistro p-5">
             <div className="mb-3 flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-[#C07F5A]" />
-              <h3 className="font-display text-base font-bold text-[#3E2723]">
+              <CreditCard className="h-4 w-4 text-[var(--accent-primary)]" />
+              <h3 className="font-display text-base font-bold text-[var(--text-primary)]">
                 Conciliação por Meio de Pagamento
               </h3>
             </div>
             <div className="space-y-2.5 text-xs">
               {paymentBreakdown.length === 0 ? (
-                <p className="text-[#8C5A3C]">
-                  Nenhuma venda paga registrada ainda.
+                <p className="text-[var(--text-secondary)]">
+                  Nenhuma venda paga registrada no período.
                 </p>
               ) : (
                 paymentBreakdown.map(([pm, stats]) => (
                   <div
                     key={pm}
-                    className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] p-3"
+                    className="rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-3"
                   >
-                    <div className="flex items-center justify-between font-bold text-[#3E2723]">
+                    <div className="flex items-center justify-between font-bold text-[var(--text-primary)]">
                       <span>
                         {pm}{" "}
-                        <span className="text-[10px] font-normal text-[#8C5A3C]">
+                        <span className="text-[10px] font-normal text-[var(--text-secondary)]">
                           ({stats.count} vendas)
                         </span>
                       </span>
-                      <span className="font-mono-num text-[#15803d]">
+                      <span className="font-mono-num text-emerald-600">
                         Líq. {formatBRL(stats.net)}
                       </span>
                     </div>
-                    <div className="mt-1 flex justify-between text-[11px] text-[#8C5A3C]">
+                    <div className="mt-1 flex justify-between text-[11px] text-[var(--text-secondary)]">
                       <span>Bruto: {formatBRL(stats.gross)}</span>
                       <span>Taxa est.: - {formatBRL(stats.fee)}</span>
                     </div>
@@ -489,14 +554,14 @@ export function FinanceSection({
 
           <div className="card-bistro p-5">
             <div className="mb-3 flex items-center gap-2">
-              <Wallet className="h-4 w-4 text-[#C07F5A]" />
-              <h3 className="font-display text-base font-bold text-[#3E2723]">
+              <Wallet className="h-4 w-4 text-[var(--accent-primary)]" />
+              <h3 className="font-display text-base font-bold text-[var(--text-primary)]">
                 Histórico de Turnos de Caixa
               </h3>
             </div>
             <div className="max-h-56 space-y-2 overflow-y-auto pr-1 text-xs">
               {cashSessions.length === 0 ? (
-                <p className="text-[#8C5A3C]">Nenhum turno registrado.</p>
+                <p className="text-[var(--text-secondary)]">Nenhum turno registrado.</p>
               ) : (
                 cashSessions.map((session) => {
                   const diff =
@@ -508,10 +573,10 @@ export function FinanceSection({
                   return (
                     <div
                       key={session.id}
-                      className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] p-3"
+                      className="rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-3"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-[#3E2723]">
+                        <span className="font-bold text-[var(--text-primary)]">
                           #{session.id} · {session.openedBy}
                         </span>
                         <span
@@ -524,21 +589,19 @@ export function FinanceSection({
                           {session.status}
                         </span>
                       </div>
-                      <div className="mt-1 flex flex-wrap justify-between gap-2 text-[11px] text-[#8C5A3C]">
-                        <span>
-                          Abertura: {formatBRL(session.openingAmount)}
-                        </span>
-                        <span className="font-mono-num font-semibold text-[#3E2723]">
+                      <div className="mt-1 flex flex-wrap justify-between gap-2 text-[11px] text-[var(--text-secondary)]">
+                        <span>Abertura: {formatBRL(session.openingAmount)}</span>
+                        <span className="font-mono-num font-semibold text-[var(--text-primary)]">
                           Esperado: {formatBRL(session.expectedAmount)}
                         </span>
                         {diff !== null && (
                           <span
                             className={`font-mono-num font-bold ${
                               diff === 0
-                                ? "text-[#15803d]"
+                                ? "text-emerald-600"
                                 : diff > 0
-                                  ? "text-amber-700"
-                                  : "text-red-700"
+                                  ? "text-amber-600"
+                                  : "text-red-600"
                             }`}
                           >
                             Quebra: {diff >= 0 ? "+" : ""}
@@ -559,27 +622,26 @@ export function FinanceSection({
       <section className="card-bistro p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="font-display text-lg font-bold text-[#3E2723]">
+            <h2 className="font-display text-lg font-bold text-[var(--text-primary)]">
               Contas a Pagar & Receber
             </h2>
-            <p className="text-xs text-[#8C5A3C]">
-              Registre compras de grãos, farinha, energia, aluguel, eventos e
-              controle vencimentos com baixa em 1 clique.
+            <p className="text-xs text-[var(--text-secondary)]">
+              Registre compras, despesas operacionais, eventos e dê baixa em 1 clique.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
-              <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-[#8C5A3C]" />
+              <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-secondary)]" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar título ou fornecedor..."
-                className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] py-1.5 pr-3 pl-8 text-xs outline-none focus:border-[#C07F5A]"
+                className="input-field py-1.5 pr-3 pl-8 text-xs"
               />
             </div>
-            <div className="flex flex-wrap gap-1 rounded-xl bg-[#E6CCB2] p-1">
+            <div className="segmented">
               {(
                 [
                   { id: "ALL", label: "Todos" },
@@ -592,12 +654,8 @@ export function FinanceSection({
                 <button
                   key={tab.id}
                   type="button"
+                  data-active={filterType === tab.id}
                   onClick={() => setFilterType(tab.id)}
-                  className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
-                    filterType === tab.id
-                      ? "bg-[#3E2723] text-white"
-                      : "text-[#8C5A3C] hover:text-[#3E2723]"
-                  }`}
                 >
                   {tab.label}
                 </button>
@@ -606,10 +664,9 @@ export function FinanceSection({
           </div>
         </div>
 
-        {/* Form Novo Lançamento */}
         <form
           onSubmit={handleCreateEntry}
-          className="mb-5 grid gap-2.5 rounded-2xl border border-[#E6CCB2] bg-[#FAF3E8] p-4 sm:grid-cols-2 lg:grid-cols-8"
+          className="mb-5 grid gap-2.5 rounded-2xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-4 sm:grid-cols-2 lg:grid-cols-8"
         >
           <select
             value={type}
@@ -619,7 +676,7 @@ export function FinanceSection({
               if (next === "RECEITA") setCategory("VENDAS_EXTRA");
               else if (category === "VENDAS_EXTRA") setCategory("FORNECEDOR");
             }}
-            className="rounded-xl border border-[#E6CCB2] bg-white px-2.5 py-2 text-xs font-semibold"
+            className="input-field py-2 text-xs font-semibold"
           >
             <option value="DESPESA">Despesa (Pagar)</option>
             <option value="RECEITA">Receita (Receber)</option>
@@ -628,7 +685,7 @@ export function FinanceSection({
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as typeof category)}
-            className="rounded-xl border border-[#E6CCB2] bg-white px-2.5 py-2 text-xs"
+            className="input-field py-2 text-xs"
           >
             {Object.entries(CATEGORY_LABELS).map(([val, label]) => (
               <option key={val} value={val}>
@@ -643,7 +700,7 @@ export function FinanceSection({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Descrição (ex: Compra Leite A2)"
-            className="rounded-xl border border-[#E6CCB2] bg-white px-3 py-2 text-xs lg:col-span-2"
+            className="input-field py-2 text-xs lg:col-span-2"
           />
 
           <input
@@ -651,7 +708,7 @@ export function FinanceSection({
             value={counterparty}
             onChange={(e) => setCounterparty(e.target.value)}
             placeholder="Fornecedor / Cliente"
-            className="rounded-xl border border-[#E6CCB2] bg-white px-3 py-2 text-xs"
+            className="input-field py-2 text-xs"
           />
 
           <input
@@ -662,7 +719,7 @@ export function FinanceSection({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="Valor R$"
-            className="font-mono-num rounded-xl border border-[#E6CCB2] bg-white px-3 py-2 text-xs"
+            className="input-field font-mono-num py-2 text-xs"
           />
 
           <input
@@ -670,7 +727,7 @@ export function FinanceSection({
             required
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="rounded-xl border border-[#E6CCB2] bg-white px-2.5 py-2 text-xs"
+            className="input-field py-2 text-xs"
           />
 
           <select
@@ -678,7 +735,7 @@ export function FinanceSection({
             onChange={(e) =>
               setPaymentMethod(e.target.value as typeof paymentMethod)
             }
-            className="rounded-xl border border-[#E6CCB2] bg-white px-2.5 py-2 text-xs"
+            className="input-field py-2 text-xs"
           >
             <option value="PIX">PIX</option>
             <option value="BOLETO">Boleto</option>
@@ -694,7 +751,7 @@ export function FinanceSection({
               onChange={(e) =>
                 setStatus(e.target.value as "PENDENTE" | "PAGO")
               }
-              className="w-32 rounded-xl border border-[#E6CCB2] bg-white px-2.5 py-2 text-xs"
+              className="input-field w-36 py-2 text-xs"
             >
               <option value="PENDENTE">Status: Pendente</option>
               <option value="PAGO">Status: Já Pago</option>
@@ -711,7 +768,7 @@ export function FinanceSection({
 
         <div className="space-y-2">
           {filteredEntries.length === 0 ? (
-            <p className="py-6 text-center text-xs text-[#8C5A3C]">
+            <p className="py-6 text-center text-xs text-[var(--text-secondary)]">
               Nenhum lançamento financeiro encontrado para esse filtro.
             </p>
           ) : (
@@ -721,7 +778,7 @@ export function FinanceSection({
               return (
                 <div
                   key={entry.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] p-3 text-xs"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-3 text-xs"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -734,17 +791,15 @@ export function FinanceSection({
                       >
                         {isExpense ? "DESPESA" : "RECEITA"}
                       </span>
-                      <span className="rounded bg-white px-2 py-0.5 text-[10px] font-semibold text-[#8C5A3C]">
+                      <span className="rounded bg-[var(--bg-surface)] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-secondary)]">
                         {CATEGORY_LABELS[entry.category] ?? entry.category}
                       </span>
-                      <span className="font-bold text-[#3E2723]">
+                      <span className="font-bold text-[var(--text-primary)]">
                         {entry.description}
                       </span>
                     </div>
-                    <p className="mt-1 text-[11px] text-[#8C5A3C]">
-                      {entry.counterparty
-                        ? `${entry.counterparty} · `
-                        : ""}
+                    <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+                      {entry.counterparty ? `${entry.counterparty} · ` : ""}
                       Vencimento:{" "}
                       <strong className="font-mono-num">{entry.dueDate}</strong>
                       {entry.paymentMethod ? ` · ${entry.paymentMethod}` : ""}
@@ -755,7 +810,7 @@ export function FinanceSection({
                   <div className="flex flex-wrap items-center gap-2.5">
                     <span
                       className={`font-mono-num text-sm font-bold ${
-                        isExpense ? "text-red-700" : "text-[#15803d]"
+                        isExpense ? "text-red-600" : "text-emerald-600"
                       }`}
                     >
                       {isExpense ? "-" : "+"} {formatBRL(entry.amount)}
@@ -768,7 +823,7 @@ export function FinanceSection({
                       className={`inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-[11px] font-bold transition ${
                         isPaid
                           ? "bg-emerald-100 text-emerald-900 hover:bg-emerald-200"
-                          : "bg-[#3E2723] text-white hover:bg-[#3a251a]"
+                          : "bg-[var(--bg-shell)] text-[#FAF3E8] hover:opacity-90"
                       }`}
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" />
@@ -779,7 +834,7 @@ export function FinanceSection({
                       type="button"
                       disabled={busy}
                       onClick={() => deleteEntry(entry.id)}
-                      className="rounded-lg border border-[#E6CCB2] bg-white p-1.5 text-[#8C5A3C] hover:text-red-700"
+                      className="icon-btn p-1.5 text-red-700"
                       title="Excluir lançamento"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -795,14 +850,13 @@ export function FinanceSection({
       {/* Engenharia de Cardápio (CMV & Margem por Produto) */}
       <section className="card-bistro p-5">
         <div className="mb-4 flex items-center gap-2">
-          <Percent className="h-5 w-5 text-[#C07F5A]" />
+          <Percent className="h-5 w-5 text-[var(--accent-primary)]" />
           <div>
-            <h2 className="font-display text-lg font-bold text-[#3E2723]">
+            <h2 className="font-display text-lg font-bold text-[var(--text-primary)]">
               Engenharia de Cardápio — CMV & Margem de Lucro por Produto
             </h2>
-            <p className="text-xs text-[#8C5A3C]">
-              Custo calculado pelas fichas técnicas ligadas aos insumos (ou
-              referência de 32% quando sem ficha cadastrada).
+            <p className="text-xs text-[var(--text-secondary)]">
+              Custo calculado pelas fichas técnicas ligadas aos insumos (ou referência de 32% quando sem ficha).
             </p>
           </div>
         </div>
@@ -812,11 +866,11 @@ export function FinanceSection({
             ({ product, hasRecipe, unitCost, unitProfit, marginPct }) => (
               <div
                 key={product.id}
-                className="flex flex-col justify-between rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] p-3.5 text-xs"
+                className="flex flex-col justify-between rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-3.5 text-xs"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
-                    <span className="font-bold text-[#3E2723]">
+                    <span className="font-bold text-[var(--text-primary)]">
                       {product.name}
                     </span>
                     <span
@@ -831,28 +885,28 @@ export function FinanceSection({
                       {marginPct}% margem
                     </span>
                   </div>
-                  <p className="mt-0.5 text-[10px] text-[#8C5A3C]">
+                  <p className="mt-0.5 text-[10px] text-[var(--text-secondary)]">
                     {product.category.name} ·{" "}
                     {hasRecipe ? "CMV Ficha Técnica" : "CMV Estimado (32%)"}
                   </p>
                 </div>
 
-                <div className="mt-3 grid grid-cols-3 gap-1 border-t border-[#E6CCB2] pt-2 text-[11px]">
+                <div className="mt-3 grid grid-cols-3 gap-1 border-t border-[var(--border-warm)] pt-2 text-[11px]">
                   <div>
-                    <p className="text-[10px] text-[#8C5A3C]">Venda</p>
-                    <p className="font-mono-num font-bold text-[#3E2723]">
+                    <p className="text-[10px] text-[var(--text-secondary)]">Venda</p>
+                    <p className="font-mono-num font-bold text-[var(--text-primary)]">
                       {formatBRL(product.price)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-[#8C5A3C]">Custo</p>
-                    <p className="font-mono-num font-semibold text-red-700">
+                    <p className="text-[10px] text-[var(--text-secondary)]">Custo</p>
+                    <p className="font-mono-num font-semibold text-red-600">
                       {formatBRL(unitCost)}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[10px] text-[#8C5A3C]">Lucro/un</p>
-                    <p className="font-mono-num font-bold text-[#15803d]">
+                    <p className="text-[10px] text-[var(--text-secondary)]">Lucro/un</p>
+                    <p className="font-mono-num font-bold text-emerald-600">
                       {formatBRL(unitProfit)}
                     </p>
                   </div>

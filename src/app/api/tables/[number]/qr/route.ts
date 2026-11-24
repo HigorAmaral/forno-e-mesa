@@ -1,6 +1,7 @@
 import os from "node:os";
 import { NextResponse } from "next/server";
 import QRCode from "qrcode";
+import { forbiddenIfNotErpOperator } from "@/lib/access-guard";
 import { prisma } from "@/lib/prisma";
 import { ensureSeeded } from "@/lib/seed";
 import { buildTableQrPath, resolveQrOrigin } from "@/lib/domain";
@@ -33,6 +34,8 @@ export async function GET(
   request: Request,
   context: { params: Promise<{ number: string }> },
 ) {
+  const forbidden = await forbiddenIfNotErpOperator();
+  if (forbidden) return forbidden;
   try {
     await ensureSeeded();
     const { number } = await context.params;

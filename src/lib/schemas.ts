@@ -1,5 +1,17 @@
 import { z } from "zod";
 
+export const PaymentMethodEnum = z.enum([
+  "DINHEIRO",
+  "PIX",
+  "CREDITO",
+  "DEBITO",
+]);
+
+export const SplitPaymentPartSchema = z.object({
+  method: PaymentMethodEnum,
+  amount: z.number().positive().max(500000),
+});
+
 export const CreateOrderSchema = z.object({
   channel: z.enum(["PDV_BALCAO", "MESA", "QR_MESA", "ENCOMENDA", "DELIVERY", "RETIRADA"]),
   tableNumber: z.number().int().positive().optional(),
@@ -12,8 +24,10 @@ export const CreateOrderSchema = z.object({
   couponCode: z.string().max(32).optional(),
   applyServiceFee: z.boolean().optional(),
   notes: z.string().max(500).optional(),
+  scheduledFor: z.string().max(40).optional(),
   payNow: z.boolean().optional(),
-  paymentMethod: z.enum(["DINHEIRO", "PIX", "CREDITO", "DEBITO"]).optional(),
+  paymentMethod: z.enum(["DINHEIRO", "PIX", "CREDITO", "DEBITO", "MISTO"]).optional(),
+  splitPayments: z.array(SplitPaymentPartSchema).min(1).max(6).optional(),
   delivery: z
     .object({
       zoneId: z.number().int().positive().optional(),
@@ -37,7 +51,8 @@ export const CreateOrderSchema = z.object({
 export type CreateOrderInput = z.infer<typeof CreateOrderSchema>;
 
 export const CheckoutOrderSchema = z.object({
-  paymentMethod: z.enum(["DINHEIRO", "PIX", "CREDITO", "DEBITO"]),
+  paymentMethod: z.enum(["DINHEIRO", "PIX", "CREDITO", "DEBITO", "MISTO"]),
+  splitPayments: z.array(SplitPaymentPartSchema).min(1).max(6).optional(),
   discount: z.number().min(0).max(50000).optional(),
   applyServiceFee: z.boolean().optional(),
 });
@@ -114,9 +129,37 @@ export const CreateProductSchema = z.object({
 });
 
 export const ToggleProductSchema = z.object({
-  isAvailable: z.boolean().optional(),
-  stockQty: z.number().min(0).max(10000).optional(),
+  name: z.string().min(2).max(120).optional(),
+  description: z.string().min(2).max(300).optional(),
   price: z.number().positive().max(50000).optional(),
+  unit: z.enum(["UN", "KG", "FATIA", "PORCAO"]).optional(),
+  prepStation: z.enum(["BALCAO", "FORNO", "CONFEITARIA", "COZINHA", "BAR"]).optional(),
+  prepTimeMinutes: z.number().int().min(1).max(180).optional(),
+  categoryId: z.number().int().positive().optional(),
+  isAvailable: z.boolean().optional(),
+  isFeatured: z.boolean().optional(),
+  trackStock: z.boolean().optional(),
+  stockQty: z.number().min(0).max(10000).optional(),
+  minStockQty: z.number().min(0).max(1000).optional(),
+});
+
+export const CreateCategorySchema = z.object({
+  kind: z.literal("category"),
+  name: z.string().min(2).max(80),
+  sector: z.enum(["PADARIA", "CONFEITARIA", "RESTAURANTE", "BEBIDAS"]),
+});
+
+export const UpsertRecipeSchema = z.object({
+  kind: z.literal("recipe"),
+  productId: z.number().int().positive(),
+  items: z
+    .array(
+      z.object({
+        ingredientId: z.number().int().positive(),
+        qtyRequired: z.number().positive().max(1000),
+      }),
+    )
+    .max(30),
 });
 
 export const CashActionSchema = z.object({
@@ -130,7 +173,8 @@ export const CashActionSchema = z.object({
 });
 
 export const TableActionSchema = z.object({
-  status: z.enum(["LIVRE", "OCUPADA", "RESERVADA", "CONTA"]),
+  status: z.enum(["LIVRE", "OCUPADA", "RESERVADA", "CONTA"]).optional(),
+  action: z.enum(["CALL_WAITER", "DISMISS_WAITER", "ROTATE_QR"]).optional(),
   qrToken: z.string().min(4).optional(),
 });
 
@@ -198,4 +242,74 @@ export const UpdateFinancialEntrySchema = z.object({
   paymentMethod: z
     .enum(["PIX", "BOLETO", "TRANSFERENCIA", "DINHEIRO", "CREDITO", "DEBITO"])
     .optional(),
+});
+
+export const CreateStaffUserSchema = z.object({
+  name: z.string().min(2).max(100),
+  email: z.string().email().max(120),
+  role: z.enum(["ADMIN", "GERENTE", "CAIXA", "GARCOM", "COZINHA"]),
+  password: z.string().min(4).max(80),
+  pin: z.string().min(4).max(16).optional(),
+});
+
+export const UpdateStaffUserSchema = z.object({
+  id: z.number().int().positive(),
+  name: z.string().min(2).max(100).optional(),
+  role: z.enum(["ADMIN", "GERENTE", "CAIXA", "GARCOM", "COZINHA"]).optional(),
+  isActive: z.boolean().optional(),
+  password: z.string().min(4).max(80).optional(),
+  pin: z.string().min(4).max(16).optional(),
+});
+
+export const UpdateStoreSettingsSchema = z.object({
+  storeName: z.string().min(2).max(120).optional(),
+  slogan: z.string().min(2).max(180).optional(),
+  phone: z.string().min(6).max(40).optional(),
+  address: z.string().min(4).max(200).optional(),
+  openingHours: z.string().min(2).max(120).optional(),
+  isDeliveryOpen: z.boolean().optional(),
+  dailyGoal: z.number().min(100).max(1000000).optional(),
+  defaultServiceFeePct: z.number().min(0).max(30).optional(),
+  freeDeliveryAbove: z.number().min(0).max(5000).optional(),
+  creditCardFeePct: z.number().min(0).max(15).optional(),
+  debitCardFeePct: z.number().min(0).max(15).optional(),
+});
+
+export const PromoCouponSchema = z.object({
+  code: z.string().min(3).max(32),
+  label: z.string().min(2).max(120),
+  type: z.enum(["PERCENT", "FIXED", "FREE_DELIVERY"]),
+  value: z.number().min(0).max(50000),
+  maxDiscount: z.number().min(0).max(50000).nullable().optional(),
+  minOrder: z.number().min(0).max(50000).default(0),
+});
+
+export const UpdatePromoCouponSchema = z.object({
+  id: z.number().int().positive(),
+  isActive: z.boolean().optional(),
+  label: z.string().min(2).max(120).optional(),
+  value: z.number().min(0).max(50000).optional(),
+  minOrder: z.number().min(0).max(50000).optional(),
+});
+
+export const CreateReservationSchema = z.object({
+  tableId: z.number().int().positive().nullable().optional(),
+  customerName: z.string().min(2).max(120),
+  customerPhone: z.string().min(6).max(40),
+  partySize: z.number().int().min(1).max(40),
+  reservedFor: z.string().min(5).max(40),
+  notes: z.string().max(300).optional(),
+});
+
+export const UpdateReservationSchema = z.object({
+  id: z.number().int().positive(),
+  status: z.enum(["CONFIRMADA", "SENTADA", "CANCELADA", "CONCLUIDA"]).optional(),
+  tableId: z.number().int().positive().nullable().optional(),
+});
+
+export const CreateOrderReviewSchema = z.object({
+  code: z.string().min(3).max(32),
+  token: z.string().min(4).max(128),
+  rating: z.number().int().min(1).max(5),
+  comment: z.string().max(400).optional(),
 });

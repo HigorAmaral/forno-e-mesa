@@ -18,10 +18,25 @@ import {
   splitBillAmount,
 } from "../domain.ts";
 import {
+  buildSignedOperatorToken,
   buildOperatorToken,
   extractHostname,
   isErpAllowedContext,
+  parseSignedOperatorToken,
 } from "../access-policy.ts";
+import {
+  checkRateLimit,
+  hashSecret,
+  signSessionPayload,
+  verifySecret,
+  verifySessionPayload,
+} from "../auth-crypto.ts";
+import { canAccessTab, defaultTabForRole, hasAnyRole } from "../rbac.ts";
+import {
+  getKdsUrgencyLevel,
+  resolveDynamicCouponBenefit,
+  validateSplitPayments,
+} from "../domain.ts";
 
 test("calculateOrderTotals aplica desconto limitado e taxa de servico de 10%", () => {
   const res = calculateOrderTotals({
@@ -289,5 +304,188 @@ test("resolveCouponBenefit valida cupons FORNO10, BEMVINDO e FRETEZERO", () => {
   const frete = resolveCouponBenefit({ code: "FRETEZERO", subtotal: 25 });
   assert.equal(frete.valid, true);
   assert.equal(frete.freeDelivery, true);
+});
+
+test("hashSecret e verifySecret protegem senhas/PINs com salt aleatorio", () => {
+  const hash1 = hashSecret("forno2026");
+  const hash2 = hashSecret("forno2026");
+  assert.notEqual(hash1, hash2);
+  assert.equal(verifySecret("forno2026", hash1), true);
+  assert.equal(verifySecret("errada", hash1), false);
+  assert.equal(verifySecret("forno2026", "formato-invalido"), false);
+  assert.equal(verifySecret("", hash1), false);
+});
+
+test("signSessionPayload e verifySessionPayload validam assinatura e expiracao", () => {
+  const token = signSessionPayload({
+    userId: 1,
+    role: "ADMIN",
+    exp: Date.now() + 60_000,
+  });
+  const decoded = verifySessionPayload<{ userId: number; role: string; exp: number }>(token);
+  assert.equal(decoded?.userId, 1);
+  assert.equal(decoded?.role, "ADMIN");
+
+  const tampered = `${token.slice(0, -2)}xx`;
+  assert.equal(verifySessionPayload(tampered), null);
+
+  const expired = signSessionPayload({
+    userId: 1,
+    exp: Date.now() - 1000,
+  });
+  assert.equal(verifySessionPayload(expired), null);
+});
+
+test("checkRateLimit bloqueia apos exceder o limite na janela", () => {
+  const key = `test-rl-${Date.now()}`;
+  assert.equal(checkRateLimit(key, 2, 60_000).allowed, true);
+  assert.equal(checkRateLimit(key, 2, 60_000).allowed, true);
+  const blocked = checkRateLimit(key, 2, 60_000);
+  assert.equal(blocked.allowed, false);
+  assert.ok(blocked.retryAfterSec > 0);
+});
+
+test("buildSignedOperatorToken, parseSignedOperatorToken e lockedCookie funcionam no controle de acesso", () => {
+  const token = buildSignedOperatorToken({
+    userId: 2,
+    name: "Carla Caixa",
+    email: "caixa@fornoemesa.com",
+    role: "CAIXA",
+  });
+  const parsed = parseSignedOperatorToken(token);
+  assert.equal(parsed?.name, "Carla Caixa");
+  assert.equal(parsed?.role, "CAIXA");
+
+  // Desktop localhost com lockedCookie="1" fica bloqueado ate novo login
+  assert.equal(
+    isErpAllowedContext({
+      host: "localhost:3001",
+      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+      cookieToken: null,
+      lockedCookie: "1",
+    }),
+    false,
+  );
+
+  // Token assinado valido libera mesmo em celular/LAN
+  assert.equal(
+    isErpAllowedContext({
+      host: "192.168.1.25:3001",
+      userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)",
+      cookieToken: token,
+      lockedCookie: "1",
+    }),
+    true,
+  );
+});
+
+test("RBAC canAccessTab, hasAnyRole e defaultTabForRole aplicam permissoes por perfil", () => {
+  assert.equal(canAccessTab("ADMIN", "finance"), true);
+  assert.equal(canAccessTab("ADMIN", "settings"), true);
+  assert.equal(canAccessTab("CAIXA", "pdv"), true);
+  assert.equal(canAccessTab("CAIXA", "finance"), false);
+  assert.equal(canAccessTab("CAIXA", "settings"), false);
+  assert.equal(canAccessTab("COZINHA", "kds"), true);
+  assert.equal(canAccessTab("COZINHA", "bakery"), true);
+  assert.equal(canAccessTab("COZINHA", "pdv"), false);
+  assert.equal(defaultTabForRole("COZINHA"), "kds");
+  assert.equal(defaultTabForRole("GARCOM"), "tables");
+  assert.equal(hasAnyRole("GERENTE", ["ADMIN", "GERENTE"]), true);
+  assert.equal(hasAnyRole("CAIXA", ["ADMIN", "GERENTE"]), false);
+});
+
+test("resolveDynamicCouponBenefit suporta PERCENT com teto, FIXED com minimo, FREE_DELIVERY e inativo", () => {
+  const pct = resolveDynamicCouponBenefit(
+    { code: "CAFE20", label: "20% até R$25", type: "PERCENT", value: 20, maxDiscount: 25, minOrder: 0, isActive: true },
+    200,
+  );
+  assert.equal(pct.valid, true);
+  assert.equal(pct.discount, 25);
+
+  const fixedFail = resolveDynamicCouponBenefit(
+    { code: "VIP15", label: "R$15 acima de 80", type: "FIXED", value: 15, minOrder: 80, isActive: true },
+    60,
+  );
+  assert.equal(fixedFail.valid, false);
+
+  const fixedOk = resolveDynamicCouponBenefit(
+    { code: "VIP15", label: "R$15 acima de 80", type: "FIXED", value: 15, minOrder: 80, isActive: true },
+    100,
+  );
+  assert.equal(fixedOk.valid, true);
+  assert.equal(fixedOk.discount, 15);
+
+  const free = resolveDynamicCouponBenefit(
+    { code: "FRETE0", label: "Frete grátis", type: "FREE_DELIVERY", value: 0, minOrder: 0, isActive: true },
+    30,
+  );
+  assert.equal(free.valid, true);
+  assert.equal(free.freeDelivery, true);
+
+  const inactive = resolveDynamicCouponBenefit(
+    { code: "OLD", label: "Expirado", type: "FIXED", value: 10, minOrder: 0, isActive: false },
+    100,
+  );
+  assert.equal(inactive.valid, false);
+});
+
+test("validateSplitPayments valida soma exata e rejeita divergencias ou valores invalidos", () => {
+  const ok = validateSplitPayments(100, [
+    { method: "PIX", amount: 40 },
+    { method: "CREDITO", amount: 60 },
+  ]);
+  assert.equal(ok.valid, true);
+  assert.equal(ok.remaining, 0);
+
+  const missing = validateSplitPayments(100, [
+    { method: "PIX", amount: 40 },
+    { method: "CREDITO", amount: 50 },
+  ]);
+  assert.equal(missing.valid, false);
+  assert.equal(missing.remaining, 10);
+
+  const zero = validateSplitPayments(100, [{ method: "PIX", amount: 0 }]);
+  assert.equal(zero.valid, false);
+});
+
+test("getKdsUrgencyLevel classifica SLA normal, warning e urgent", () => {
+  const now = new Date("2026-11-24T12:00:00Z");
+  assert.equal(getKdsUrgencyLevel(new Date("2026-11-24T11:55:00Z"), now), "normal");
+  assert.equal(getKdsUrgencyLevel(new Date("2026-11-24T11:50:00Z"), now), "warning");
+  assert.equal(getKdsUrgencyLevel(new Date("2026-11-24T11:42:00Z"), now), "urgent");
+});
+
+test("computeFinancialDre aceita taxas de cartao personalizadas", () => {
+  const dre = computeFinancialDre({
+    orders: [
+      {
+        status: "PAGO",
+        paymentMethod: "CREDITO",
+        subtotal: 100,
+        discount: 0,
+        serviceFee: 0,
+        total: 100,
+        items: [{ productId: 1, qty: 1, totalPrice: 100 }],
+      },
+      {
+        status: "PAGO",
+        paymentMethod: "DEBITO",
+        subtotal: 100,
+        discount: 0,
+        serviceFee: 0,
+        total: 100,
+        items: [{ productId: 1, qty: 1, totalPrice: 100 }],
+      },
+    ],
+    productCostById: new Map([[1, 20]]),
+    cakeOrders: [],
+    entries: [],
+    creditCardFeeRate: 0.04,
+    debitCardFeeRate: 0.02,
+  });
+
+  assert.equal(dre.cardFeesEstimated, 6);
+  assert.equal(dre.estimatedCmv, 40);
+  assert.equal(dre.netProfit, 154);
 });
 

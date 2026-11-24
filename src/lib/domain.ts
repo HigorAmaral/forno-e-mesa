@@ -334,7 +334,11 @@ export function computeFinancialDre(params: {
     amount: number;
     status: string;
   }>;
+  creditCardFeeRate?: number;
+  debitCardFeeRate?: number;
 }): FinancialDreSummary {
+  const creditRate = params.creditCardFeeRate ?? 0.032;
+  const debitRate = params.debitCardFeeRate ?? 0.016;
   const paidOrders = params.orders.filter((o) => o.status === "PAGO");
   const openOrders = params.orders.filter(
     (o) => !["PAGO", "CANCELADO"].includes(o.status),
@@ -350,10 +354,15 @@ export function computeFinancialDre(params: {
     paidOrders.reduce((s, o) => s + o.serviceFee, 0),
   );
   const cardFeesEstimated = roundMoney(
-    paidOrders.reduce(
-      (s, o) => s + o.total * calculateCardFeeRate(o.paymentMethod),
-      0,
-    ),
+    paidOrders.reduce((s, o) => {
+      const rate =
+        o.paymentMethod === "CREDITO"
+          ? creditRate
+          : o.paymentMethod === "DEBITO"
+            ? debitRate
+            : calculateCardFeeRate(o.paymentMethod);
+      return s + o.total * rate;
+    }, 0),
   );
 
   let estimatedCmv = 0;
@@ -528,5 +537,148 @@ export function resolveCouponBenefit(params: {
     label: "",
     error: "Cupom inválido ou expirado.",
   };
+}
+
+export interface DynamicCouponInput {
+  code: string;
+  label: string;
+  type: string; // PERCENT | FIXED | FREE_DELIVERY
+  value: number;
+  maxDiscount?: number | null;
+  minOrder?: number;
+  isActive: boolean;
+}
+
+export function resolveDynamicCouponBenefit(
+  coupon: DynamicCouponInput | null | undefined,
+  subtotal: number,
+): CouponBenefitResult {
+  if (!coupon) {
+    return {
+      valid: false,
+      code: "",
+      discount: 0,
+      freeDelivery: false,
+      label: "",
+      error: "Cupom inválido ou expirado.",
+    };
+  }
+  const normalized = coupon.code.trim().toUpperCase();
+  if (!coupon.isActive) {
+    return {
+      valid: false,
+      code: normalized,
+      discount: 0,
+      freeDelivery: false,
+      label: coupon.label,
+      error: "Este cupom está inativo no momento.",
+    };
+  }
+  const sub = Math.max(0, roundMoney(subtotal));
+  const minOrder = Math.max(0, coupon.minOrder ?? 0);
+  if (sub < minOrder) {
+    return {
+      valid: false,
+      code: normalized,
+      discount: 0,
+      freeDelivery: false,
+      label: coupon.label,
+      error: `Cupom ${normalized} exige pedido mínimo de ${formatBRL(minOrder)}.`,
+    };
+  }
+
+  if (coupon.type === "FREE_DELIVERY") {
+    return {
+      valid: true,
+      code: normalized,
+      discount: 0,
+      freeDelivery: true,
+      label: coupon.label || "Frete Grátis",
+    };
+  }
+
+  if (coupon.type === "PERCENT") {
+    let discount = roundMoney((sub * Math.max(0, coupon.value)) / 100);
+    if (coupon.maxDiscount && coupon.maxDiscount > 0) {
+      discount = Math.min(discount, coupon.maxDiscount);
+    }
+    return {
+      valid: true,
+      code: normalized,
+      discount: Math.min(sub, roundMoney(discount)),
+      freeDelivery: false,
+      label: coupon.label,
+    };
+  }
+
+  const fixedDiscount = Math.min(sub, roundMoney(Math.max(0, coupon.value)));
+  return {
+    valid: true,
+    code: normalized,
+    discount: fixedDiscount,
+    freeDelivery: false,
+    label: coupon.label,
+  };
+}
+
+export interface SplitPaymentValidation {
+  valid: boolean;
+  sum: number;
+  remaining: number;
+  error?: string;
+}
+
+/**
+ * Validates that split payment parts have positive amounts summing to the order total.
+ */
+export function validateSplitPayments(
+  total: number,
+  payments: Array<{ method: string; amount: number }>,
+): SplitPaymentValidation {
+  const safeTotal = roundMoney(Math.max(0, total));
+  if (payments.length === 0) {
+    return {
+      valid: false,
+      sum: 0,
+      remaining: safeTotal,
+      error: "Informe ao menos uma forma de pagamento.",
+    };
+  }
+  for (const part of payments) {
+    if (!Number.isFinite(part.amount) || part.amount <= 0) {
+      return {
+        valid: false,
+        sum: 0,
+        remaining: safeTotal,
+        error: "Todos os valores do pagamento dividido devem ser maiores que zero.",
+      };
+    }
+  }
+  const sum = roundMoney(payments.reduce((acc, p) => acc + p.amount, 0));
+  const remaining = roundMoney(safeTotal - sum);
+  if (Math.abs(remaining) > 0.02) {
+    return {
+      valid: false,
+      sum,
+      remaining,
+      error:
+        remaining > 0
+          ? `Faltam ${formatBRL(remaining)} para completar o total.`
+          : `Valor informado excede o total em ${formatBRL(Math.abs(remaining))}.`,
+    };
+  }
+  return { valid: true, sum, remaining: 0 };
+}
+
+export type KdsUrgencyLevel = "normal" | "warning" | "urgent";
+
+export function getKdsUrgencyLevel(
+  createdAt: string | Date,
+  now: Date = new Date(),
+): KdsUrgencyLevel {
+  const mins = minutesSince(createdAt, now);
+  if (mins >= 15) return "urgent";
+  if (mins >= 8) return "warning";
+  return "normal";
 }
 

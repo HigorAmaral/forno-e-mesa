@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { forbiddenIfNotErpOperator } from "@/lib/access-guard";
 import { prisma } from "@/lib/prisma";
 import { CreateBatchSchema } from "@/lib/schemas";
 
 export async function POST(request: Request) {
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE", "COZINHA"]);
+  if (forbidden) return forbidden;
   try {
     const body = await request.json();
     const parsed = CreateBatchSchema.safeParse(body);

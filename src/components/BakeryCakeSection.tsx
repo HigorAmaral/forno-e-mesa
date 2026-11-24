@@ -50,7 +50,7 @@ export function BakeryCakeSection({
   const [flavor, setFlavor] = useState("Massa Branca / Baunilha");
   const [filling, setFilling] = useState("Ninho com Morangos");
   const [deliveryDate, setDeliveryDate] = useState(
-    new Date(Date.now() + 86400000).toISOString().slice(0, 10),
+    () => new Date(Date.now() + 86400000).toISOString().slice(0, 10),
   );
   const [deliverySlot, setDeliverySlot] = useState("15:00");
   const [totalPrice, setTotalPrice] = useState("260");

@@ -1,8 +1,31 @@
 import crypto from "node:crypto";
+import {
+  safeEqualString,
+  signSessionPayload,
+  verifySessionPayload,
+} from "./auth-crypto.ts";
+import type { StaffRole } from "../types/erp.ts";
 
 export const OPERATOR_COOKIE_NAME = "forno_operator_session";
+export const OPERATOR_LOCKED_COOKIE = "forno_operator_locked";
+export const CUSTOMER_COOKIE_NAME = "forno_customer_session";
 
 const DEFAULT_PIN = "2026";
+
+export interface OperatorSessionPayload {
+  userId: number;
+  name: string;
+  email: string;
+  role: StaffRole;
+  exp: number;
+}
+
+export interface CustomerSessionPayload {
+  customerId: number;
+  name: string;
+  phone: string;
+  exp: number;
+}
 
 export function getOperatorPin(): string {
   return process.env.ERP_OPERATOR_PIN?.trim() || DEFAULT_PIN;
@@ -10,11 +33,49 @@ export function getOperatorPin(): string {
 
 export function buildOperatorToken(pin: string): string {
   const secret =
-    process.env.DATABASE_URL?.trim() || "forno-e-mesa-internal-secret";
+    process.env.AUTH_SECRET?.trim() ||
+    process.env.DATABASE_URL?.trim() ||
+    "forno-e-mesa-internal-secret";
   return crypto
     .createHmac("sha256", secret)
     .update(`operator:${pin}`)
     .digest("hex");
+}
+
+export function buildSignedOperatorToken(
+  session: Omit<OperatorSessionPayload, "exp">,
+  ttlMs = 1000 * 60 * 60 * 12,
+): string {
+  return signSessionPayload<OperatorSessionPayload>({
+    ...session,
+    exp: Date.now() + ttlMs,
+  });
+}
+
+export function parseSignedOperatorToken(
+  token: string | null | undefined,
+): OperatorSessionPayload | null {
+  const payload = verifySessionPayload<OperatorSessionPayload>(token);
+  if (!payload || !payload.role || !payload.name) return null;
+  return payload;
+}
+
+export function buildSignedCustomerToken(
+  session: Omit<CustomerSessionPayload, "exp">,
+  ttlMs = 1000 * 60 * 60 * 24 * 30,
+): string {
+  return signSessionPayload<CustomerSessionPayload>({
+    ...session,
+    exp: Date.now() + ttlMs,
+  });
+}
+
+export function parseSignedCustomerToken(
+  token: string | null | undefined,
+): CustomerSessionPayload | null {
+  const payload = verifySessionPayload<CustomerSessionPayload>(token);
+  if (!payload || !payload.customerId || !payload.phone) return null;
+  return payload;
 }
 
 export function extractHostname(hostHeader: string | null | undefined): string {
@@ -28,18 +89,29 @@ export function extractHostname(hostHeader: string | null | undefined): string {
 }
 
 /**
- * Allows ERP access on desktop localhost/loopback without login, while blocking
- * mobile browsers and LAN/external hosts unless unlocked with a valid operator cookie.
+ * Allows ERP access on desktop localhost/loopback without login (unless locked),
+ * while blocking mobile browsers and LAN/external hosts unless unlocked with a
+ * valid operator cookie (legacy HMAC or signed RBAC session token).
  */
 export function isErpAllowedContext(params: {
   host: string | null | undefined;
   userAgent: string | null | undefined;
   cookieToken: string | null | undefined;
   expectedToken?: string;
+  lockedCookie?: string | null | undefined;
 }): boolean {
-  const expected = params.expectedToken ?? buildOperatorToken(getOperatorPin());
-  if (params.cookieToken && params.cookieToken === expected) {
-    return true;
+  if (params.cookieToken) {
+    const expected = params.expectedToken ?? buildOperatorToken(getOperatorPin());
+    if (safeEqualString(params.cookieToken, expected)) {
+      return true;
+    }
+    if (parseSignedOperatorToken(params.cookieToken)) {
+      return true;
+    }
+  }
+
+  if (params.lockedCookie === "1") {
+    return false;
   }
 
   const hostname = extractHostname(params.host);

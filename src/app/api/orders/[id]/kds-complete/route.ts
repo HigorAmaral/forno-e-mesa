@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { forbiddenIfNotErpOperator } from "@/lib/access-guard";
 import { prisma } from "@/lib/prisma";
 import { deriveOrderStatusFromItems, type ItemStatus } from "@/lib/domain";
 import { syncDeliveryFromKitchen } from "@/lib/workspace-service";
@@ -7,6 +8,8 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
+  const forbidden = await forbiddenIfNotErpOperator();
+  if (forbidden) return forbidden;
   try {
     const { id } = await context.params;
     const orderId = Number(id);

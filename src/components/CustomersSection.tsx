@@ -154,11 +154,18 @@ export function CustomersSection({
       <section className="card-bistro p-5 xl:col-span-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="font-display text-lg font-bold text-[#3E2723]">
+            <h2 className="font-display text-lg font-bold text-[var(--text-primary)]">
               Base de Clientes & Pontuação ({customers.length})
             </h2>
-            <p className="text-xs text-[#8C5A3C]">
-              Selecione um cliente para iniciar pedido no PDV já acumulando ou resgatando pontos.
+            <p className="text-xs text-[var(--text-secondary)]">
+              Selecione um cliente para iniciar pedido no PDV ou{" "}
+              <a
+                href="/api/reports/export?scope=customers"
+                className="font-bold text-[var(--accent-primary)] hover:underline"
+              >
+                exportar base CSV
+              </a>
+              .
             </p>
           </div>
           <div className="relative w-full sm:w-64">

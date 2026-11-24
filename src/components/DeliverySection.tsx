@@ -455,7 +455,7 @@ export function DeliverySection({
                 </div>
                 <div className="space-y-2.5">
                   {list.length === 0 ? (
-                    <p className="rounded-xl border border-dashed border-[#E6CCB2] p-4 text-center text-[11px] text-[#8b9098]">
+                    <p className="rounded-xl border border-dashed border-[var(--border-warm)] p-4 text-center text-[11px] text-[var(--text-secondary)]">
                       Nenhum pedido aqui
                     </p>
                   ) : (
@@ -579,7 +579,7 @@ export function DeliverySection({
                         <button
                           type="button"
                           onClick={() => zoneRequest("PATCH", { id: z.id, isActive: !z.isActive })}
-                          className={`icon-btn ${z.isActive ? "text-emerald-700" : "text-[#8b9098]"}`}
+                          className={`icon-btn ${z.isActive ? "text-emerald-700" : "text-[var(--text-secondary)]"}`}
                           title={z.isActive ? "Pausar entregas" : "Reativar entregas"}
                         >
                           <Power className="h-3.5 w-3.5" />

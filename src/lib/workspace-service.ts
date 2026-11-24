@@ -13,86 +13,203 @@ import {
   nextDeliveryStatus,
   resolveCouponBenefit,
   resolveDeliveryFee,
+  resolveDynamicCouponBenefit,
   roundMoney,
+  validateSplitPayments,
   type DeliveryStatus,
   type ItemStatus,
 } from "./domain";
 
+function extractNextSequenceNumber(code: string | null | undefined, fallbackId: number): number {
+  if (code) {
+    const match = code.match(/(\d+)$/);
+    if (match) {
+      return Math.max(Number(match[1]) + 1, fallbackId + 1);
+    }
+  }
+  return fallbackId + 1;
+}
+
 export async function generateOrderCode(): Promise<string> {
-  const count = await prisma.order.count();
-  return `PED-${String(count + 1).padStart(4, "0")}`;
+  const last = await prisma.order.findFirst({
+    orderBy: { id: "desc" },
+    select: { id: true, code: true },
+  });
+  const next = last ? extractNextSequenceNumber(last.code, last.id) : 1;
+  return `PED-${String(next).padStart(4, "0")}`;
 }
 
 export async function generateCakeCode(): Promise<string> {
-  const count = await prisma.cakeCustomOrder.count();
-  return `ENC-${String(count + 1).padStart(4, "0")}`;
+  const last = await prisma.cakeCustomOrder.findFirst({
+    orderBy: { id: "desc" },
+    select: { id: true, code: true },
+  });
+  const next = last ? extractNextSequenceNumber(last.code, last.id) : 1;
+  return `ENC-${String(next).padStart(4, "0")}`;
 }
 
 export async function getWorkspaceSnapshot() {
   await ensureSeeded();
 
-  const categories = await prisma.category.findMany({ orderBy: { sortOrder: "asc" } });
-  const products = await prisma.product.findMany({
-    include: {
-      category: true,
-      recipeItems: { include: { ingredient: true } },
-    },
-    orderBy: [{ categoryId: "asc" }, { name: "asc" }],
-  });
-  const ingredients = await prisma.ingredient.findMany({ orderBy: { name: "asc" } });
-  const tables = await prisma.diningTable.findMany({
-    orderBy: { number: "asc" },
-    include: {
-      orders: {
-        where: { status: { notIn: ["PAGO", "CANCELADO"] } },
-        include: { items: true },
-        orderBy: { createdAt: "desc" },
+  const [
+    categories,
+    products,
+    ingredients,
+    tables,
+    orders,
+    batches,
+    cakeOrders,
+    openCashSession,
+    customers,
+    shiftNotes,
+    cashSessions,
+    financialEntries,
+    deliveryZones,
+    rawSettings,
+    rawStaffUsers,
+    coupons,
+    reservations,
+    reviews,
+    auditLogs,
+  ] = await Promise.all([
+    prisma.category.findMany({ orderBy: { sortOrder: "asc" } }),
+    prisma.product.findMany({
+      include: {
+        category: true,
+        recipeItems: { include: { ingredient: true } },
       },
-    },
-  });
-  const orders = await prisma.order.findMany({
-    include: {
-      table: true,
-      items: true,
-    },
-    orderBy: { createdAt: "desc" },
-    take: 60,
-  });
-  const batches = await prisma.bakeryBatch.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 30,
-  });
-  const cakeOrders = await prisma.cakeCustomOrder.findMany({
-    orderBy: [{ deliveryDate: "asc" }, { createdAt: "desc" }],
-  });
-  const openCashSession = await prisma.cashRegisterSession.findFirst({
-    where: { status: "ABERTO" },
-    include: {
-      movements: { orderBy: { createdAt: "desc" }, take: 40 },
-    },
-    orderBy: { openedAt: "desc" },
-  });
-  const customers = await prisma.customerProfile.findMany({
-    orderBy: { totalSpent: "desc" },
-  });
-  const shiftNotes = await prisma.shiftNote.findMany({
-    orderBy: [{ isDone: "asc" }, { createdAt: "desc" }],
-    take: 25,
-  });
-  const cashSessions = await prisma.cashRegisterSession.findMany({
-    orderBy: { openedAt: "desc" },
-    take: 10,
-    include: {
-      movements: { orderBy: { createdAt: "desc" }, take: 20 },
-    },
-  });
-  const financialEntries = await prisma.financialEntry.findMany({
-    orderBy: [{ dueDate: "asc" }, { id: "desc" }],
-    take: 100,
-  });
-  const deliveryZones = await prisma.deliveryZone.findMany({
-    orderBy: [{ isActive: "desc" }, { fee: "asc" }],
-  });
+      orderBy: [{ categoryId: "asc" }, { name: "asc" }],
+    }),
+    prisma.ingredient.findMany({ orderBy: { name: "asc" } }),
+    prisma.diningTable.findMany({
+      orderBy: { number: "asc" },
+      include: {
+        orders: {
+          where: { status: { notIn: ["PAGO", "CANCELADO"] } },
+          include: { items: true },
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    }),
+    prisma.order.findMany({
+      include: {
+        table: true,
+        items: true,
+        review: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 80,
+    }),
+    prisma.bakeryBatch.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 30,
+    }),
+    prisma.cakeCustomOrder.findMany({
+      orderBy: [{ deliveryDate: "asc" }, { createdAt: "desc" }],
+    }),
+    prisma.cashRegisterSession.findFirst({
+      where: { status: "ABERTO" },
+      include: {
+        movements: { orderBy: { createdAt: "desc" }, take: 40 },
+      },
+      orderBy: { openedAt: "desc" },
+    }),
+    prisma.customerProfile.findMany({
+      orderBy: { totalSpent: "desc" },
+    }),
+    prisma.shiftNote.findMany({
+      orderBy: [{ isDone: "asc" }, { createdAt: "desc" }],
+      take: 25,
+    }),
+    prisma.cashRegisterSession.findMany({
+      orderBy: { openedAt: "desc" },
+      take: 10,
+      include: {
+        movements: { orderBy: { createdAt: "desc" }, take: 20 },
+      },
+    }),
+    prisma.financialEntry.findMany({
+      orderBy: [{ dueDate: "asc" }, { id: "desc" }],
+      take: 100,
+    }),
+    prisma.deliveryZone.findMany({
+      orderBy: [{ isActive: "desc" }, { fee: "asc" }],
+    }),
+    prisma.storeSettings.findUnique({ where: { id: 1 } }),
+    prisma.staffUser.findMany({
+      orderBy: [{ isActive: "desc" }, { id: "asc" }],
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isActive: true,
+        pinHash: true,
+        lastLoginAt: true,
+        createdAt: true,
+      },
+    }),
+    prisma.promoCoupon.findMany({
+      orderBy: [{ isActive: "desc" }, { code: "asc" }],
+    }),
+    prisma.tableReservation.findMany({
+      include: { table: true },
+      orderBy: [{ reservedFor: "asc" }, { id: "desc" }],
+      take: 40,
+    }),
+    prisma.orderReview.findMany({
+      include: { order: { select: { code: true, channel: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 40,
+    }),
+    prisma.auditLog.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    }),
+  ]);
+
+  const storeSettings = rawSettings ?? {
+    id: 1,
+    storeName: "Forno & Mesa",
+    slogan: "Padaria Artesanal, Cafeteria & Bistrô",
+    phone: "(11) 99999-0000",
+    address: "Rua das Flores, 240 — Centro",
+    openingHours: "Ter–Dom · 07:00 às 22:00",
+    isDeliveryOpen: true,
+    dailyGoal: 2500,
+    defaultServiceFeePct: 10,
+    freeDeliveryAbove: FREE_DELIVERY_ABOVE,
+    creditCardFeePct: 3.2,
+    debitCardFeePct: 1.6,
+    updatedAt: new Date(),
+  };
+
+  const staffUsers = rawStaffUsers.map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    isActive: u.isActive,
+    hasPin: Boolean(u.pinHash),
+    lastLoginAt: u.lastLoginAt,
+    createdAt: u.createdAt,
+  }));
+
+  const safeCustomers = customers.map((c) => ({
+    id: c.id,
+    name: c.name,
+    phone: c.phone,
+    email: c.email,
+    favoriteItem: c.favoriteItem,
+    loyaltyPoints: c.loyaltyPoints,
+    totalSpent: c.totalSpent,
+    visitsCount: c.visitsCount,
+    notes: c.notes,
+    defaultAddress: c.defaultAddress,
+    defaultNeighborhood: c.defaultNeighborhood,
+    defaultReference: c.defaultReference,
+    createdAt: c.createdAt,
+  }));
 
   const paidOrders = orders.filter((o) => o.status === "PAGO");
   const activeOrders = orders.filter((o) => !["PAGO", "CANCELADO"].includes(o.status));
@@ -113,6 +230,12 @@ export async function getWorkspaceSnapshot() {
   const deliveryRevenue = roundMoney(
     deliveryOrders.filter((o) => o.status === "PAGO").reduce((s, o) => s + o.total, 0),
   );
+  const waiterCallsCount = tables.filter((t) => Boolean(t.waiterCalledAt)).length;
+  const reviewsCount = reviews.length;
+  const averageRating =
+    reviewsCount > 0
+      ? roundMoney(reviews.reduce((sum, r) => sum + r.rating, 0) / reviewsCount)
+      : 5;
 
   return {
     categories,
@@ -124,10 +247,16 @@ export async function getWorkspaceSnapshot() {
     cakeOrders,
     openCashSession,
     cashSessions,
-    customers,
+    customers: safeCustomers,
     shiftNotes,
     financialEntries,
     deliveryZones,
+    storeSettings,
+    staffUsers,
+    coupons,
+    reservations,
+    reviews,
+    auditLogs,
     metrics: {
       revenueToday,
       paidCount: paidOrders.length,
@@ -140,6 +269,9 @@ export async function getWorkspaceSnapshot() {
       kdsPendingCount,
       activeDeliveries,
       deliveryRevenue,
+      waiterCallsCount,
+      averageRating,
+      reviewsCount,
     },
   };
 }
@@ -148,21 +280,38 @@ function generateTrackingToken(): string {
   return crypto.randomBytes(9).toString("base64url");
 }
 
-export async function createOrAppendOrder(input: CreateOrderInput, opts: { isPublic?: boolean } = {}) {
+export async function createOrAppendOrder(
+  input: CreateOrderInput,
+  opts: {
+    isPublic?: boolean;
+    customerSessionId?: number | null;
+    operatorName?: string | null;
+  } = {},
+) {
   await ensureSeeded();
 
   const isDeliveryChannel = input.channel === "DELIVERY" || input.channel === "RETIRADA";
   const isPickup = input.channel === "RETIRADA";
 
-  // Public (customer-facing) orders can never set prices, discounts or payments.
+  const storeSettings = await prisma.storeSettings.findUnique({ where: { id: 1 } });
+  const serviceFeeRate = (storeSettings?.defaultServiceFeePct ?? 10) / 100;
+  const freeDeliveryThreshold = storeSettings?.freeDeliveryAbove ?? FREE_DELIVERY_ABOVE;
+
+  if (opts.isPublic && isDeliveryChannel && storeSettings && !storeSettings.isDeliveryOpen) {
+    throw new Error("A loja está temporariamente pausada para novos pedidos de delivery e retirada.");
+  }
+
+  // Public (customer-facing) orders can never set arbitrary discounts, prices or mark paid;
+  // authenticated customers may link their session and redeem loyalty points.
   if (opts.isPublic) {
     input = {
       ...input,
       discount: 0,
-      redeemLoyaltyPoints: false,
-      customerId: undefined,
+      redeemLoyaltyPoints: Boolean(opts.customerSessionId && input.redeemLoyaltyPoints),
+      customerId: opts.customerSessionId ?? undefined,
       payNow: false,
       applyServiceFee: false,
+      splitPayments: undefined,
     };
   }
 
@@ -197,7 +346,6 @@ export async function createOrAppendOrder(input: CreateOrderInput, opts: { isPub
     }
   }
 
-  // Delivery validation (zone, address, minimum order)
   let deliveryZone: Awaited<ReturnType<typeof prisma.deliveryZone.findUnique>> = null;
   if (isDeliveryChannel) {
     if (!input.customerName?.trim() && !input.customerId) {
@@ -218,7 +366,6 @@ export async function createOrAppendOrder(input: CreateOrderInput, opts: { isPub
     }
   }
 
-  // If table already has an active open order, append items to it instead of duplicating commands
   const existingTableOrder = table
     ? await prisma.order.findFirst({
         where: { tableId: table.id, status: { notIn: ["PAGO", "CANCELADO"] } },
@@ -254,7 +401,6 @@ export async function createOrAppendOrder(input: CreateOrderInput, opts: { isPub
     }
   }
 
-  // Deduct product stock and ingredient stock from recipes
   const recipeRows = dbProducts.flatMap((p) => p.recipeItems);
   const ingredientDeductions = computeIngredientDeductions(
     input.items.map((i) => ({ productId: i.productId, qty: i.qty })),
@@ -291,6 +437,7 @@ export async function createOrAppendOrder(input: CreateOrderInput, opts: { isPub
       items: allItems.map((i) => ({ qty: i.qty, unitPrice: i.unitPrice })),
       discount: existingTableOrder.discount,
       applyServiceFee: true,
+      serviceFeeRate,
     });
     const nextStatus = deriveOrderStatusFromItems(allItems.map((i) => i.itemStatus as ItemStatus));
 
@@ -323,7 +470,6 @@ export async function createOrAppendOrder(input: CreateOrderInput, opts: { isPub
     ? await prisma.customerProfile.findUnique({ where: { id: input.customerId } })
     : null;
 
-  // Delivery customers are automatically linked to their loyalty profile by phone.
   if (!linkedCustomer && isDeliveryChannel && input.customerPhone?.trim()) {
     linkedCustomer = await prisma.customerProfile.findUnique({
       where: { phone: input.customerPhone.trim() },
@@ -342,23 +488,41 @@ export async function createOrAppendOrder(input: CreateOrderInput, opts: { isPub
   const rawSubtotal = roundMoney(
     newOrderItems.reduce((s, i) => s + i.qty * i.unitPrice, 0),
   );
-  const couponBenefit = resolveCouponBenefit({
-    code: input.couponCode,
-    subtotal: rawSubtotal,
-  });
-  const totalDiscount = (input.discount ?? 0) + loyaltyDiscount + (couponBenefit.valid ? couponBenefit.discount : 0);
+
+  let couponBenefit = resolveCouponBenefit({ code: undefined, subtotal: rawSubtotal });
+  let appliedDbCouponId: number | null = null;
+  const normalizedCoupon = input.couponCode?.trim().toUpperCase();
+  if (normalizedCoupon) {
+    const dbCoupon = await prisma.promoCoupon.findUnique({
+      where: { code: normalizedCoupon },
+    });
+    if (dbCoupon) {
+      couponBenefit = resolveDynamicCouponBenefit(dbCoupon, rawSubtotal);
+      if (couponBenefit.valid) {
+        appliedDbCouponId = dbCoupon.id;
+      }
+    } else {
+      couponBenefit = resolveCouponBenefit({ code: normalizedCoupon, subtotal: rawSubtotal });
+    }
+  }
+
+  const totalDiscount =
+    (input.discount ?? 0) +
+    loyaltyDiscount +
+    (couponBenefit.valid ? couponBenefit.discount : 0);
 
   const preTotals = calculateOrderTotals({
     items: newOrderItems.map((i) => ({ qty: i.qty, unitPrice: i.unitPrice })),
     discount: totalDiscount,
   });
+
   const deliveryFee = deliveryZone
     ? couponBenefit.valid && couponBenefit.freeDelivery
       ? 0
       : resolveDeliveryFee({
           zoneFee: deliveryZone.fee,
           subtotal: roundMoney(preTotals.subtotal - preTotals.discount),
-          freeAbove: FREE_DELIVERY_ABOVE,
+          freeAbove: freeDeliveryThreshold,
         })
     : 0;
 
@@ -366,11 +530,35 @@ export async function createOrAppendOrder(input: CreateOrderInput, opts: { isPub
     items: newOrderItems.map((i) => ({ qty: i.qty, unitPrice: i.unitPrice })),
     discount: totalDiscount,
     applyServiceFee: useServiceFee,
+    serviceFeeRate,
     deliveryFee,
   });
 
+  const splitParts = input.splitPayments?.length ? input.splitPayments : null;
+  const isPaid = Boolean(input.payNow && (input.paymentMethod || splitParts));
+
+  if (isPaid && splitParts) {
+    const check = validateSplitPayments(totals.total, splitParts);
+    if (!check.valid) {
+      throw new Error(check.error ?? "Pagamento dividido inválido.");
+    }
+  }
+
+  if (appliedDbCouponId) {
+    await prisma.promoCoupon
+      .update({
+        where: { id: appliedDbCouponId },
+        data: { usageCount: { increment: 1 } },
+      })
+      .catch(() => null);
+  }
+
   const code = await generateOrderCode();
-  const isPaid = Boolean(input.payNow && input.paymentMethod);
+  const effectivePaymentMethod = splitParts
+    ? splitParts.length === 1
+      ? splitParts[0].method
+      : "MISTO"
+    : (input.paymentMethod ?? null);
 
   const deliveryData = isDeliveryChannel
     ? {
@@ -383,7 +571,7 @@ export async function createOrAppendOrder(input: CreateOrderInput, opts: { isPub
           : input.delivery?.neighborhood?.trim() || deliveryZone?.name || null,
         deliveryReference: input.delivery?.reference?.trim() || null,
         changeFor:
-          input.paymentMethod === "DINHEIRO" && input.delivery?.changeFor
+          effectivePaymentMethod === "DINHEIRO" && input.delivery?.changeFor
             ? input.delivery.changeFor
             : null,
         estimatedMinutes: estimateDeliveryMinutes({
@@ -407,13 +595,16 @@ export async function createOrAppendOrder(input: CreateOrderInput, opts: { isPub
         linkedCustomer?.name ||
         (table ? `${table.name}${input.channel === "QR_MESA" ? " (QR)" : ""}` : "Cliente Balcão"),
       customerPhone: input.customerPhone?.trim() || linkedCustomer?.phone || null,
-      // For delivery the chosen method is kept as "pay on delivery" intent even when unpaid.
-      paymentMethod: isPaid || isDeliveryChannel ? (input.paymentMethod ?? null) : null,
+      paymentMethod: isPaid || isDeliveryChannel ? effectivePaymentMethod : null,
       subtotal: totals.subtotal,
       discount: totals.discount,
       serviceFee: totals.serviceFee,
       total: totals.total,
       notes: input.notes?.trim() || null,
+      scheduledFor: input.scheduledFor?.trim() || null,
+      couponCode: couponBenefit.valid ? couponBenefit.code : null,
+      splitPayments: splitParts ? JSON.stringify(splitParts) : null,
+      operatorName: opts.operatorName ?? null,
       paidAt: isPaid ? new Date() : null,
       items: { create: newOrderItems },
       ...deliveryData,
@@ -428,8 +619,15 @@ export async function createOrAppendOrder(input: CreateOrderInput, opts: { isPub
     });
   }
 
-  if (isPaid && input.paymentMethod) {
-    await registerCashSale(created.code, created.total, input.paymentMethod);
+  if (isPaid) {
+    if (splitParts) {
+      for (const part of splitParts) {
+        await registerCashSale(created.code, part.amount, part.method);
+      }
+    } else if (input.paymentMethod && input.paymentMethod !== "MISTO") {
+      await registerCashSale(created.code, created.total, input.paymentMethod);
+    }
+
     if (linkedCustomer) {
       const earned = calculateLoyaltyPointsEarned(created.total);
       await prisma.customerProfile.update({

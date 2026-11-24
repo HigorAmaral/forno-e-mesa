@@ -69,14 +69,16 @@ model RecipeItem {
 }
 
 model DiningTable {
-  id       Int     @id @default(autoincrement())
-  number   Int     @unique
-  name     String
-  area     String  @default("SALAO") // SALAO | VARANDA | BALCAO
-  capacity Int     @default(4)
-  status   String  @default("LIVRE") // LIVRE | OCUPADA | RESERVADA | CONTA
-  qrToken  String  @unique
-  orders   Order[]
+  id             Int                @id @default(autoincrement())
+  number         Int                @unique
+  name           String
+  area           String             @default("SALAO") // SALAO | VARANDA | BALCAO
+  capacity       Int                @default(4)
+  status         String             @default("LIVRE") // LIVRE | OCUPADA | RESERVADA | CONTA
+  qrToken        String             @unique
+  waiterCalledAt DateTime?
+  orders         Order[]
+  reservations   TableReservation[]
 }
 
 model Order {
@@ -90,7 +92,7 @@ model Order {
   customer      CustomerProfile? @relation(fields: [customerId], references: [id], onDelete: SetNull)
   customerName  String?
   customerPhone String?
-  paymentMethod String?      // DINHEIRO | PIX | CREDITO | DEBITO
+  paymentMethod String?      // DINHEIRO | PIX | CREDITO | DEBITO | MISTO
   subtotal      Float        @default(0)
   discount      Float        @default(0)
   serviceFee    Float        @default(0)
@@ -101,7 +103,7 @@ model Order {
   updatedAt     DateTime     @updatedAt
   items         OrderItem[]
 
-  // Delivery / Retirada
+  // Delivery / Retirada / Pagamento Misto / Agendamento
   deliveryFee          Float     @default(0)
   deliveryStatus       String?   // RECEBIDO | EM_PREPARO | PRONTO | SAIU_ENTREGA | ENTREGUE | CANCELADO
   deliveryAddress      String?
@@ -115,6 +117,11 @@ model Order {
   trackingToken        String?   @unique
   dispatchedAt         DateTime?
   deliveredAt          DateTime?
+  scheduledFor         String?
+  couponCode           String?
+  splitPayments        String?
+  operatorName         String?
+  review               OrderReview?
 
   @@index([status])
   @@index([channel])
@@ -214,17 +221,21 @@ model CashMovement {
 }
 
 model CustomerProfile {
-  id            Int      @id @default(autoincrement())
-  name          String
-  phone         String   @unique
-  email         String?
-  favoriteItem  String?
-  loyaltyPoints Int      @default(0)
-  totalSpent    Float    @default(0)
-  visitsCount   Int      @default(0)
-  notes         String?
-  orders        Order[]
-  createdAt     DateTime @default(now())
+  id                  Int      @id @default(autoincrement())
+  name                String
+  phone               String   @unique
+  email               String?
+  favoriteItem        String?
+  loyaltyPoints       Int      @default(0)
+  totalSpent          Float    @default(0)
+  visitsCount         Int      @default(0)
+  notes               String?
+  pinHash             String?
+  defaultAddress      String?
+  defaultNeighborhood String?
+  defaultReference    String?
+  orders              Order[]
+  createdAt           DateTime @default(now())
 }
 
 model ShiftNote {
@@ -253,4 +264,86 @@ model FinancialEntry {
   @@index([type])
   @@index([status])
   @@index([dueDate])
+}
+
+model StaffUser {
+  id           Int       @id @default(autoincrement())
+  name         String
+  email        String    @unique
+  role         String    @default("CAIXA") // ADMIN | GERENTE | CAIXA | GARCOM | COZINHA
+  passwordHash String
+  pinHash      String?
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([role])
+}
+
+model StoreSettings {
+  id                   Int      @id @default(1)
+  storeName            String   @default("Forno & Mesa")
+  slogan               String   @default("Padaria Artesanal, Cafeteria & Bistrô")
+  phone                String   @default("(11) 99999-0000")
+  address              String   @default("Rua das Flores, 240 — Centro")
+  openingHours         String   @default("Ter–Dom · 07:00 às 22:00")
+  isDeliveryOpen       Boolean  @default(true)
+  dailyGoal            Float    @default(2500)
+  defaultServiceFeePct Float    @default(10)
+  freeDeliveryAbove    Float    @default(150)
+  creditCardFeePct     Float    @default(3.2)
+  debitCardFeePct      Float    @default(1.6)
+  updatedAt            DateTime @updatedAt
+}
+
+model PromoCoupon {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  label       String
+  type        String   @default("PERCENT") // PERCENT | FIXED | FREE_DELIVERY
+  value       Float    @default(0)
+  maxDiscount Float?
+  minOrder    Float    @default(0)
+  isActive    Boolean  @default(true)
+  usageCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model TableReservation {
+  id            Int          @id @default(autoincrement())
+  tableId       Int?
+  table         DiningTable? @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  customerName  String
+  customerPhone String
+  partySize     Int          @default(2)
+  reservedFor   String
+  status        String       @default("CONFIRMADA") // CONFIRMADA | SENTADA | CANCELADA | CONCLUIDA
+  notes         String?
+  createdAt     DateTime     @default(now())
+
+  @@index([status])
+  @@index([reservedFor])
+}
+
+model OrderReview {
+  id           Int      @id @default(autoincrement())
+  orderId      Int      @unique
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  rating       Int
+  comment      String?
+  customerName String?
+  createdAt    DateTime @default(now())
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  actorName String
+  actorRole String
+  action    String
+  entity    String?
+  details   String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }

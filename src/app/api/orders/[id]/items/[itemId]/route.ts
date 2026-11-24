@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { forbiddenIfNotErpOperator } from "@/lib/access-guard";
 import { prisma } from "@/lib/prisma";
 import { UpdateOrderItemStatusSchema } from "@/lib/schemas";
 import { deriveOrderStatusFromItems, type ItemStatus } from "@/lib/domain";
@@ -8,6 +9,8 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string; itemId: string }> },
 ) {
+  const forbidden = await forbiddenIfNotErpOperator();
+  if (forbidden) return forbidden;
   try {
     const { id, itemId } = await context.params;
     const orderId = Number(id);

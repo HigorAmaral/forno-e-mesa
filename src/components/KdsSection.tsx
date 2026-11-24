@@ -1,8 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, CheckCheck, ChefHat, Clock, Flame, Volume2, VolumeX } from "lucide-react";
-import { channelLabel } from "@/lib/domain";
+import {
+  Check,
+  CheckCheck,
+  ChefHat,
+  Clock,
+  Flame,
+  Maximize2,
+  Minimize2,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
+import { channelLabel, getKdsUrgencyLevel, minutesSince } from "@/lib/domain";
 import type { OrderDto } from "@/types/erp";
 
 interface KdsSectionProps {
@@ -31,12 +41,12 @@ const NEXT_STAGE: Record<
   PREPARANDO: {
     next: "PRONTO",
     label: "Pronto",
-    color: "bg-[#15803d] text-white hover:bg-[#22523d]",
+    color: "bg-emerald-700 text-white hover:bg-emerald-800",
   },
   PRONTO: {
     next: "ENTREGUE",
     label: "Entregar",
-    color: "bg-[#3E2723] text-white hover:bg-black",
+    color: "bg-[var(--bg-shell)] text-[#FAF3E8] hover:opacity-90",
   },
 };
 
@@ -67,6 +77,7 @@ function playChime() {
 export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
   const [station, setStation] = useState("ALL");
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [fullscreenMode, setFullscreenMode] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
   const prevTicketCountRef = useRef<number | null>(null);
 
@@ -94,6 +105,29 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
     }
     prevTicketCountRef.current = activeTickets.length;
   }, [activeTickets.length, soundEnabled]);
+
+  useEffect(() => {
+    if (!fullscreenMode) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setFullscreenMode(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [fullscreenMode]);
+
+  function toggleFullscreen() {
+    const next = !fullscreenMode;
+    setFullscreenMode(next);
+    try {
+      if (next && document.documentElement.requestFullscreen) {
+        void document.documentElement.requestFullscreen().catch(() => null);
+      } else if (!next && document.fullscreenElement) {
+        void document.exitFullscreen().catch(() => null);
+      }
+    } catch {
+      // Fallback CSS fullscreen still works
+    }
+  }
 
   async function advanceItem(
     orderId: number,
@@ -141,17 +175,22 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
   }
 
   return (
-    <div className="animate-fade-in space-y-5">
+    <div
+      className={`animate-fade-in space-y-5 ${
+        fullscreenMode
+          ? "fixed inset-0 z-50 overflow-y-auto bg-[var(--bg-canvas)] p-4 sm:p-6"
+          : ""
+      }`}
+    >
       <div className="card-bistro flex flex-wrap items-center justify-between gap-3 p-4">
         <div className="flex items-center gap-2.5">
-          <ChefHat className="h-5 w-5 text-[#C07F5A]" />
+          <ChefHat className="h-5 w-5 text-[var(--accent-primary)]" />
           <div>
-            <h2 className="font-display text-xl font-bold text-[#3E2723]">
+            <h2 className="font-display text-xl font-bold text-[var(--text-primary)]">
               KDS · Tela de Produção (Cozinha, Forno & Confeitaria)
             </h2>
-            <p className="text-xs text-[#8C5A3C]">
-              Pedidos de Balcão, Mesas e QR Code chegam aqui em tempo real com
-              controle de SLA.
+            <p className="text-xs text-[var(--text-secondary)]">
+              Pedidos de Balcão, Mesas, QR Code e Delivery em tempo real com alerta de SLA.
             </p>
           </div>
         </div>
@@ -159,11 +198,24 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
+            onClick={toggleFullscreen}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:border-[var(--accent-primary)]"
+          >
+            {fullscreenMode ? (
+              <Minimize2 className="h-3.5 w-3.5" />
+            ) : (
+              <Maximize2 className="h-3.5 w-3.5" />
+            )}
+            {fullscreenMode ? "Sair Tela Cheia" : "Modo TV / Tela Cheia"}
+          </button>
+
+          <button
+            type="button"
             onClick={() => setSoundEnabled((v) => !v)}
             className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
               soundEnabled
                 ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-                : "border-[#E6CCB2] bg-[#FAF3E8] text-[#8C5A3C]"
+                : "border-[var(--border-warm)] bg-[var(--bg-canvas)] text-[var(--text-secondary)]"
             }`}
           >
             {soundEnabled ? (
@@ -182,8 +234,8 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
                 onClick={() => setStation(st.id)}
                 className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
                   station === st.id
-                    ? "bg-[#C07F5A] text-white"
-                    : "bg-[#E6CCB2] text-[#8C5A3C] hover:text-[#3E2723]"
+                    ? "bg-[var(--accent-primary)] text-white"
+                    : "bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 }`}
               >
                 {st.label}
@@ -195,55 +247,59 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
 
       {activeTickets.length === 0 ? (
         <div className="card-bistro border-dashed p-10 text-center">
-          <Check className="mx-auto h-8 w-8 text-[#15803d]" />
-          <p className="mt-2 font-semibold text-[#3E2723]">
+          <Check className="mx-auto h-8 w-8 text-emerald-600" />
+          <p className="mt-2 font-semibold text-[var(--text-primary)]">
             Nenhum item pendente nesta estação!
           </p>
-          <p className="text-xs text-[#8C5A3C]">
-            Novos pedidos do PDV, Mesas ou QR Code aparecerão aqui
-            automaticamente.
+          <p className="text-xs text-[var(--text-secondary)]">
+            Novos pedidos do PDV, Mesas, Delivery ou QR Code aparecerão aqui automaticamente.
           </p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {activeTickets.map((ticket) => {
-            const elapsedMin = Math.max(
-              1,
-              Math.floor(
-                (Date.now() - new Date(ticket.createdAt).getTime()) / 60000,
-              ),
-            );
+            const elapsedMin = Math.max(1, minutesSince(ticket.createdAt));
+            const urgency = getKdsUrgencyLevel(ticket.createdAt);
             const allReady = ticket.visibleItems.every(
               (i) => i.itemStatus === "PRONTO",
             );
             const slaStyle =
-              elapsedMin >= 18
+              urgency === "urgent"
                 ? "bg-red-100 text-red-800 animate-pulse"
-                : elapsedMin >= 10
+                : urgency === "warning"
                   ? "bg-amber-100 text-amber-900"
                   : "bg-emerald-100 text-emerald-800";
+
+            const cardBorder =
+              urgency === "urgent"
+                ? "border-red-400 ring-1 ring-red-400/30"
+                : urgency === "warning"
+                  ? "border-amber-400"
+                  : "";
 
             return (
               <div
                 key={ticket.id}
-                className="card-bistro flex flex-col justify-between overflow-hidden"
+                className={`card-bistro flex flex-col justify-between overflow-hidden ${cardBorder}`}
               >
                 <div>
-                  <div className="flex items-center justify-between border-b border-[#E6CCB2] bg-[#FAF3E8] px-4 py-3">
+                  <div className="flex items-center justify-between border-b border-[var(--border-warm)] bg-[var(--bg-canvas)] px-4 py-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono-num text-sm font-bold text-[#3E2723]">
+                        <span className="font-mono-num text-sm font-bold text-[var(--text-primary)]">
                           {ticket.code}
                         </span>
-                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold text-white ${
-                          ticket.channel === "DELIVERY" || ticket.channel === "RETIRADA"
-                            ? "bg-[#C07F5A]"
-                            : "bg-[#3E2723]"
-                        }`}>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold text-white ${
+                            ticket.channel === "DELIVERY" || ticket.channel === "RETIRADA"
+                              ? "bg-[var(--accent-primary)]"
+                              : "bg-[var(--bg-shell)]"
+                          }`}
+                        >
                           {ticket.table ? ticket.table.name : channelLabel(ticket.channel)}
                         </span>
                       </div>
-                      <p className="text-xs text-[#8C5A3C]">
+                      <p className="text-xs text-[var(--text-secondary)]">
                         {ticket.customerName ?? "Cliente"}
                         {ticket.deliveryNeighborhood ? ` · ${ticket.deliveryNeighborhood}` : ""}
                       </p>
@@ -261,24 +317,24 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
                       return (
                         <div
                           key={item.id}
-                          className="flex items-center justify-between gap-3 rounded-xl border border-[#E6CCB2] bg-[#FAF3E8]/70 p-3"
+                          className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-3"
                         >
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="rounded bg-white px-1.5 py-0.5 text-[10px] font-bold text-[#C07F5A]">
+                              <span className="rounded bg-[var(--bg-surface)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--accent-primary)]">
                                 {item.prepStation}
                               </span>
-                              <span className="truncate text-xs font-bold text-[#3E2723]">
+                              <span className="truncate text-xs font-bold text-[var(--text-primary)]">
                                 {item.qty}× {item.productName}
                               </span>
                             </div>
                             {item.notes && (
-                              <p className="mt-1 flex items-center gap-1 text-[11px] font-medium text-amber-900">
+                              <p className="mt-1 flex items-center gap-1 text-[11px] font-medium text-amber-700">
                                 <Flame className="h-3 w-3 shrink-0" />{" "}
                                 {item.notes}
                               </p>
                             )}
-                            <p className="mt-0.5 text-[10px] font-semibold text-[#8C5A3C]">
+                            <p className="mt-0.5 text-[10px] font-semibold text-[var(--text-secondary)]">
                               Status: {item.itemStatus}
                             </p>
                           </div>
@@ -301,7 +357,7 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
                   </div>
                 </div>
 
-                <div className="border-t border-[#E6CCB2] bg-[#FAF3E8]/60 px-4 py-2.5">
+                <div className="border-t border-[var(--border-warm)] bg-[var(--bg-canvas)] px-4 py-2.5">
                   <button
                     type="button"
                     disabled={busyId === ticket.id}
@@ -313,8 +369,8 @@ export function KdsSection({ orders, onRefresh, onError }: KdsSectionProps) {
                     }
                     className={`flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition disabled:opacity-50 ${
                       allReady
-                        ? "bg-[#3E2723] text-white hover:bg-black"
-                        : "bg-[#15803d] text-white hover:bg-[#22523d]"
+                        ? "bg-[var(--bg-shell)] text-[#FAF3E8] hover:opacity-90"
+                        : "bg-emerald-700 text-white hover:bg-emerald-800"
                     }`}
                   >
                     <CheckCheck className="h-4 w-4" />

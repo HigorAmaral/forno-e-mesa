@@ -1,8 +1,10 @@
 import { prisma } from "./prisma";
 import { calculateOrderTotals } from "./domain";
+import { hashSecret } from "./auth-crypto";
 
 let seedPromise: Promise<void> | null = null;
 let deliverySchemaPromise: Promise<void> | null = null;
+let extendedSchemaPromise: Promise<void> | null = null;
 
 async function ensureDeliverySchema() {
   if (!deliverySchemaPromise) {
@@ -68,7 +70,186 @@ async function ensureDeliverySchema() {
   await deliverySchemaPromise;
 }
 
+async function ensureExtendedSchema() {
+  if (!extendedSchemaPromise) {
+    extendedSchemaPromise = (async () => {
+      await prisma.$executeRawUnsafe(
+        `ALTER TABLE "DiningTable" ADD COLUMN IF NOT EXISTS "waiterCalledAt" TIMESTAMP(3)`,
+      );
+
+      const customerCols = [
+        `"pinHash" TEXT`,
+        `"defaultAddress" TEXT`,
+        `"defaultNeighborhood" TEXT`,
+        `"defaultReference" TEXT`,
+      ];
+      for (const col of customerCols) {
+        await prisma.$executeRawUnsafe(
+          `ALTER TABLE "CustomerProfile" ADD COLUMN IF NOT EXISTS ${col}`,
+        );
+      }
+
+      const orderExtraCols = [
+        `"scheduledFor" TEXT`,
+        `"couponCode" TEXT`,
+        `"splitPayments" TEXT`,
+        `"operatorName" TEXT`,
+      ];
+      for (const col of orderExtraCols) {
+        await prisma.$executeRawUnsafe(
+          `ALTER TABLE "Order" ADD COLUMN IF NOT EXISTS ${col}`,
+        );
+      }
+
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "StaffUser" (
+          "id" SERIAL NOT NULL,
+          "name" TEXT NOT NULL,
+          "email" TEXT NOT NULL,
+          "role" TEXT NOT NULL DEFAULT 'CAIXA',
+          "passwordHash" TEXT NOT NULL,
+          "pinHash" TEXT,
+          "isActive" BOOLEAN NOT NULL DEFAULT true,
+          "lastLoginAt" TIMESTAMP(3),
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "StaffUser_pkey" PRIMARY KEY ("id")
+        )
+      `);
+      await prisma.$executeRawUnsafe(
+        `CREATE UNIQUE INDEX IF NOT EXISTS "StaffUser_email_key" ON "StaffUser"("email")`,
+      );
+      await prisma.$executeRawUnsafe(
+        `CREATE INDEX IF NOT EXISTS "StaffUser_role_idx" ON "StaffUser"("role")`,
+      );
+
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "StoreSettings" (
+          "id" INTEGER NOT NULL DEFAULT 1,
+          "storeName" TEXT NOT NULL DEFAULT 'Forno & Mesa',
+          "slogan" TEXT NOT NULL DEFAULT 'Padaria Artesanal, Cafeteria & Bistrô',
+          "phone" TEXT NOT NULL DEFAULT '(11) 99999-0000',
+          "address" TEXT NOT NULL DEFAULT 'Rua das Flores, 240 — Centro',
+          "openingHours" TEXT NOT NULL DEFAULT 'Ter–Dom · 07:00 às 22:00',
+          "isDeliveryOpen" BOOLEAN NOT NULL DEFAULT true,
+          "dailyGoal" DOUBLE PRECISION NOT NULL DEFAULT 2500,
+          "defaultServiceFeePct" DOUBLE PRECISION NOT NULL DEFAULT 10,
+          "freeDeliveryAbove" DOUBLE PRECISION NOT NULL DEFAULT 150,
+          "creditCardFeePct" DOUBLE PRECISION NOT NULL DEFAULT 3.2,
+          "debitCardFeePct" DOUBLE PRECISION NOT NULL DEFAULT 1.6,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "StoreSettings_pkey" PRIMARY KEY ("id")
+        )
+      `);
+
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "PromoCoupon" (
+          "id" SERIAL NOT NULL,
+          "code" TEXT NOT NULL,
+          "label" TEXT NOT NULL,
+          "type" TEXT NOT NULL DEFAULT 'PERCENT',
+          "value" DOUBLE PRECISION NOT NULL DEFAULT 0,
+          "maxDiscount" DOUBLE PRECISION,
+          "minOrder" DOUBLE PRECISION NOT NULL DEFAULT 0,
+          "isActive" BOOLEAN NOT NULL DEFAULT true,
+          "usageCount" INTEGER NOT NULL DEFAULT 0,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "PromoCoupon_pkey" PRIMARY KEY ("id")
+        )
+      `);
+      await prisma.$executeRawUnsafe(
+        `CREATE UNIQUE INDEX IF NOT EXISTS "PromoCoupon_code_key" ON "PromoCoupon"("code")`,
+      );
+
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "TableReservation" (
+          "id" SERIAL NOT NULL,
+          "tableId" INTEGER,
+          "customerName" TEXT NOT NULL,
+          "customerPhone" TEXT NOT NULL,
+          "partySize" INTEGER NOT NULL DEFAULT 2,
+          "reservedFor" TEXT NOT NULL,
+          "status" TEXT NOT NULL DEFAULT 'CONFIRMADA',
+          "notes" TEXT,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "TableReservation_pkey" PRIMARY KEY ("id")
+        )
+      `);
+      await prisma.$executeRawUnsafe(
+        `CREATE INDEX IF NOT EXISTS "TableReservation_status_idx" ON "TableReservation"("status")`,
+      );
+      await prisma.$executeRawUnsafe(
+        `CREATE INDEX IF NOT EXISTS "TableReservation_reservedFor_idx" ON "TableReservation"("reservedFor")`,
+      );
+      await prisma.$executeRawUnsafe(`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint WHERE conname = 'TableReservation_tableId_fkey'
+          ) THEN
+            ALTER TABLE "TableReservation"
+            ADD CONSTRAINT "TableReservation_tableId_fkey"
+            FOREIGN KEY ("tableId") REFERENCES "DiningTable"("id")
+            ON DELETE SET NULL ON UPDATE CASCADE;
+          END IF;
+        END $$;
+      `);
+
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "OrderReview" (
+          "id" SERIAL NOT NULL,
+          "orderId" INTEGER NOT NULL,
+          "rating" INTEGER NOT NULL,
+          "comment" TEXT,
+          "customerName" TEXT,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "OrderReview_pkey" PRIMARY KEY ("id")
+        )
+      `);
+      await prisma.$executeRawUnsafe(
+        `CREATE UNIQUE INDEX IF NOT EXISTS "OrderReview_orderId_key" ON "OrderReview"("orderId")`,
+      );
+      await prisma.$executeRawUnsafe(`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint WHERE conname = 'OrderReview_orderId_fkey'
+          ) THEN
+            ALTER TABLE "OrderReview"
+            ADD CONSTRAINT "OrderReview_orderId_fkey"
+            FOREIGN KEY ("orderId") REFERENCES "Order"("id")
+            ON DELETE CASCADE ON UPDATE CASCADE;
+          END IF;
+        END $$;
+      `);
+
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "AuditLog" (
+          "id" SERIAL NOT NULL,
+          "actorName" TEXT NOT NULL,
+          "actorRole" TEXT NOT NULL,
+          "action" TEXT NOT NULL,
+          "entity" TEXT,
+          "details" TEXT,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
+        )
+      `);
+      await prisma.$executeRawUnsafe(
+        `CREATE INDEX IF NOT EXISTS "AuditLog_createdAt_idx" ON "AuditLog"("createdAt")`,
+      );
+    })().catch((err) => {
+      extendedSchemaPromise = null;
+      throw err;
+    });
+  }
+  await extendedSchemaPromise;
+}
+
 export async function ensureSeeded() {
+  await ensureDeliverySchema();
+  await ensureExtendedSchema();
+
   const existing = await prisma.category.count();
   if (existing === 0) {
     if (!seedPromise) {
@@ -79,7 +260,92 @@ export async function ensureSeeded() {
     await seedPromise;
   }
 
-  await ensureDeliverySchema();
+  const settingsCount = await prisma.storeSettings.count();
+  if (settingsCount === 0) {
+    await prisma.storeSettings.upsert({
+      where: { id: 1 },
+      update: {},
+      create: { id: 1 },
+    });
+  }
+
+  const staffCount = await prisma.staffUser.count();
+  if (staffCount === 0) {
+    const masterPin = process.env.ERP_OPERATOR_PIN?.trim() || "2026";
+    await prisma.staffUser.createMany({
+      data: [
+        {
+          name: "Higor Admin",
+          email: "admin@fornoemesa.com",
+          role: "ADMIN",
+          passwordHash: hashSecret("forno2026"),
+          pinHash: hashSecret(masterPin),
+          isActive: true,
+        },
+        {
+          name: "Carla Caixa",
+          email: "caixa@fornoemesa.com",
+          role: "CAIXA",
+          passwordHash: hashSecret("caixa2026"),
+          pinHash: hashSecret("1010"),
+          isActive: true,
+        },
+        {
+          name: "Rafael Garçom",
+          email: "garcom@fornoemesa.com",
+          role: "GARCOM",
+          passwordHash: hashSecret("garcom2026"),
+          pinHash: hashSecret("2020"),
+          isActive: true,
+        },
+        {
+          name: "Chef Marina",
+          email: "cozinha@fornoemesa.com",
+          role: "COZINHA",
+          passwordHash: hashSecret("cozinha2026"),
+          pinHash: hashSecret("3030"),
+          isActive: true,
+        },
+      ],
+      skipDuplicates: true,
+    });
+  }
+
+  const couponCount = await prisma.promoCoupon.count();
+  if (couponCount === 0) {
+    await prisma.promoCoupon.createMany({
+      data: [
+        {
+          code: "FORNO10",
+          label: "10% OFF (até R$ 30)",
+          type: "PERCENT",
+          value: 10,
+          maxDiscount: 30,
+          minOrder: 0,
+          isActive: true,
+        },
+        {
+          code: "BEMVINDO",
+          label: "R$ 10 OFF acima de R$ 40",
+          type: "FIXED",
+          value: 10,
+          maxDiscount: null,
+          minOrder: 40,
+          isActive: true,
+        },
+        {
+          code: "FRETEZERO",
+          label: "Frete Grátis",
+          type: "FREE_DELIVERY",
+          value: 0,
+          maxDiscount: null,
+          minOrder: 0,
+          isActive: true,
+        },
+      ],
+      skipDuplicates: true,
+    });
+  }
   const zoneCount = await prisma.deliveryZone.count();
   if (zoneCount === 0) {
     await prisma.deliveryZone.createMany({
@@ -96,6 +362,7 @@ export async function ensureSeeded() {
 
   const customerCount = await prisma.customerProfile.count();
   if (customerCount === 0) {
+    const defaultCustomerPin = hashSecret("1234");
     await prisma.customerProfile.createMany({
       data: [
         {
@@ -107,6 +374,9 @@ export async function ensureSeeded() {
           totalSpent: 540.0,
           visitsCount: 11,
           notes: "Prefere leite de aveia quando disponível",
+          pinHash: defaultCustomerPin,
+          defaultAddress: "Rua Augusta, 1420 — Apto 42",
+          defaultNeighborhood: "Centro",
         },
         {
           name: "Eduardo Nogueira",
@@ -117,6 +387,9 @@ export async function ensureSeeded() {
           totalSpent: 285.5,
           visitsCount: 5,
           notes: "Cliente habitual do almoço",
+          pinHash: defaultCustomerPin,
+          defaultAddress: "Alameda das Acácias, 315",
+          defaultNeighborhood: "Jardim América",
         },
         {
           name: "Helena Guimarães",
@@ -125,6 +398,48 @@ export async function ensureSeeded() {
           loyaltyPoints: 9,
           totalSpent: 112.0,
           visitsCount: 3,
+          pinHash: defaultCustomerPin,
+        },
+      ],
+    });
+  } else {
+    const customersWithoutPin = await prisma.customerProfile.findMany({
+      where: { pinHash: null },
+      select: { id: true },
+    });
+    if (customersWithoutPin.length > 0) {
+      const defaultCustomerPin = hashSecret("1234");
+      await prisma.customerProfile.updateMany({
+        where: { pinHash: null },
+        data: { pinHash: defaultCustomerPin },
+      });
+    }
+  }
+
+  const reservationCount = await prisma.tableReservation.count();
+  if (reservationCount === 0) {
+    const table4 = await prisma.diningTable.findUnique({ where: { number: 4 } });
+    const table6 = await prisma.diningTable.findUnique({ where: { number: 6 } });
+    const todayIso = new Date().toISOString().slice(0, 10);
+    await prisma.tableReservation.createMany({
+      data: [
+        {
+          tableId: table4?.id ?? null,
+          customerName: "Família Mendonça",
+          customerPhone: "(11) 98211-4400",
+          partySize: 6,
+          reservedFor: `${todayIso} 19:30`,
+          status: "CONFIRMADA",
+          notes: "Aniversário — mesa próxima à janela",
+        },
+        {
+          tableId: table6?.id ?? null,
+          customerName: "Juliana & Pedro",
+          customerPhone: "(11) 97123-8821",
+          partySize: 2,
+          reservedFor: `${todayIso} 20:00`,
+          status: "CONFIRMADA",
+          notes: "Varanda",
         },
       ],
     });
@@ -318,7 +633,7 @@ async function runInitialSeed() {
     },
   });
 
-  const tortaLimao = await prisma.product.create({
+  await prisma.product.create({
     data: {
       sku: "CNF-002",
       name: "Tartelete de Limão Siciliano",
@@ -395,7 +710,7 @@ async function runInitialSeed() {
     },
   });
 
-  const sanduicheCroissant = await prisma.product.create({
+  await prisma.product.create({
     data: {
       sku: "RST-004",
       name: "Croissant Tostado Parma & Brie",
@@ -441,7 +756,7 @@ async function runInitialSeed() {
     },
   });
 
-  const sodaItaliana = await prisma.product.create({
+  await prisma.product.create({
     data: {
       sku: "BEB-003",
       name: "Soda Italiana Maçã Verde",

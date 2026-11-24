@@ -31,11 +31,11 @@ export default async function MesaQrPage({
 
   if (!table || !token || token !== table.qrToken) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-[#FAF3E8] p-6 text-center">
-        <h1 className="font-display text-2xl font-bold text-[#3E2723]">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-[var(--bg-canvas)] p-6 text-center">
+        <h1 className="font-display text-2xl font-bold text-[var(--text-primary)]">
           {!table ? "Mesa não encontrada" : "QR Code inválido ou expirado"}
         </h1>
-        <p className="mt-2 max-w-sm text-sm text-[#8C5A3C]">
+        <p className="mt-2 max-w-sm text-sm text-[var(--text-secondary)]">
           Por favor, escaneie novamente o QR Code impresso na sua mesa ou peça
           auxílio a um atendente.
         </p>
@@ -59,16 +59,20 @@ export default async function MesaQrPage({
       tableName={table.name}
       area={table.area}
       qrToken={token ?? table.qrToken}
-      initialCategories={categories}
-      initialOrders={table.orders.map((o) => ({
-        id: o.id,
-        code: o.code,
-        status: o.status,
-        subtotal: o.subtotal,
-        serviceFee: o.serviceFee,
-        total: o.total,
-        items: o.items,
-      }))}
+      initialCategories={JSON.parse(JSON.stringify(categories))}
+      initialOrders={JSON.parse(
+        JSON.stringify(
+          table.orders.map((o) => ({
+            id: o.id,
+            code: o.code,
+            status: o.status,
+            subtotal: o.subtotal,
+            serviceFee: o.serviceFee,
+            total: o.total,
+            items: o.items,
+          })),
+        ),
+      )}
     />
   );
 }

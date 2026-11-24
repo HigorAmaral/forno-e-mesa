@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 
   const order = await prisma.order.findUnique({
     where: { code },
-    include: { items: true },
+    include: { items: true, review: true },
   });
   if (!order || !order.trackingToken || order.trackingToken !== token) {
     return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
@@ -35,9 +35,11 @@ export async function GET(request: Request) {
       deliveryFee: order.deliveryFee,
       total: order.total,
       estimatedMinutes: order.estimatedMinutes,
+      scheduledFor: order.scheduledFor,
       createdAt: order.createdAt,
       dispatchedAt: order.dispatchedAt,
       deliveredAt: order.deliveredAt,
+      review: order.review,
       items: order.items.map((i) => ({
         id: i.id,
         productName: i.productName,

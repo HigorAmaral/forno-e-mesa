@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { forbiddenIfNotErpOperator } from "@/lib/access-guard";
 import { prisma } from "@/lib/prisma";
 import { UpdateBatchSchema } from "@/lib/schemas";
 import { roundMoney } from "@/lib/domain";
@@ -7,6 +8,8 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE", "COZINHA"]);
+  if (forbidden) return forbidden;
   try {
     const { id } = await context.params;
     const batchId = Number(id);

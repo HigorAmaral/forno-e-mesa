@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { isServerErpAuthorized } from "@/lib/access-guard";
+import {
+  getServerCustomerSession,
+  getServerOperatorSession,
+  recordAuditLog,
+} from "@/lib/access-guard";
 import { CreateOrderSchema } from "@/lib/schemas";
 import { createOrAppendOrder } from "@/lib/workspace-service";
 
@@ -16,7 +20,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const isOperator = await isServerErpAuthorized();
+    const operatorSession = await getServerOperatorSession();
+    const isOperator = operatorSession !== null;
     if (!isOperator && !PUBLIC_CHANNELS.has(parsed.data.channel)) {
       return NextResponse.json(
         { error: "Acesso restrito ao painel interno." },
@@ -24,9 +29,31 @@ export async function POST(request: Request) {
       );
     }
 
-    const order = await createOrAppendOrder(parsed.data, { isPublic: !isOperator });
+    const customerSession = !isOperator ? await getServerCustomerSession() : null;
+
+    const order = await createOrAppendOrder(parsed.data, {
+      isPublic: !isOperator,
+      customerSessionId: customerSession?.customerId ?? null,
+      operatorName: operatorSession?.name ?? null,
+    });
+
+    if (isOperator) {
+      await recordAuditLog({
+        actorName: operatorSession.name,
+        actorRole: operatorSession.role,
+        action: "CRIAR_PEDIDO",
+        entity: "Order",
+        details: `${order.code} (${order.channel}) · R$ ${order.total.toFixed(2)}`,
+      });
+    }
+
     return NextResponse.json(
-      { order, trackingUrl: order.trackingToken ? `/delivery/acompanhar/${order.code}?t=${order.trackingToken}` : null },
+      {
+        order,
+        trackingUrl: order.trackingToken
+          ? `/delivery/acompanhar/${order.code}?t=${order.trackingToken}`
+          : null,
+      },
       { status: 201 },
     );
   } catch (err) {

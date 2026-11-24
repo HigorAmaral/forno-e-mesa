@@ -1,6 +1,8 @@
 import { ErpWorkspace } from "@/components/ErpWorkspace";
 import { OperatorLockScreen } from "@/components/OperatorLockScreen";
-import { isServerErpAuthorized } from "@/lib/access-guard";
+import { getServerOperatorSession } from "@/lib/access-guard";
+import { prisma } from "@/lib/prisma";
+import { ensureSeeded } from "@/lib/seed";
 import { getWorkspaceSnapshot } from "@/lib/workspace-service";
 import type { WorkspaceSnapshotDto } from "@/types/erp";
 
@@ -20,6 +22,26 @@ const EMPTY_SNAPSHOT: WorkspaceSnapshotDto = {
   shiftNotes: [],
   financialEntries: [],
   deliveryZones: [],
+  storeSettings: {
+    id: 1,
+    storeName: "Forno & Mesa",
+    slogan: "Padaria Artesanal, Cafeteria & Bistrô",
+    phone: "(11) 99999-0000",
+    address: "Rua das Flores, 240 — Centro",
+    openingHours: "Ter–Dom · 07:00 às 22:00",
+    isDeliveryOpen: true,
+    dailyGoal: 2500,
+    defaultServiceFeePct: 10,
+    freeDeliveryAbove: 150,
+    creditCardFeePct: 3.2,
+    debitCardFeePct: 1.6,
+    updatedAt: new Date().toISOString(),
+  },
+  staffUsers: [],
+  coupons: [],
+  reservations: [],
+  reviews: [],
+  auditLogs: [],
   metrics: {
     revenueToday: 0,
     paidCount: 0,
@@ -32,13 +54,39 @@ const EMPTY_SNAPSHOT: WorkspaceSnapshotDto = {
     kdsPendingCount: 0,
     activeDeliveries: 0,
     deliveryRevenue: 0,
+    waiterCallsCount: 0,
+    averageRating: 5,
+    reviewsCount: 0,
   },
 };
 
 export default async function HomePage() {
-  const authorized = await isServerErpAuthorized();
-  if (!authorized) {
-    return <OperatorLockScreen />;
+  const operatorSession = await getServerOperatorSession();
+  if (!operatorSession) {
+    let storeName = "Forno & Mesa";
+    let slogan = "Padaria Artesanal, Cafeteria & Bistrô";
+    let openingHours = "Ter–Dom · 07:00 às 22:00";
+    let isDeliveryOpen = true;
+    try {
+      await ensureSeeded();
+      const s = await prisma.storeSettings.findUnique({ where: { id: 1 } });
+      if (s) {
+        storeName = s.storeName;
+        slogan = s.slogan;
+        openingHours = s.openingHours;
+        isDeliveryOpen = s.isDeliveryOpen;
+      }
+    } catch {
+      // Fallback to defaults if DB offline
+    }
+    return (
+      <OperatorLockScreen
+        storeName={storeName}
+        slogan={slogan}
+        openingHours={openingHours}
+        isDeliveryOpen={isDeliveryOpen}
+      />
+    );
   }
 
   let dbError: string | null = null;
@@ -52,5 +100,11 @@ export default async function HomePage() {
       err instanceof Error ? err.message : "Erro ao conectar no banco PostgreSQL.";
   }
 
-  return <ErpWorkspace initialData={snapshot} dbError={dbError} />;
+  return (
+    <ErpWorkspace
+      initialData={snapshot}
+      operatorSession={operatorSession}
+      dbError={dbError}
+    />
+  );
 }

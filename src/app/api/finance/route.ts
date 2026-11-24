@@ -8,7 +8,7 @@ import {
 } from "@/lib/schemas";
 
 export async function GET() {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE"]);
   if (forbidden) return forbidden;
   try {
     await ensureSeeded();
@@ -30,7 +30,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE"]);
   if (forbidden) return forbidden;
   try {
     const body = await request.json();
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE"]);
   if (forbidden) return forbidden;
   try {
     const body = await request.json();
@@ -97,7 +97,7 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE"]);
   if (forbidden) return forbidden;
   try {
     const url = new URL(request.url);

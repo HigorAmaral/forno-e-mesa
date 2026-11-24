@@ -1,8 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { AlertTriangle, Banknote, Boxes, Plus, Utensils } from "lucide-react";
-import { formatBRL } from "@/lib/domain";
+import { useEffect, useMemo, useState } from "react";
+import {
+  AlertTriangle,
+  Banknote,
+  BookOpen,
+  Boxes,
+  Download,
+  Pencil,
+  Plus,
+  Trash2,
+  Utensils,
+  X,
+} from "lucide-react";
+import {
+  calculateMarginPercentage,
+  calculateProductRecipeCost,
+  formatBRL,
+} from "@/lib/domain";
 import type {
   CashSessionDto,
   CategoryDto,
@@ -38,6 +53,12 @@ export function InventoryCashSection({
     categories[0]?.id ?? 1,
   );
 
+  const [showNewCat, setShowNewCat] = useState(false);
+  const [catName, setCatName] = useState("");
+  const [catSector, setCatSector] = useState<
+    "PADARIA" | "CONFEITARIA" | "RESTAURANTE" | "BEBIDAS"
+  >("PADARIA");
+
   const [ingName, setIngName] = useState("");
   const [ingUnit, setIngUnit] = useState<"KG" | "L" | "UN" | "G" | "ML">("KG");
   const [ingQty, setIngQty] = useState("10");
@@ -51,6 +72,167 @@ export function InventoryCashSection({
   const [openingAmount, setOpeningAmount] = useState("250");
   const [busy, setBusy] = useState(false);
 
+  // Edit Product Modal
+  const [editingProduct, setEditingProduct] = useState<ProductDto | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    description: "",
+    price: "",
+    unit: "UN",
+    prepStation: "COZINHA",
+    prepTimeMinutes: "5",
+    categoryId: 1,
+    stockQty: "0",
+    minStockQty: "5",
+    isFeatured: false,
+    isAvailable: true,
+  });
+
+  // Recipe Modal
+  const [recipeProduct, setRecipeProduct] = useState<ProductDto | null>(null);
+  const [recipeDraft, setRecipeDraft] = useState<
+    Array<{ ingredientId: number; qtyRequired: number }>
+  >([]);
+
+  useEffect(() => {
+    if (!editingProduct && !recipeProduct) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setEditingProduct(null);
+        setRecipeProduct(null);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [editingProduct, recipeProduct]);
+
+  function openEditProduct(p: ProductDto) {
+    setEditingProduct(p);
+    setEditForm({
+      name: p.name,
+      description: p.description,
+      price: String(p.price),
+      unit: p.unit,
+      prepStation: p.prepStation,
+      prepTimeMinutes: String(p.prepTimeMinutes),
+      categoryId: p.categoryId,
+      stockQty: String(p.stockQty),
+      minStockQty: String(p.minStockQty),
+      isFeatured: p.isFeatured,
+      isAvailable: p.isAvailable,
+    });
+  }
+
+  function openRecipeEditor(p: ProductDto) {
+    setRecipeProduct(p);
+    setRecipeDraft(
+      (p.recipeItems ?? []).map((ri) => ({
+        ingredientId: ri.ingredientId,
+        qtyRequired: ri.qtyRequired,
+      })),
+    );
+  }
+
+  const recipeCostPreview = useMemo(() => {
+    const ingMap = new Map(ingredients.map((i) => [i.id, i]));
+    return calculateProductRecipeCost(
+      recipeDraft.map((r) => ({
+        qtyRequired: r.qtyRequired,
+        costPerUnit: ingMap.get(r.ingredientId)?.costPerUnit ?? 0,
+      })),
+    );
+  }, [recipeDraft, ingredients]);
+
+  async function saveEditProduct(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingProduct || busy) return;
+    setBusy(true);
+    try {
+      const res = await fetch("/api/inventory", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "product",
+          id: editingProduct.id,
+          name: editForm.name.trim(),
+          description: editForm.description.trim(),
+          price: Number(editForm.price) || editingProduct.price,
+          unit: editForm.unit,
+          prepStation: editForm.prepStation,
+          prepTimeMinutes: Number(editForm.prepTimeMinutes) || 5,
+          categoryId: Number(editForm.categoryId),
+          stockQty: Number(editForm.stockQty) || 0,
+          minStockQty: Number(editForm.minStockQty) || 0,
+          isFeatured: editForm.isFeatured,
+          isAvailable: editForm.isAvailable,
+        }),
+      });
+      if (!res.ok) {
+        const j = await res.json();
+        onError(j.error ?? "Erro ao editar produto.");
+        return;
+      }
+      setEditingProduct(null);
+      await onRefresh();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveRecipe(e: React.FormEvent) {
+    e.preventDefault();
+    if (!recipeProduct || busy) return;
+    setBusy(true);
+    try {
+      const res = await fetch("/api/inventory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "recipe",
+          productId: recipeProduct.id,
+          items: recipeDraft.filter((r) => r.qtyRequired > 0),
+        }),
+      });
+      if (!res.ok) {
+        const j = await res.json();
+        onError(j.error ?? "Erro ao salvar ficha técnica.");
+        return;
+      }
+      setRecipeProduct(null);
+      await onRefresh();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function createCategory(e: React.FormEvent) {
+    e.preventDefault();
+    if (!catName.trim() || busy) return;
+    setBusy(true);
+    try {
+      const res = await fetch("/api/inventory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "category",
+          name: catName.trim(),
+          sector: catSector,
+        }),
+      });
+      const j = await res.json();
+      if (!res.ok) {
+        onError(j.error ?? "Erro ao criar categoria.");
+        return;
+      }
+      setCatName("");
+      setShowNewCat(false);
+      if (j.category?.id) setNewCategoryId(j.category.id);
+      await onRefresh();
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function adjustIngredient(id: number, deltaQty: number) {
     const res = await fetch("/api/inventory", {
       method: "PATCH",
@@ -60,6 +242,18 @@ export function InventoryCashSection({
     if (!res.ok) {
       const j = await res.json();
       onError(j.error ?? "Erro ao ajustar estoque.");
+      return;
+    }
+    await onRefresh();
+  }
+
+  async function deleteEntity(kind: "product" | "ingredient", id: number) {
+    const res = await fetch(`/api/inventory?kind=${kind}&id=${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      const j = await res.json();
+      onError(j.error ?? "Erro ao remover item.");
       return;
     }
     await onRefresh();
@@ -190,22 +384,30 @@ export function InventoryCashSection({
       <div className="grid gap-6 xl:grid-cols-12">
         {/* Insumos / Estoque */}
         <section className="card-bistro p-5 xl:col-span-7">
-          <div className="mb-4 flex items-center gap-2">
-            <Boxes className="h-5 w-5 text-[#C07F5A]" />
-            <div>
-              <h2 className="font-display text-lg font-bold text-[#3E2723]">
-                Estoque de Insumos & Fichas Técnicas
-              </h2>
-              <p className="text-xs text-[#8C5A3C]">
-                Baixa automática pelas vendas ligadas às receitas; cadastre e
-                reponha insumos em 1 clique.
-              </p>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Boxes className="h-5 w-5 text-[var(--accent-primary)]" />
+              <div>
+                <h2 className="font-display text-lg font-bold text-[var(--text-primary)]">
+                  Estoque de Insumos & Fichas Técnicas
+                </h2>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  Baixa automática pelas vendas ligadas às receitas; cadastre e reponha em 1 clique.
+                </p>
+              </div>
             </div>
+            <a
+              href="/api/reports/export?scope=inventory"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:border-[var(--accent-primary)]"
+            >
+              <Download className="h-3.5 w-3.5 text-emerald-600" />
+              CSV Estoque
+            </a>
           </div>
 
           <form
             onSubmit={createIngredient}
-            className="mb-4 grid gap-2 rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] p-3 sm:grid-cols-6"
+            className="mb-4 grid gap-2 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-3 sm:grid-cols-6"
           >
             <input
               type="text"
@@ -213,12 +415,12 @@ export function InventoryCashSection({
               value={ingName}
               onChange={(e) => setIngName(e.target.value)}
               placeholder="Novo insumo (ex: Morango)"
-              className="rounded-lg border border-[#E6CCB2] bg-white px-2.5 py-1.5 text-xs sm:col-span-2"
+              className="input-field py-1.5 text-xs sm:col-span-2"
             />
             <select
               value={ingUnit}
               onChange={(e) => setIngUnit(e.target.value as typeof ingUnit)}
-              className="rounded-lg border border-[#E6CCB2] bg-white px-2 py-1.5 text-xs"
+              className="input-field py-1.5 text-xs"
             >
               <option value="KG">KG</option>
               <option value="L">L</option>
@@ -233,7 +435,7 @@ export function InventoryCashSection({
               value={ingQty}
               onChange={(e) => setIngQty(e.target.value)}
               placeholder="Qtd"
-              className="rounded-lg border border-[#E6CCB2] bg-white px-2.5 py-1.5 text-xs"
+              className="input-field py-1.5 text-xs"
             />
             <input
               type="number"
@@ -242,7 +444,7 @@ export function InventoryCashSection({
               value={ingMin}
               onChange={(e) => setIngMin(e.target.value)}
               placeholder="Mínimo"
-              className="rounded-lg border border-[#E6CCB2] bg-white px-2.5 py-1.5 text-xs"
+              className="input-field py-1.5 text-xs"
             />
             <button
               type="submit"
@@ -258,14 +460,14 @@ export function InventoryCashSection({
               value={ingCost}
               onChange={(e) => setIngCost(e.target.value)}
               placeholder="Custo unit. R$"
-              className="rounded-lg border border-[#E6CCB2] bg-white px-2.5 py-1.5 text-xs sm:col-span-2"
+              className="input-field py-1.5 text-xs sm:col-span-2"
             />
             <input
               type="text"
               value={ingSupplier}
               onChange={(e) => setIngSupplier(e.target.value)}
               placeholder="Fornecedor (opcional)"
-              className="rounded-lg border border-[#E6CCB2] bg-white px-2.5 py-1.5 text-xs sm:col-span-4"
+              className="input-field py-1.5 text-xs sm:col-span-4"
             />
           </form>
 
@@ -281,14 +483,14 @@ export function InventoryCashSection({
                   key={ing.id}
                   className={`rounded-xl border p-3 ${
                     isLow
-                      ? "border-red-200 bg-red-50/50"
-                      : "border-[#E6CCB2] bg-[#FAF3E8]"
+                      ? "border-red-300 bg-red-50/40"
+                      : "border-[var(--border-warm)] bg-[var(--bg-canvas)]"
                   }`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-[#3E2723]">
+                        <span className="text-sm font-bold text-[var(--text-primary)]">
                           {ing.name}
                         </span>
                         {isLow && (
@@ -297,9 +499,9 @@ export function InventoryCashSection({
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-[#8C5A3C]">
+                      <p className="text-xs text-[var(--text-secondary)]">
                         Atual:{" "}
-                        <span className="font-mono-num font-bold text-[#3E2723]">
+                        <span className="font-mono-num font-bold text-[var(--text-primary)]">
                           {ing.currentQty} {ing.unit}
                         </span>{" "}
                         · Mínimo: {ing.minQty} {ing.unit} · Custo:{" "}
@@ -312,23 +514,31 @@ export function InventoryCashSection({
                       <button
                         type="button"
                         onClick={() => adjustIngredient(ing.id, -1)}
-                        className="rounded-lg border border-[#E6CCB2] bg-white px-2.5 py-1 text-xs font-bold hover:bg-[#E6CCB2]"
+                        className="icon-btn px-2.5 py-1 text-xs font-bold"
                       >
                         -1
                       </button>
                       <button
                         type="button"
                         onClick={() => adjustIngredient(ing.id, 5)}
-                        className="rounded-lg bg-[#15803d] px-2.5 py-1 text-xs font-bold text-white hover:bg-[#22523d]"
+                        className="rounded-lg bg-emerald-700 px-2.5 py-1 text-xs font-bold text-white hover:bg-emerald-800"
                       >
                         +5 {ing.unit}
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteEntity("ingredient", ing.id)}
+                        className="icon-btn p-1 text-red-700"
+                        title="Remover insumo"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
                     </div>
                   </div>
-                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white">
+                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-surface)]">
                     <div
                       className={`h-full rounded-full transition-all ${
-                        isLow ? "bg-red-500" : "bg-[#15803d]"
+                        isLow ? "bg-red-500" : "bg-emerald-600"
                       }`}
                       style={{ width: `${pct}%` }}
                     />
@@ -342,20 +552,20 @@ export function InventoryCashSection({
         {/* Caixa */}
         <section className="card-bistro p-5 xl:col-span-5">
           <div className="mb-4 flex items-center gap-2">
-            <Banknote className="h-5 w-5 text-[#15803d]" />
+            <Banknote className="h-5 w-5 text-emerald-600" />
             <div>
-              <h2 className="font-display text-lg font-bold text-[#3E2723]">
+              <h2 className="font-display text-lg font-bold text-[var(--text-primary)]">
                 Frente de Caixa (Turnos)
               </h2>
-              <p className="text-xs text-[#8C5A3C]">
+              <p className="text-xs text-[var(--text-secondary)]">
                 Controle de abertura, sangria, suprimento e fechamento do dia.
               </p>
             </div>
           </div>
 
           {!openCashSession ? (
-            <div className="space-y-3 rounded-xl border border-dashed border-[#E6CCB2] bg-[#FAF3E8] p-4">
-              <p className="text-xs font-semibold text-[#3E2723]">
+            <div className="space-y-3 rounded-xl border border-dashed border-[var(--border-warm)] bg-[var(--bg-canvas)] p-4">
+              <p className="text-xs font-semibold text-[var(--text-primary)]">
                 Nenhum turno de caixa aberto.
               </p>
               <div className="grid gap-2 sm:grid-cols-2">
@@ -364,14 +574,14 @@ export function InventoryCashSection({
                   value={openedBy}
                   onChange={(e) => setOpenedBy(e.target.value)}
                   placeholder="Operador"
-                  className="rounded-xl border border-[#E6CCB2] bg-white px-3 py-2 text-xs"
+                  className="input-field py-2 text-xs"
                 />
                 <input
                   type="number"
                   value={openingAmount}
                   onChange={(e) => setOpeningAmount(e.target.value)}
                   placeholder="Troco inicial R$"
-                  className="rounded-xl border border-[#E6CCB2] bg-white px-3 py-2 text-xs"
+                  className="input-field py-2 text-xs"
                 />
               </div>
               <button
@@ -384,25 +594,25 @@ export function InventoryCashSection({
                     openingAmount: Number(openingAmount) || 0,
                   })
                 }
-                className="w-full rounded-xl bg-[#15803d] py-2.5 text-xs font-semibold text-white hover:bg-[#22523d]"
+                className="w-full rounded-xl bg-emerald-700 py-2.5 text-xs font-semibold text-white hover:bg-emerald-800"
               >
                 Abrir Turno de Caixa
               </button>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-2.5 rounded-xl bg-[#FAF3E8] p-3.5 text-xs">
+              <div className="grid grid-cols-2 gap-2.5 rounded-xl bg-[var(--bg-canvas)] p-3.5 text-xs">
                 <div>
-                  <span className="text-[#8C5A3C]">Operador</span>
-                  <p className="font-bold text-[#3E2723]">
+                  <span className="text-[var(--text-secondary)]">Operador</span>
+                  <p className="font-bold text-[var(--text-primary)]">
                     {openCashSession.openedBy}
                   </p>
                 </div>
                 <div>
-                  <span className="text-[#8C5A3C]">
+                  <span className="text-[var(--text-secondary)]">
                     Saldo Esperado (Dinheiro)
                   </span>
-                  <p className="font-mono-num text-base font-bold text-[#15803d]">
+                  <p className="font-mono-num text-base font-bold text-emerald-600">
                     {formatBRL(openCashSession.expectedAmount)}
                   </p>
                 </div>
@@ -415,14 +625,14 @@ export function InventoryCashSection({
                   value={movAmount}
                   onChange={(e) => setMovAmount(e.target.value)}
                   placeholder="Valor R$"
-                  className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs"
+                  className="input-field py-2 text-xs"
                 />
                 <input
                   type="text"
                   value={movDesc}
                   onChange={(e) => setMovDesc(e.target.value)}
                   placeholder="Motivo (ex: Pag. gelo)"
-                  className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs"
+                  className="input-field py-2 text-xs"
                 />
               </div>
 
@@ -438,7 +648,7 @@ export function InventoryCashSection({
                       description: movDesc,
                     })
                   }
-                  className="flex-1 rounded-xl bg-[#15803d] px-3 py-2 text-xs font-semibold text-white hover:bg-[#22523d]"
+                  className="flex-1 rounded-xl bg-emerald-700 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-800"
                 >
                   + Suprimento
                 </button>
@@ -467,17 +677,17 @@ export function InventoryCashSection({
                 </button>
               </div>
 
-              <div className="max-h-64 space-y-1.5 overflow-y-auto border-t border-[#E6CCB2] pt-3">
+              <div className="max-h-64 space-y-1.5 overflow-y-auto border-t border-[var(--border-warm)] pt-3">
                 {openCashSession.movements.map((mov) => (
                   <div
                     key={mov.id}
-                    className="flex items-center justify-between rounded-lg bg-[#FAF3E8] px-3 py-1.5 text-xs"
+                    className="flex items-center justify-between rounded-lg bg-[var(--bg-canvas)] px-3 py-1.5 text-xs"
                   >
                     <div>
-                      <span className="font-bold text-[#3E2723]">
+                      <span className="font-bold text-[var(--text-primary)]">
                         {mov.type}
                       </span>
-                      <span className="ml-2 text-[#8C5A3C]">
+                      <span className="ml-2 text-[var(--text-secondary)]">
                         {mov.description}
                       </span>
                     </div>
@@ -485,7 +695,7 @@ export function InventoryCashSection({
                       className={`font-mono-num font-bold ${
                         mov.type === "SANGRIA"
                           ? "text-red-700"
-                          : "text-[#15803d]"
+                          : "text-emerald-600"
                       }`}
                     >
                       {mov.type === "SANGRIA" ? "-" : "+"}{" "}
@@ -501,18 +711,55 @@ export function InventoryCashSection({
 
       {/* Cardápio / Cadastro rápido */}
       <section className="card-bistro p-5">
-        <div className="mb-4 flex items-center gap-2">
-          <Utensils className="h-5 w-5 text-[#C07F5A]" />
-          <div>
-            <h2 className="font-display text-lg font-bold text-[#3E2723]">
-              Catálogo Unificado de Produtos & Fichas Técnicas
-            </h2>
-            <p className="text-xs text-[#8C5A3C]">
-              Cadastre novos itens, pause disponibilidade em tempo real e
-              acompanhe os insumos ligados a cada receita.
-            </p>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Utensils className="h-5 w-5 text-[var(--accent-primary)]" />
+            <div>
+              <h2 className="font-display text-lg font-bold text-[var(--text-primary)]">
+                Catálogo Unificado de Produtos & Fichas Técnicas
+              </h2>
+              <p className="text-xs text-[var(--text-secondary)]">
+                Edite produtos, configure fichas técnicas com CMV automático e gerencie categorias.
+              </p>
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={() => setShowNewCat((v) => !v)}
+            className="rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:border-[var(--accent-primary)]"
+          >
+            {showNewCat ? "Fechar Categoria" : "+ Nova Categoria"}
+          </button>
         </div>
+
+        {showNewCat && (
+          <form
+            onSubmit={createCategory}
+            className="mb-4 grid gap-2 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-3 sm:grid-cols-4"
+          >
+            <input
+              type="text"
+              required
+              value={catName}
+              onChange={(e) => setCatName(e.target.value)}
+              placeholder="Nome da categoria (ex: Salgados)"
+              className="input-field py-2 text-xs sm:col-span-2"
+            />
+            <select
+              value={catSector}
+              onChange={(e) => setCatSector(e.target.value as typeof catSector)}
+              className="input-field py-2 text-xs"
+            >
+              <option value="PADARIA">Padaria</option>
+              <option value="CONFEITARIA">Confeitaria</option>
+              <option value="RESTAURANTE">Restaurante</option>
+              <option value="BEBIDAS">Bebidas</option>
+            </select>
+            <button type="submit" disabled={busy} className="btn-primary rounded-xl py-2 text-xs font-bold">
+              Criar Categoria
+            </button>
+          </form>
+        )}
 
         <form onSubmit={createProduct} className="mb-5 grid gap-2.5 sm:grid-cols-6">
           <input
@@ -521,7 +768,7 @@ export function InventoryCashSection({
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Nome do produto"
-            className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs sm:col-span-2"
+            className="input-field py-2 text-xs sm:col-span-2"
           />
           <input
             type="text"
@@ -529,7 +776,7 @@ export function InventoryCashSection({
             value={newDesc}
             onChange={(e) => setNewDesc(e.target.value)}
             placeholder="Descrição curta"
-            className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs sm:col-span-2"
+            className="input-field py-2 text-xs sm:col-span-2"
           />
           <input
             type="number"
@@ -538,12 +785,12 @@ export function InventoryCashSection({
             value={newPrice}
             onChange={(e) => setNewPrice(e.target.value)}
             placeholder="Preço"
-            className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs"
+            className="input-field py-2 text-xs"
           />
           <select
             value={newCategoryId}
             onChange={(e) => setNewCategoryId(Number(e.target.value))}
-            className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs"
+            className="input-field py-2 text-xs"
           >
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
@@ -554,7 +801,7 @@ export function InventoryCashSection({
           <select
             value={newUnit}
             onChange={(e) => setNewUnit(e.target.value as typeof newUnit)}
-            className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs"
+            className="input-field py-2 text-xs"
           >
             <option value="UN">Unidade (UN)</option>
             <option value="KG">Quilo (KG)</option>
@@ -564,7 +811,7 @@ export function InventoryCashSection({
           <select
             value={newStation}
             onChange={(e) => setNewStation(e.target.value as typeof newStation)}
-            className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs"
+            className="input-field py-2 text-xs"
           >
             <option value="COZINHA">Estação: Cozinha</option>
             <option value="FORNO">Estação: Forno</option>
@@ -585,14 +832,14 @@ export function InventoryCashSection({
           {products.map((product) => (
             <div
               key={product.id}
-              className="flex flex-col justify-between gap-2 rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] p-3"
+              className="flex flex-col justify-between gap-2 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] p-3"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="truncate text-xs font-bold text-[#3E2723]">
+                  <p className="truncate text-xs font-bold text-[var(--text-primary)]">
                     {product.name}
                   </p>
-                  <p className="font-mono-num text-[11px] text-[#8C5A3C]">
+                  <p className="font-mono-num text-[11px] text-[var(--text-secondary)]">
                     {formatBRL(product.price)}/{product.unit} · {product.prepStation}{" "}
                     · Estq: {product.stockQty}
                   </p>
@@ -614,7 +861,7 @@ export function InventoryCashSection({
                   {product.recipeItems.map((ri) => (
                     <span
                       key={ri.id}
-                      className="rounded-md bg-white px-1.5 py-0.5 text-[10px] font-medium text-[#8C5A3C]"
+                      className="rounded-md bg-[var(--bg-surface)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--text-secondary)]"
                     >
                       {ri.ingredient.name}: {ri.qtyRequired}
                       {ri.ingredient.unit}
@@ -622,7 +869,7 @@ export function InventoryCashSection({
                   ))}
                 </div>
               )}
-              <div className="flex flex-wrap items-center justify-between gap-1 border-t border-[#E6CCB2]/70 pt-2">
+              <div className="flex flex-wrap items-center justify-between gap-1 border-t border-[var(--border-warm)] pt-2">
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
@@ -631,7 +878,7 @@ export function InventoryCashSection({
                         price: Math.max(1, Number((product.price - 1).toFixed(2))),
                       })
                     }
-                    className="rounded-md border border-[#E6CCB2] bg-white px-2 py-0.5 text-[10px] font-bold text-[#8C5A3C] hover:bg-[#E6CCB2]"
+                    className="icon-btn px-2 py-0.5 text-[10px] font-bold"
                   >
                     -R$1
                   </button>
@@ -642,9 +889,33 @@ export function InventoryCashSection({
                         price: Number((product.price + 1).toFixed(2)),
                       })
                     }
-                    className="rounded-md border border-[#E6CCB2] bg-white px-2 py-0.5 text-[10px] font-bold text-[#8C5A3C] hover:bg-[#E6CCB2]"
+                    className="icon-btn px-2 py-0.5 text-[10px] font-bold"
                   >
                     +R$1
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openEditProduct(product)}
+                    className="icon-btn p-1"
+                    title="Editar produto"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openRecipeEditor(product)}
+                    className="icon-btn p-1"
+                    title="Ficha Técnica / Receita"
+                  >
+                    <BookOpen className="h-3 w-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteEntity("product", product.id)}
+                    className="icon-btn p-1 text-red-700"
+                    title="Excluir produto"
+                  >
+                    <Trash2 className="h-3 w-3" />
                   </button>
                 </div>
                 <button
@@ -654,7 +925,7 @@ export function InventoryCashSection({
                       stockQty: Number((product.stockQty + 5).toFixed(2)),
                     })
                   }
-                  className="rounded-md bg-[#15803d] px-2 py-0.5 text-[10px] font-bold text-white hover:bg-[#22523d]"
+                  className="rounded-md bg-emerald-700 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-800"
                 >
                   +5 Estq
                 </button>
@@ -663,6 +934,288 @@ export function InventoryCashSection({
           ))}
         </div>
       </section>
+
+      {/* Edit Product Modal */}
+      {editingProduct && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-xs"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Editar ${editingProduct.name}`}
+          onClick={() => setEditingProduct(null)}
+        >
+          <form
+            onSubmit={saveEditProduct}
+            onClick={(e) => e.stopPropagation()}
+            className="card-bistro animate-scale-in max-h-[90vh] w-full max-w-lg space-y-3 overflow-y-auto p-5 shadow-2xl"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="font-display text-lg font-bold">
+                Editar Produto · {editingProduct.sku}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setEditingProduct(null)}
+                className="icon-btn"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="field-label sm:col-span-2">
+                Nome
+                <input
+                  type="text"
+                  required
+                  value={editForm.name}
+                  onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                  className="input-field"
+                />
+              </label>
+              <label className="field-label sm:col-span-2">
+                Descrição
+                <input
+                  type="text"
+                  required
+                  value={editForm.description}
+                  onChange={(e) =>
+                    setEditForm((f) => ({ ...f, description: e.target.value }))
+                  }
+                  className="input-field"
+                />
+              </label>
+              <label className="field-label">
+                Preço (R$)
+                <input
+                  type="number"
+                  step="0.5"
+                  value={editForm.price}
+                  onChange={(e) => setEditForm((f) => ({ ...f, price: e.target.value }))}
+                  className="input-field font-mono-num"
+                />
+              </label>
+              <label className="field-label">
+                Categoria
+                <select
+                  value={editForm.categoryId}
+                  onChange={(e) =>
+                    setEditForm((f) => ({ ...f, categoryId: Number(e.target.value) }))
+                  }
+                  className="input-field"
+                >
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="field-label">
+                Unidade
+                <select
+                  value={editForm.unit}
+                  onChange={(e) => setEditForm((f) => ({ ...f, unit: e.target.value }))}
+                  className="input-field"
+                >
+                  <option value="UN">UN</option>
+                  <option value="KG">KG</option>
+                  <option value="FATIA">FATIA</option>
+                  <option value="PORCAO">PORCAO</option>
+                </select>
+              </label>
+              <label className="field-label">
+                Estação KDS
+                <select
+                  value={editForm.prepStation}
+                  onChange={(e) =>
+                    setEditForm((f) => ({ ...f, prepStation: e.target.value }))
+                  }
+                  className="input-field"
+                >
+                  <option value="COZINHA">Cozinha</option>
+                  <option value="FORNO">Forno</option>
+                  <option value="CONFEITARIA">Confeitaria</option>
+                  <option value="BAR">Bar</option>
+                  <option value="BALCAO">Balcão</option>
+                </select>
+              </label>
+              <label className="field-label">
+                Estoque Atual
+                <input
+                  type="number"
+                  step="0.5"
+                  value={editForm.stockQty}
+                  onChange={(e) =>
+                    setEditForm((f) => ({ ...f, stockQty: e.target.value }))
+                  }
+                  className="input-field font-mono-num"
+                />
+              </label>
+              <label className="field-label">
+                Tempo Preparo (min)
+                <input
+                  type="number"
+                  min="1"
+                  value={editForm.prepTimeMinutes}
+                  onChange={(e) =>
+                    setEditForm((f) => ({ ...f, prepTimeMinutes: e.target.value }))
+                  }
+                  className="input-field font-mono-num"
+                />
+              </label>
+            </div>
+            <div className="flex flex-wrap gap-4 pt-1 text-xs font-semibold">
+              <label className="inline-flex items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={editForm.isFeatured}
+                  onChange={(e) =>
+                    setEditForm((f) => ({ ...f, isFeatured: e.target.checked }))
+                  }
+                />
+                Destaque no Cardápio
+              </label>
+              <label className="inline-flex items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={editForm.isAvailable}
+                  onChange={(e) =>
+                    setEditForm((f) => ({ ...f, isAvailable: e.target.checked }))
+                  }
+                />
+                Disponível para venda
+              </label>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setEditingProduct(null)}
+                className="rounded-xl border border-[var(--border-warm)] px-4 py-2 text-xs font-semibold"
+              >
+                Cancelar
+              </button>
+              <button type="submit" disabled={busy} className="btn-primary rounded-xl px-5 py-2 text-xs font-bold">
+                Salvar Produto
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Recipe / Ficha Técnica Modal */}
+      {recipeProduct && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-xs"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Ficha técnica ${recipeProduct.name}`}
+          onClick={() => setRecipeProduct(null)}
+        >
+          <form
+            onSubmit={saveRecipe}
+            onClick={(e) => e.stopPropagation()}
+            className="card-bistro animate-scale-in max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto p-5 shadow-2xl"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-display text-lg font-bold">
+                  Ficha Técnica · {recipeProduct.name}
+                </h3>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  Venda: {formatBRL(recipeProduct.price)} · CMV:{" "}
+                  <strong className="font-mono-num">{formatBRL(recipeCostPreview)}</strong>{" "}
+                  · Margem:{" "}
+                  <strong className="font-mono-num text-emerald-600">
+                    {calculateMarginPercentage(recipeProduct.price, recipeCostPreview)}%
+                  </strong>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRecipeProduct(null)}
+                className="icon-btn"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {recipeDraft.map((row, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <select
+                    value={row.ingredientId}
+                    onChange={(e) =>
+                      setRecipeDraft((prev) =>
+                        prev.map((r, i) =>
+                          i === idx ? { ...r, ingredientId: Number(e.target.value) } : r,
+                        ),
+                      )
+                    }
+                    className="input-field flex-1 py-1.5 text-xs"
+                  >
+                    {ingredients.map((ing) => (
+                      <option key={ing.id} value={ing.id}>
+                        {ing.name} ({ing.unit} · {formatBRL(ing.costPerUnit)})
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.001"
+                    value={row.qtyRequired}
+                    onChange={(e) =>
+                      setRecipeDraft((prev) =>
+                        prev.map((r, i) =>
+                          i === idx
+                            ? { ...r, qtyRequired: Number(e.target.value) || 0 }
+                            : r,
+                        ),
+                      )
+                    }
+                    className="input-field font-mono-num w-24 py-1.5 text-right text-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setRecipeDraft((prev) => prev.filter((_, i) => i !== idx))
+                    }
+                    className="icon-btn p-1.5 text-red-700"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() =>
+                  ingredients[0] &&
+                  setRecipeDraft((prev) => [
+                    ...prev,
+                    { ingredientId: ingredients[0].id, qtyRequired: 0.1 },
+                  ])
+                }
+                className="inline-flex items-center gap-1 text-xs font-bold text-[var(--accent-primary)] hover:underline"
+              >
+                <Plus className="h-3.5 w-3.5" /> Adicionar insumo à receita
+              </button>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-[var(--border-warm)] pt-3">
+              <button
+                type="button"
+                onClick={() => setRecipeProduct(null)}
+                className="rounded-xl border border-[var(--border-warm)] px-4 py-2 text-xs font-semibold"
+              >
+                Cancelar
+              </button>
+              <button type="submit" disabled={busy} className="btn-primary rounded-xl px-5 py-2 text-xs font-bold">
+                Salvar Ficha Técnica
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

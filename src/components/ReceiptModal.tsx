@@ -1,28 +1,59 @@
 "use client";
 
+import { useEffect } from "react";
 import { Printer, X } from "lucide-react";
 import { channelLabel, formatBRL } from "@/lib/domain";
-import type { OrderDto } from "@/types/erp";
+import type { OrderDto, SplitPaymentPart } from "@/types/erp";
 
 interface ReceiptModalProps {
   order: OrderDto | null;
   onClose: () => void;
 }
 
+function parseSplitParts(raw: string | null | undefined): SplitPaymentPart[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as SplitPaymentPart[]) : [];
+  } catch {
+    return [];
+  }
+}
+
 export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
+  useEffect(() => {
+    if (!order) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [order, onClose]);
+
   if (!order) return null;
 
+  const splitParts = parseSplitParts(order.splitPayments);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-      <div className="w-full max-w-sm rounded-2xl border border-[#E6CCB2] bg-white p-5 shadow-2xl">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-xs"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Cupom ${order.code}`}
+      onClick={onClose}
+    >
+      <div
+        className="card-bistro animate-scale-in max-h-[92vh] w-full max-w-sm overflow-y-auto p-5 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-display text-lg font-bold text-[#3E2723]">
+          <h3 className="font-display text-lg font-bold text-[var(--text-primary)]">
             Comanda / Cupom 80mm
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-[#8C5A3C] hover:bg-[#E6CCB2]"
+            className="icon-btn"
             aria-label="Fechar cupom"
           >
             <X className="h-5 w-5" />
@@ -62,6 +93,18 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
               <div className="flex justify-between">
                 <span>Telefone:</span>
                 <span>{order.customerPhone}</span>
+              </div>
+            )}
+            {order.operatorName && (
+              <div className="flex justify-between">
+                <span>Operador:</span>
+                <span>{order.operatorName}</span>
+              </div>
+            )}
+            {order.scheduledFor && (
+              <div className="flex justify-between">
+                <span>Agendado:</span>
+                <span>{order.scheduledFor}</span>
               </div>
             )}
             {order.deliveryAddress && (
@@ -114,13 +157,13 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
             </div>
             {order.discount > 0 && (
               <div className="flex justify-between text-[#15803d]">
-                <span>Desconto</span>
+                <span>Desconto{order.couponCode ? ` (${order.couponCode})` : ""}</span>
                 <span>- {formatBRL(order.discount)}</span>
               </div>
             )}
             {order.serviceFee > 0 && (
               <div className="flex justify-between">
-                <span>Serviço (10%)</span>
+                <span>Serviço</span>
                 <span>{formatBRL(order.serviceFee)}</span>
               </div>
             )}
@@ -138,6 +181,16 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
               <span>Pagamento:</span>
               <span>{order.paymentMethod ?? order.status}</span>
             </div>
+            {splitParts.length > 0 && (
+              <div className="space-y-0.5 rounded bg-[#FAF3E8] p-1.5 text-[10px] text-[#6E442B]">
+                {splitParts.map((part, idx) => (
+                  <div key={`${part.method}-${idx}`} className="flex justify-between">
+                    <span>{part.method}</span>
+                    <span>{formatBRL(part.amount)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
             {order.changeFor && (
               <div className="flex justify-between text-[11px] text-[#8C5A3C]">
                 <span>Troco para:</span>
@@ -155,7 +208,7 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
           <button
             type="button"
             onClick={() => window.print()}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#C07F5A] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#A66844]"
+            className="btn-primary flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold"
           >
             <Printer className="h-4 w-4" />
             Imprimir 80mm
@@ -163,7 +216,7 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-[#E6CCB2] px-4 py-2.5 text-sm font-medium text-[#3E2723] hover:bg-[#E6CCB2]"
+            className="rounded-xl border border-[var(--border-warm)] px-4 py-2.5 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-canvas)]"
           >
             Fechar
           </button>

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { forbiddenIfNotErpOperator } from "@/lib/access-guard";
 import { prisma } from "@/lib/prisma";
 import { UpdateCakeStatusSchema } from "@/lib/schemas";
 
@@ -6,6 +7,13 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
+  const forbidden = await forbiddenIfNotErpOperator([
+    "ADMIN",
+    "GERENTE",
+    "CAIXA",
+    "COZINHA",
+  ]);
+  if (forbidden) return forbidden;
   try {
     const { id } = await context.params;
     const cakeId = Number(id);

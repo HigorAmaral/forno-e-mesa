@@ -1,18 +1,98 @@
 import { NextResponse } from "next/server";
-import { forbiddenIfNotErpOperator } from "@/lib/access-guard";
+import {
+  forbiddenIfNotErpOperator,
+  getServerOperatorSession,
+  recordAuditLog,
+} from "@/lib/access-guard";
 import { prisma } from "@/lib/prisma";
 import {
+  CreateCategorySchema,
   CreateIngredientSchema,
   CreateProductSchema,
   IngredientAdjustSchema,
   ToggleProductSchema,
+  UpsertRecipeSchema,
 } from "@/lib/schemas";
 
+function slugifyCategory(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export async function POST(request: Request) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE", "CAIXA"]);
   if (forbidden) return forbidden;
   try {
+    const session = await getServerOperatorSession();
     const body = await request.json();
+
+    if (body.kind === "category") {
+      const parsedCat = CreateCategorySchema.safeParse(body);
+      if (!parsedCat.success) {
+        return NextResponse.json({ error: "Dados da categoria inválidos." }, { status: 400 });
+      }
+      const baseSlug = slugifyCategory(parsedCat.data.name) || "categoria";
+      const count = await prisma.category.count();
+      const existingSlug = await prisma.category.findUnique({ where: { slug: baseSlug } });
+      const slug = existingSlug ? `${baseSlug}-${count + 1}` : baseSlug;
+      const category = await prisma.category.create({
+        data: {
+          name: parsedCat.data.name.trim(),
+          slug,
+          sector: parsedCat.data.sector,
+          sortOrder: count + 1,
+        },
+      });
+      return NextResponse.json({ category }, { status: 201 });
+    }
+
+    if (body.kind === "recipe") {
+      const parsedRecipe = UpsertRecipeSchema.safeParse(body);
+      if (!parsedRecipe.success) {
+        return NextResponse.json({ error: "Ficha técnica inválida." }, { status: 400 });
+      }
+      const product = await prisma.product.findUnique({
+        where: { id: parsedRecipe.data.productId },
+      });
+      if (!product) {
+        return NextResponse.json({ error: "Produto não encontrado." }, { status: 404 });
+      }
+
+      await prisma.$transaction(async (tx) => {
+        await tx.recipeItem.deleteMany({
+          where: { productId: parsedRecipe.data.productId },
+        });
+        if (parsedRecipe.data.items.length > 0) {
+          await tx.recipeItem.createMany({
+            data: parsedRecipe.data.items.map((item) => ({
+              productId: parsedRecipe.data.productId,
+              ingredientId: item.ingredientId,
+              qtyRequired: item.qtyRequired,
+            })),
+          });
+        }
+      });
+
+      const updatedProduct = await prisma.product.findUnique({
+        where: { id: parsedRecipe.data.productId },
+        include: {
+          category: true,
+          recipeItems: { include: { ingredient: true } },
+        },
+      });
+      await recordAuditLog({
+        actorName: session?.name ?? "Operador",
+        actorRole: session?.role ?? "ADMIN",
+        action: "ATUALIZAR_FICHA_TECNICA",
+        entity: "Product",
+        details: `${product.name} (${parsedRecipe.data.items.length} insumos)`,
+      });
+      return NextResponse.json({ product: updatedProduct });
+    }
 
     if (body.kind === "ingredient") {
       const parsedIng = CreateIngredientSchema.safeParse(body);
@@ -37,8 +117,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Dados do produto inválidos." }, { status: 400 });
     }
 
-    const count = await prisma.product.count();
-    const sku = `PRD-${String(count + 1).padStart(3, "0")}`;
+    const lastProduct = await prisma.product.findFirst({
+      orderBy: { id: "desc" },
+      select: { id: true },
+    });
+    const sku = `PRD-${String((lastProduct?.id ?? 0) + 1).padStart(3, "0")}`;
 
     const product = await prisma.product.create({
       data: {
@@ -56,6 +139,14 @@ export async function POST(request: Request) {
       include: { category: true },
     });
 
+    await recordAuditLog({
+      actorName: session?.name ?? "Operador",
+      actorRole: session?.role ?? "ADMIN",
+      action: "CRIAR_PRODUTO",
+      entity: "Product",
+      details: `${product.name} (${product.sku})`,
+    });
+
     return NextResponse.json({ product }, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erro ao cadastrar produto.";
@@ -64,7 +155,7 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE", "CAIXA"]);
   if (forbidden) return forbidden;
   try {
     const body = await request.json();
@@ -95,6 +186,7 @@ export async function PATCH(request: Request) {
       const updated = await prisma.product.update({
         where: { id: body.id },
         data: parsed.data,
+        include: { category: true, recipeItems: { include: { ingredient: true } } },
       });
       return NextResponse.json({ product: updated });
     }
@@ -102,6 +194,33 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Tipo de atualização não suportado." }, { status: 400 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erro ao atualizar estoque.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE"]);
+  if (forbidden) return forbidden;
+  try {
+    const url = new URL(request.url);
+    const kind = url.searchParams.get("kind");
+    const id = Number(url.searchParams.get("id"));
+    if (!Number.isInteger(id) || id <= 0) {
+      return NextResponse.json({ error: "ID inválido." }, { status: 400 });
+    }
+
+    if (kind === "ingredient") {
+      await prisma.ingredient.delete({ where: { id } });
+      return NextResponse.json({ ok: true });
+    }
+    if (kind === "product") {
+      await prisma.product.delete({ where: { id } });
+      return NextResponse.json({ ok: true });
+    }
+
+    return NextResponse.json({ error: "Tipo para exclusão inválido." }, { status: 400 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Erro ao remover item.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

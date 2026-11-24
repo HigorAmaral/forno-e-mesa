@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
+import { forbiddenIfNotErpOperator } from "@/lib/access-guard";
 import { prisma } from "@/lib/prisma";
 import { CreateCakeOrderSchema } from "@/lib/schemas";
 import { generateCakeCode } from "@/lib/workspace-service";
 
 export async function POST(request: Request) {
+  const forbidden = await forbiddenIfNotErpOperator([
+    "ADMIN",
+    "GERENTE",
+    "CAIXA",
+    "COZINHA",
+  ]);
+  if (forbidden) return forbidden;
   try {
     const body = await request.json();
     const parsed = CreateCakeOrderSchema.safeParse(body);

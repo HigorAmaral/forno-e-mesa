@@ -1,3 +1,94 @@
+export type StaffRole = "ADMIN" | "GERENTE" | "CAIXA" | "GARCOM" | "COZINHA";
+
+export interface OperatorSessionDto {
+  userId: number;
+  name: string;
+  email: string;
+  role: StaffRole;
+  isLocalAuto?: boolean;
+}
+
+export interface StaffUserDto {
+  id: number;
+  name: string;
+  email: string;
+  role: StaffRole;
+  isActive: boolean;
+  hasPin: boolean;
+  lastLoginAt: string | null;
+  createdAt: string;
+}
+
+export interface StoreSettingsDto {
+  id: number;
+  storeName: string;
+  slogan: string;
+  phone: string;
+  address: string;
+  openingHours: string;
+  isDeliveryOpen: boolean;
+  dailyGoal: number;
+  defaultServiceFeePct: number;
+  freeDeliveryAbove: number;
+  creditCardFeePct: number;
+  debitCardFeePct: number;
+  updatedAt: string;
+}
+
+export interface PromoCouponDto {
+  id: number;
+  code: string;
+  label: string;
+  type: "PERCENT" | "FIXED" | "FREE_DELIVERY";
+  value: number;
+  maxDiscount: number | null;
+  minOrder: number;
+  isActive: boolean;
+  usageCount: number;
+  createdAt: string;
+}
+
+export interface TableReservationDto {
+  id: number;
+  tableId: number | null;
+  table: DiningTableSummary | null;
+  customerName: string;
+  customerPhone: string;
+  partySize: number;
+  reservedFor: string;
+  status: string; // CONFIRMADA | SENTADA | CANCELADA | CONCLUIDA
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface OrderReviewDto {
+  id: number;
+  orderId: number;
+  rating: number;
+  comment: string | null;
+  customerName: string | null;
+  createdAt: string;
+  order?: {
+    code: string;
+    channel: string;
+  };
+}
+
+export interface AuditLogDto {
+  id: number;
+  actorName: string;
+  actorRole: string;
+  action: string;
+  entity: string | null;
+  details: string | null;
+  createdAt: string;
+}
+
+export interface SplitPaymentPart {
+  method: "DINHEIRO" | "PIX" | "CREDITO" | "DEBITO";
+  amount: number;
+}
+
 export interface CategoryDto {
   id: number;
   name: string;
@@ -64,6 +155,7 @@ export interface DiningTableSummary {
   capacity: number;
   status: string;
   qrToken: string;
+  waiterCalledAt: string | null;
 }
 
 export interface OrderDto {
@@ -96,6 +188,11 @@ export interface OrderDto {
   trackingToken: string | null;
   dispatchedAt: string | null;
   deliveredAt: string | null;
+  scheduledFor: string | null;
+  couponCode: string | null;
+  splitPayments: string | null;
+  operatorName: string | null;
+  review?: OrderReviewDto | null;
 }
 
 export interface DeliveryZoneDto {
@@ -186,6 +283,9 @@ export interface CustomerProfileDto {
   totalSpent: number;
   visitsCount: number;
   notes: string | null;
+  defaultAddress: string | null;
+  defaultNeighborhood: string | null;
+  defaultReference: string | null;
   createdAt: string;
 }
 
@@ -227,6 +327,12 @@ export interface WorkspaceSnapshotDto {
   shiftNotes: ShiftNoteDto[];
   financialEntries: FinancialEntryDto[];
   deliveryZones: DeliveryZoneDto[];
+  storeSettings: StoreSettingsDto;
+  staffUsers: StaffUserDto[];
+  coupons: PromoCouponDto[];
+  reservations: TableReservationDto[];
+  reviews: OrderReviewDto[];
+  auditLogs: AuditLogDto[];
   metrics: {
     revenueToday: number;
     paidCount: number;
@@ -239,5 +345,8 @@ export interface WorkspaceSnapshotDto {
     kdsPendingCount: number;
     activeDeliveries: number;
     deliveryRevenue: number;
+    waiterCallsCount: number;
+    averageRating: number;
+    reviewsCount: number;
   };
 }

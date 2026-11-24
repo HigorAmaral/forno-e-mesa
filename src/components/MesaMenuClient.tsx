@@ -2,16 +2,19 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  BellRing,
   CheckCircle2,
   ChefHat,
   Clock,
   Minus,
   Plus,
+  Search,
   ShoppingBag,
   Sparkles,
+  Split,
   UtensilsCrossed,
 } from "lucide-react";
-import { formatBRL } from "@/lib/domain";
+import { formatBRL, splitBillAmount } from "@/lib/domain";
 import type { CategoryDto, OrderItemDto, ProductDto } from "@/types/erp";
 
 interface MesaMenuCategory extends CategoryDto {
@@ -61,10 +64,13 @@ export function MesaMenuClient({
   const [categories, setCategories] = useState<MesaMenuCategory[]>(initialCategories);
   const [orders, setOrders] = useState<MesaOrder[]>(initialOrders);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | "ALL">("ALL");
+  const [search, setSearch] = useState("");
   const [cart, setCart] = useState<CartLine[]>([]);
   const [customerName, setCustomerName] = useState("");
+  const [splitPeople, setSplitPeople] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [requestingBill, setRequestingBill] = useState(false);
+  const [callingWaiter, setCallingWaiter] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const refreshTable = useCallback(async () => {
@@ -84,9 +90,21 @@ export function MesaMenuClient({
   }, [refreshTable]);
 
   const visibleCategories = useMemo(() => {
-    if (selectedCategoryId === "ALL") return categories;
-    return categories.filter((c) => c.id === selectedCategoryId);
-  }, [categories, selectedCategoryId]);
+    const q = search.trim().toLowerCase();
+    return categories
+      .filter((c) => selectedCategoryId === "ALL" || c.id === selectedCategoryId)
+      .map((c) => ({
+        ...c,
+        products: q
+          ? c.products.filter(
+              (p) =>
+                p.name.toLowerCase().includes(q) ||
+                p.description.toLowerCase().includes(q),
+            )
+          : c.products,
+      }))
+      .filter((c) => c.products.length > 0);
+  }, [categories, selectedCategoryId, search]);
 
   const cartTotal = useMemo(
     () => cart.reduce((sum, l) => sum + l.product.price * l.qty, 0),
@@ -123,6 +141,25 @@ export function MesaMenuClient({
     setCart((prev) =>
       prev.map((line) => (line.product.id === productId ? { ...line, notes } : line)),
     );
+  }
+
+  async function callWaiter() {
+    if (callingWaiter) return;
+    setCallingWaiter(true);
+    try {
+      const res = await fetch(`/api/tables/${tableNumber}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "CALL_WAITER", qrToken }),
+      });
+      if (!res.ok) {
+        setFeedback("Não foi possível chamar o garçom no momento.");
+        return;
+      }
+      setFeedback("Garçom chamado! Em instantes alguém atenderá sua mesa.");
+    } finally {
+      setCallingWaiter(false);
+    }
   }
 
   async function requestTableBill() {
@@ -180,58 +217,78 @@ export function MesaMenuClient({
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF3E8] pb-28">
-      <header className="sticky top-0 z-20 border-b border-[#E6CCB2] bg-white/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3.5">
+    <div className="min-h-screen bg-[var(--bg-canvas)] text-[var(--text-primary)] pb-32">
+      <header className="cafe-topbar sticky top-0 z-20 backdrop-blur-md">
+        <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 px-4 py-3">
           <div>
             <div className="flex items-center gap-2">
-              <UtensilsCrossed className="h-5 w-5 text-[#C07F5A]" />
-              <h1 className="font-display text-lg font-bold text-[#3E2723]">
-                Forno & Mesa
-              </h1>
+              <UtensilsCrossed className="h-5 w-5 text-[var(--accent-primary)]" />
+              <h1 className="font-display text-lg font-bold">Forno & Mesa</h1>
             </div>
-            <p className="text-xs text-[#8C5A3C]">
+            <p className="text-xs text-[var(--text-secondary)]">
               {tableName} · {area} · Cardápio Digital
             </p>
           </div>
 
-          <span className="rounded-full border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-1.5 text-xs font-semibold text-[#8C5A3C]">
-            Cardápio da Mesa
-          </span>
-        </div>
-
-        <div className="mx-auto flex max-w-2xl gap-2 overflow-x-auto px-4 pb-3">
           <button
             type="button"
-            onClick={() => setSelectedCategoryId("ALL")}
-            className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
-              selectedCategoryId === "ALL"
-                ? "bg-[#3E2723] text-white"
-                : "bg-[#E6CCB2] text-[#8C5A3C]"
-            }`}
+            disabled={callingWaiter}
+            onClick={callWaiter}
+            className="inline-flex items-center gap-1.5 rounded-full border border-orange-300 bg-orange-50 px-3 py-1.5 text-xs font-bold text-orange-900 hover:bg-orange-100 disabled:opacity-50"
           >
-            Tudo
+            <BellRing className="h-3.5 w-3.5 text-orange-700" />
+            {callingWaiter ? "Chamando..." : "Chamar Garçom"}
           </button>
-          {categories.map((cat) => (
+        </div>
+
+        <div className="mx-auto max-w-2xl space-y-2.5 px-4 pb-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-secondary)]" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar prato, café, pão ou doce..."
+              className="input-field py-1.5 pl-8 text-xs"
+            />
+          </div>
+
+          <div className="no-scrollbar flex gap-2 overflow-x-auto">
             <button
-              key={cat.id}
               type="button"
-              onClick={() => setSelectedCategoryId(cat.id)}
+              onClick={() => setSelectedCategoryId("ALL")}
               className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
-                selectedCategoryId === cat.id
-                  ? "bg-[#C07F5A] text-white"
-                  : "bg-[#E6CCB2] text-[#8C5A3C]"
+                selectedCategoryId === "ALL"
+                  ? "bg-[var(--bg-shell)] text-[#FAF3E8]"
+                  : "bg-[var(--bg-subtle)] text-[var(--text-secondary)]"
               }`}
             >
-              {cat.name}
+              Tudo
             </button>
-          ))}
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setSelectedCategoryId(cat.id)}
+                className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+                  selectedCategoryId === cat.id
+                    ? "bg-[var(--accent-primary)] text-white"
+                    : "bg-[var(--bg-subtle)] text-[var(--text-secondary)]"
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-2xl space-y-6 px-4 pt-5">
         {feedback && (
-          <div className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">
+          <div
+            role="status"
+            className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900"
+          >
             <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-700" />
             {feedback}
           </div>
@@ -241,13 +298,13 @@ export function MesaMenuClient({
           <section className="card-bistro animate-fade-in p-4">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <ChefHat className="h-4 w-4 text-[#C07F5A]" />
-                <h2 className="text-sm font-bold text-[#3E2723]">
+                <ChefHat className="h-4 w-4 text-[var(--accent-primary)]" />
+                <h2 className="text-sm font-bold">
                   Comanda Aberta · {activeCommand.code}
                 </h2>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-mono-num text-sm font-bold text-[#C07F5A]">
+                <span className="font-mono-num text-sm font-bold text-[var(--accent-primary)]">
                   {formatBRL(activeCommand.total)}
                 </span>
                 <button
@@ -260,20 +317,23 @@ export function MesaMenuClient({
                 </button>
               </div>
             </div>
+
             <div className="space-y-2">
               {activeCommand.items.map((item) => {
                 const st = STATUS_LABELS[item.itemStatus] ?? STATUS_LABELS.PENDENTE;
                 return (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between rounded-xl bg-[#FAF3E8] px-3 py-2 text-xs"
+                    className="flex items-center justify-between rounded-xl bg-[var(--bg-canvas)] px-3 py-2 text-xs"
                   >
                     <div>
-                      <p className="font-semibold text-[#3E2723]">
+                      <p className="font-semibold">
                         {item.qty}× {item.productName}
                       </p>
                       {item.notes && (
-                        <p className="text-[11px] text-[#8C5A3C]">Obs: {item.notes}</p>
+                        <p className="text-[11px] text-[var(--text-secondary)]">
+                          Obs: {item.notes}
+                        </p>
                       )}
                     </div>
                     <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${st.badge}`}>
@@ -283,16 +343,41 @@ export function MesaMenuClient({
                 );
               })}
             </div>
+
+            {/* Split Bill Calculator */}
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] px-3 py-2 text-xs">
+              <span className="inline-flex items-center gap-1.5 font-semibold text-[var(--text-secondary)]">
+                <Split className="h-3.5 w-3.5 text-[var(--accent-primary)]" />
+                Simular divisão da conta:
+              </span>
+              <div className="flex items-center gap-2">
+                <select
+                  value={splitPeople}
+                  onChange={(e) => setSplitPeople(Number(e.target.value))}
+                  className="input-field w-auto py-1 text-xs font-bold"
+                  aria-label="Dividir conta por quantas pessoas"
+                >
+                  {[1, 2, 3, 4, 5, 6, 8].map((n) => (
+                    <option key={n} value={n}>
+                      {n} {n === 1 ? "pessoa" : "pessoas"}
+                    </option>
+                  ))}
+                </select>
+                {splitPeople > 1 && (
+                  <span className="font-mono-num font-bold text-[var(--accent-primary)]">
+                    {formatBRL(splitBillAmount(activeCommand.total, splitPeople))}/pessoa
+                  </span>
+                )}
+              </div>
+            </div>
           </section>
         )}
 
         {visibleCategories.map((category) => (
           <section key={category.id} className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-xl font-bold text-[#3E2723]">
-                {category.name}
-              </h2>
-              <span className="text-xs font-medium text-[#8C5A3C]">
+              <h2 className="font-display text-xl font-bold">{category.name}</h2>
+              <span className="text-xs font-medium text-[var(--text-secondary)]">
                 {category.products.length} opções
               </span>
             </div>
@@ -303,25 +388,25 @@ export function MesaMenuClient({
                 return (
                   <div
                     key={product.id}
-                    className="rounded-2xl border border-[#E6CCB2] bg-white p-4 shadow-xs"
+                    className="card-bistro p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-[#3E2723]">{product.name}</h3>
+                          <h3 className="font-semibold">{product.name}</h3>
                           {product.isFeatured && (
                             <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
                               <Sparkles className="h-3 w-3" /> Destaque
                             </span>
                           )}
                         </div>
-                        <p className="text-xs leading-relaxed text-[#8C5A3C]">
+                        <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
                           {product.description}
                         </p>
-                        <div className="flex items-center gap-3 pt-1 text-xs text-[#8C5A3C]">
-                          <span className="font-mono-num text-sm font-bold text-[#3E2723]">
+                        <div className="flex items-center gap-3 pt-1 text-xs text-[var(--text-secondary)]">
+                          <span className="font-mono-num text-sm font-bold text-[var(--text-primary)]">
                             {formatBRL(product.price)}{" "}
-                            <span className="text-[11px] font-normal text-[#8C5A3C]">
+                            <span className="text-[11px] font-normal text-[var(--text-secondary)]">
                               / {product.unit}
                             </span>
                           </span>
@@ -335,16 +420,17 @@ export function MesaMenuClient({
                         <button
                           type="button"
                           onClick={() => addToCart(product)}
-                          className="shrink-0 rounded-xl bg-[#C07F5A] px-3.5 py-2 text-xs font-semibold text-white hover:bg-[#A66844]"
+                          className="btn-primary shrink-0 rounded-xl px-3.5 py-2 text-xs font-semibold"
                         >
                           + Adicionar
                         </button>
                       ) : (
-                        <div className="flex shrink-0 items-center gap-2 rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-2 py-1">
+                        <div className="flex shrink-0 items-center gap-2 rounded-xl border border-[var(--border-warm)] bg-[var(--bg-canvas)] px-2 py-1">
                           <button
                             type="button"
                             onClick={() => updateQty(product.id, -1)}
-                            className="rounded-lg p-1 text-[#3E2723] hover:bg-white"
+                            className="rounded-lg p-1 hover:bg-[var(--bg-surface)]"
+                            aria-label="Diminuir quantidade"
                           >
                             <Minus className="h-3.5 w-3.5" />
                           </button>
@@ -354,7 +440,8 @@ export function MesaMenuClient({
                           <button
                             type="button"
                             onClick={() => updateQty(product.id, 1)}
-                            className="rounded-lg p-1 text-[#3E2723] hover:bg-white"
+                            className="rounded-lg p-1 hover:bg-[var(--bg-surface)]"
+                            aria-label="Aumentar quantidade"
                           >
                             <Plus className="h-3.5 w-3.5" />
                           </button>
@@ -368,7 +455,7 @@ export function MesaMenuClient({
                         value={inCart.notes}
                         onChange={(e) => updateNotes(product.id, e.target.value)}
                         placeholder="Observação para cozinha/confeitaria (ex: sem cebola, ponto da carne)..."
-                        className="mt-3 w-full rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs text-[#3E2723] outline-none focus:border-[#C07F5A]"
+                        className="input-field mt-3 py-2 text-xs"
                       />
                     )}
                   </div>
@@ -380,20 +467,20 @@ export function MesaMenuClient({
       </main>
 
       {cart.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[#E6CCB2] bg-white p-4 shadow-2xl">
+        <div className="cafe-topbar safe-bottom fixed inset-x-0 bottom-0 z-30 border-t p-4 shadow-2xl">
           <div className="mx-auto flex max-w-2xl flex-col gap-2.5 sm:flex-row sm:items-center">
             <input
               type="text"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder="Seu nome (opcional)"
-              className="rounded-xl border border-[#E6CCB2] bg-[#FAF3E8] px-3 py-2 text-xs outline-none focus:border-[#C07F5A] sm:w-44"
+              className="input-field py-2 text-xs sm:w-44"
             />
             <button
               type="button"
               onClick={submitQrOrder}
               disabled={submitting}
-              className="flex flex-1 items-center justify-between rounded-xl bg-[#C07F5A] px-4 py-3 text-sm font-semibold text-white hover:bg-[#A66844] disabled:opacity-60"
+              className="btn-primary flex flex-1 items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-60"
             >
               <span className="flex items-center gap-2">
                 <ShoppingBag className="h-4 w-4" />

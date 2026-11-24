@@ -1,8 +1,14 @@
+import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ensureSeeded } from "@/lib/seed";
 import { TableActionSchema } from "@/lib/schemas";
-import { isServerErpAuthorized } from "@/lib/access-guard";
+import {
+  forbiddenIfNotErpOperator,
+  getServerOperatorSession,
+  isServerErpAuthorized,
+  recordAuditLog,
+} from "@/lib/access-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -67,25 +73,80 @@ export async function PATCH(
   context: { params: Promise<{ number: string }> },
 ) {
   try {
+    await ensureSeeded();
     const { number } = await context.params;
     const tableNumber = Number(number);
     const body = await request.json();
     const parsed = TableActionSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Status da mesa inválido." }, { status: 400 });
+      return NextResponse.json({ error: "Ação ou status da mesa inválido." }, { status: 400 });
     }
 
-    const erpAuthorized = await isServerErpAuthorized();
-    if (!erpAuthorized) {
-      const existing = await prisma.diningTable.findUnique({
+    const existing = await prisma.diningTable.findUnique({
+      where: { number: tableNumber },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: "Mesa não encontrada." }, { status: 404 });
+    }
+
+    const session = await getServerOperatorSession();
+    const erpAuthorized = session !== null;
+    const validQr = Boolean(parsed.data.qrToken && parsed.data.qrToken === existing.qrToken);
+
+    if (parsed.data.action === "CALL_WAITER") {
+      if (!erpAuthorized && !validQr) {
+        return NextResponse.json({ error: "Token QR inválido." }, { status: 403 });
+      }
+      const table = await prisma.diningTable.update({
         where: { number: tableNumber },
+        data: { waiterCalledAt: new Date() },
       });
-      if (
-        !existing ||
-        parsed.data.status !== "CONTA" ||
-        !parsed.data.qrToken ||
-        parsed.data.qrToken !== existing.qrToken
-      ) {
+      return NextResponse.json({ table });
+    }
+
+    if (parsed.data.action === "DISMISS_WAITER") {
+      if (!erpAuthorized) {
+        return NextResponse.json(
+          { error: "Operação restrita ao painel interno." },
+          { status: 403 },
+        );
+      }
+      const table = await prisma.diningTable.update({
+        where: { number: tableNumber },
+        data: { waiterCalledAt: null },
+      });
+      return NextResponse.json({ table });
+    }
+
+    if (parsed.data.action === "ROTATE_QR") {
+      if (!erpAuthorized) {
+        return NextResponse.json(
+          { error: "Operação restrita ao painel interno." },
+          { status: 403 },
+        );
+      }
+      const tokenSuffix = crypto.randomBytes(3).toString("hex");
+      const newToken = `fm-mesa-${String(tableNumber).padStart(2, "0")}-${tokenSuffix}`;
+      const table = await prisma.diningTable.update({
+        where: { number: tableNumber },
+        data: { qrToken: newToken },
+      });
+      await recordAuditLog({
+        actorName: session?.name ?? "Operador",
+        actorRole: session?.role ?? "ADMIN",
+        action: "ROTACIONAR_QR_MESA",
+        entity: "DiningTable",
+        details: `${table.name} (novo token gerado)`,
+      });
+      return NextResponse.json({ table });
+    }
+
+    if (!parsed.data.status) {
+      return NextResponse.json({ error: "Informe o novo status da mesa." }, { status: 400 });
+    }
+
+    if (!erpAuthorized) {
+      if (parsed.data.status !== "CONTA" || !validQr) {
         return NextResponse.json(
           { error: "Operação restrita ao painel interno." },
           { status: 403 },
@@ -95,11 +156,46 @@ export async function PATCH(
 
     const table = await prisma.diningTable.update({
       where: { number: tableNumber },
-      data: { status: parsed.data.status },
+      data: {
+        status: parsed.data.status,
+        ...(parsed.data.status === "LIVRE" ? { waiterCalledAt: null } : {}),
+      },
     });
     return NextResponse.json({ table });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erro ao atualizar mesa.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  _request: Request,
+  context: { params: Promise<{ number: string }> },
+) {
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE"]);
+  if (forbidden) return forbidden;
+  try {
+    const { number } = await context.params;
+    const tableNumber = Number(number);
+    const table = await prisma.diningTable.findUnique({
+      where: { number: tableNumber },
+      include: {
+        orders: { where: { status: { notIn: ["PAGO", "CANCELADO"] } } },
+      },
+    });
+    if (!table) {
+      return NextResponse.json({ error: "Mesa não encontrada." }, { status: 404 });
+    }
+    if (table.orders.length > 0) {
+      return NextResponse.json(
+        { error: "Feche ou transfira a comanda aberta antes de remover a mesa." },
+        { status: 400 },
+      );
+    }
+    await prisma.diningTable.delete({ where: { id: table.id } });
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Erro ao remover mesa.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

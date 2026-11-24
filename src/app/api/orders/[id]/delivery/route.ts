@@ -8,7 +8,12 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const forbidden = await forbiddenIfNotErpOperator();
+    const forbidden = await forbiddenIfNotErpOperator([
+      "ADMIN",
+      "GERENTE",
+      "CAIXA",
+      "COZINHA",
+    ]);
     if (forbidden) return forbidden;
 
     const { id } = await context.params;

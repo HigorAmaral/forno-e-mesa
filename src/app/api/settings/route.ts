@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   forbiddenIfNotErpOperator,
   getServerOperatorSession,
+  isServerErpAuthorized,
   recordAuditLog,
 } from "@/lib/access-guard";
 import { prisma } from "@/lib/prisma";
@@ -12,8 +13,22 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   await ensureSeeded();
+  const isOperator = await isServerErpAuthorized();
   const settings = await prisma.storeSettings.findUnique({ where: { id: 1 } });
-  return NextResponse.json({ settings });
+  if (!settings || isOperator) {
+    return NextResponse.json({ settings });
+  }
+  return NextResponse.json({
+    settings: {
+      storeName: settings.storeName,
+      slogan: settings.slogan,
+      phone: settings.phone,
+      address: settings.address,
+      openingHours: settings.openingHours,
+      isDeliveryOpen: settings.isDeliveryOpen,
+      freeDeliveryAbove: settings.freeDeliveryAbove,
+    },
+  });
 }
 
 export async function PATCH(request: Request) {

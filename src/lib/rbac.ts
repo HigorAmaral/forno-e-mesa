@@ -79,12 +79,17 @@ export const ROLE_ALLOWED_TABS: Record<StaffRole, ErpTabId[]> = {
   COZINHA: ["kds", "bakery", "delivery"],
 };
 
+export function isValidStaffRole(role: string | null | undefined): role is StaffRole {
+  if (!role) return false;
+  return ALL_STAFF_ROLES.includes(role as StaffRole);
+}
+
 export function canAccessTab(
   role: StaffRole | string | null | undefined,
   tab: ErpTabId,
 ): boolean {
-  const normalized = (role ?? "ADMIN") as StaffRole;
-  const allowed = ROLE_ALLOWED_TABS[normalized];
+  if (!role || !isValidStaffRole(role)) return false;
+  const allowed = ROLE_ALLOWED_TABS[role];
   if (!allowed) return false;
   return allowed.includes(tab);
 }
@@ -93,15 +98,16 @@ export function hasAnyRole(
   role: StaffRole | string | null | undefined,
   allowedRoles?: StaffRole[],
 ): boolean {
+  if (!role || !isValidStaffRole(role)) return false;
   if (!allowedRoles || allowedRoles.length === 0) return true;
-  return allowedRoles.includes((role ?? "") as StaffRole);
+  return allowedRoles.includes(role);
 }
 
 export function defaultTabForRole(
   role: StaffRole | string | null | undefined,
 ): ErpTabId {
-  const normalized = (role ?? "ADMIN") as StaffRole;
-  const allowed = ROLE_ALLOWED_TABS[normalized];
+  if (!role || !isValidStaffRole(role)) return "overview";
+  const allowed = ROLE_ALLOWED_TABS[role];
   if (!allowed || allowed.length === 0) return "overview";
   return allowed[0];
 }

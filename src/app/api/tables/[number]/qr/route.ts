@@ -34,7 +34,12 @@ export async function GET(
   request: Request,
   context: { params: Promise<{ number: string }> },
 ) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator([
+    "ADMIN",
+    "GERENTE",
+    "CAIXA",
+    "GARCOM",
+  ]);
   if (forbidden) return forbidden;
   try {
     await ensureSeeded();

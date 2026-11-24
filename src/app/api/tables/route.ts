@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { CreateTableSchema } from "@/lib/schemas";
 
 export async function POST(request: Request) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE"]);
   if (forbidden) return forbidden;
   try {
     const body = await request.json();

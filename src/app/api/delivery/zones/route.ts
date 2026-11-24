@@ -16,7 +16,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE"]);
   if (forbidden) return forbidden;
   const parsed = DeliveryZoneSchema.safeParse(await request.json());
   if (!parsed.success) {
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE"]);
   if (forbidden) return forbidden;
   const parsed = UpdateDeliveryZoneSchema.safeParse(await request.json());
   if (!parsed.success) {
@@ -47,7 +47,7 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE"]);
   if (forbidden) return forbidden;
   const id = Number(new URL(request.url).searchParams.get("id"));
   if (!Number.isInteger(id) || id <= 0) {

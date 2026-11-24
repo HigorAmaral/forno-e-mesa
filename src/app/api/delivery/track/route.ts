@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { safeEqualString } from "@/lib/auth-crypto";
 import { prisma } from "@/lib/prisma";
 
 /** Public order tracking — requires the secret tracking token issued at checkout. */
@@ -14,7 +15,7 @@ export async function GET(request: Request) {
     where: { code },
     include: { items: true, review: true },
   });
-  if (!order || !order.trackingToken || order.trackingToken !== token) {
+  if (!order || !order.trackingToken || !safeEqualString(order.trackingToken, token)) {
     return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
   }
 

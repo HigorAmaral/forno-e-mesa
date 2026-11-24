@@ -8,7 +8,12 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const forbidden = await forbiddenIfNotErpOperator();
+    const forbidden = await forbiddenIfNotErpOperator([
+      "ADMIN",
+      "GERENTE",
+      "CAIXA",
+      "GARCOM",
+    ]);
     if (forbidden) return forbidden;
     const { id } = await context.params;
     const orderId = Number(id);
@@ -35,6 +40,12 @@ export async function PATCH(
     }
 
     if (parsed.data.action === "CANCEL") {
+      const cancelForbidden = await forbiddenIfNotErpOperator([
+        "ADMIN",
+        "GERENTE",
+        "CAIXA",
+      ]);
+      if (cancelForbidden) return cancelForbidden;
       const updated = await prisma.order.update({
         where: { id: orderId },
         data: {

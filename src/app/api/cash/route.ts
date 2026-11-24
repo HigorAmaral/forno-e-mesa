@@ -5,7 +5,7 @@ import { CashActionSchema } from "@/lib/schemas";
 import { roundMoney } from "@/lib/domain";
 
 export async function POST(request: Request) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE", "CAIXA"]);
   if (forbidden) return forbidden;
   try {
     const body = await request.json();

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { forbiddenIfNotErpOperator } from "@/lib/access-guard";
+import { safeEqualString } from "@/lib/auth-crypto";
 import { prisma } from "@/lib/prisma";
 import { CreateOrderReviewSchema } from "@/lib/schemas";
 import { ensureSeeded } from "@/lib/seed";
@@ -7,7 +8,7 @@ import { ensureSeeded } from "@/lib/seed";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE"]);
   if (forbidden) return forbidden;
 
   await ensureSeeded();
@@ -35,7 +36,11 @@ export async function POST(request: Request) {
       include: { review: true },
     });
 
-    if (!order || !order.trackingToken || order.trackingToken !== parsed.data.token.trim()) {
+    if (
+      !order ||
+      !order.trackingToken ||
+      !safeEqualString(order.trackingToken, parsed.data.token.trim())
+    ) {
       return NextResponse.json(
         { error: "Pedido não encontrado ou token inválido." },
         { status: 404 },

@@ -4,6 +4,7 @@ import {
   getServerOperatorSession,
   recordAuditLog,
 } from "@/lib/access-guard";
+import { hasAnyRole } from "@/lib/rbac";
 import { CreateOrderSchema } from "@/lib/schemas";
 import { createOrAppendOrder } from "@/lib/workspace-service";
 
@@ -24,7 +25,17 @@ export async function POST(request: Request) {
     const isOperator = operatorSession !== null;
     if (!isOperator && !PUBLIC_CHANNELS.has(parsed.data.channel)) {
       return NextResponse.json(
-        { error: "Acesso restrito ao painel interno." },
+        { error: "Autenticação obrigatória para pedidos internos." },
+        { status: 401 },
+      );
+    }
+    if (
+      isOperator &&
+      !PUBLIC_CHANNELS.has(parsed.data.channel) &&
+      !hasAnyRole(operatorSession.role, ["ADMIN", "GERENTE", "CAIXA", "GARCOM"])
+    ) {
+      return NextResponse.json(
+        { error: "Seu perfil não possui permissão para criar pedidos neste canal." },
         { status: 403 },
       );
     }

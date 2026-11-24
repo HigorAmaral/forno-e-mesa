@@ -89,13 +89,12 @@ export function extractHostname(hostHeader: string | null | undefined): string {
 }
 
 /**
- * Allows ERP access on desktop localhost/loopback without login (unless locked),
- * while blocking mobile browsers and LAN/external hosts unless unlocked with a
- * valid operator cookie (legacy HMAC or signed RBAC session token).
+ * Strictly requires a valid signed RBAC operator session cookie or legacy HMAC
+ * operator cookie on every host (including localhost). Never bypasses auth automatically.
  */
 export function isErpAllowedContext(params: {
-  host: string | null | undefined;
-  userAgent: string | null | undefined;
+  host?: string | null | undefined;
+  userAgent?: string | null | undefined;
   cookieToken: string | null | undefined;
   expectedToken?: string;
   lockedCookie?: string | null | undefined;
@@ -110,17 +109,5 @@ export function isErpAllowedContext(params: {
     }
   }
 
-  if (params.lockedCookie === "1") {
-    return false;
-  }
-
-  const hostname = extractHostname(params.host);
-  const isLocalHost =
-    hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
-  const isMobileUa =
-    /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(
-      params.userAgent ?? "",
-    );
-
-  return isLocalHost && !isMobileUa;
+  return false;
 }

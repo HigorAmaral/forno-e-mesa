@@ -22,6 +22,9 @@ interface OperatorLockScreenProps {
   slogan?: string;
   openingHours?: string;
   isDeliveryOpen?: boolean;
+  defaultShowStaffPanel?: boolean;
+  nextPath?: string;
+  authNotice?: string | null;
 }
 
 export function OperatorLockScreen({
@@ -29,9 +32,12 @@ export function OperatorLockScreen({
   slogan = "Padaria Artesanal, Cafeteria & Bistrô",
   openingHours = "Ter–Dom · 07:00 às 22:00",
   isDeliveryOpen = true,
+  defaultShowStaffPanel = false,
+  nextPath,
+  authNotice = null,
 }: OperatorLockScreenProps) {
   const [authMode, setAuthMode] = useState<"PIN" | "CREDENTIALS">("PIN");
-  const [showStaffPanel, setShowStaffPanel] = useState(false);
+  const [showStaffPanel, setShowStaffPanel] = useState(defaultShowStaffPanel);
   const [pin, setPin] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,6 +60,10 @@ export function OperatorLockScreen({
       const json = await res.json();
       if (!res.ok) {
         setError(json.error ?? "Credenciais ou PIN inválidos.");
+        return;
+      }
+      if (nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//") && nextPath !== "/login") {
+        window.location.href = nextPath;
         return;
       }
       window.location.reload();
@@ -115,6 +125,16 @@ export function OperatorLockScreen({
           </div>
 
           <div className="p-5 sm:p-7 space-y-6">
+            {authNotice && (
+              <div
+                role="alert"
+                className="flex items-center gap-2.5 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-950"
+              >
+                <ShieldCheck className="h-4 w-4 shrink-0 text-amber-700" />
+                <span>{authNotice}</span>
+              </div>
+            )}
+
             {/* Easy Access Cards for Customers */}
             <div>
               <p className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">

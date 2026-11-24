@@ -1,17 +1,16 @@
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import {
   buildOperatorToken,
   CUSTOMER_COOKIE_NAME,
   getOperatorPin,
-  isErpAllowedContext,
   OPERATOR_COOKIE_NAME,
   OPERATOR_LOCKED_COOKIE,
   parseSignedCustomerToken,
   parseSignedOperatorToken,
 } from "./access-policy";
 import { safeEqualString } from "./auth-crypto";
-import { hasAnyRole } from "./rbac";
+import { hasAnyRole, isValidStaffRole } from "./rbac";
 import { prisma } from "./prisma";
 import type { OperatorSessionDto, StaffRole } from "@/types/erp";
 
@@ -26,46 +25,57 @@ export {
 } from "./access-policy";
 
 export async function getServerOperatorSession(): Promise<OperatorSessionDto | null> {
-  const hdrs = await headers();
   const cookieStore = await cookies();
   const token = cookieStore.get(OPERATOR_COOKIE_NAME)?.value;
   const locked = cookieStore.get(OPERATOR_LOCKED_COOKIE)?.value;
 
-  if (token) {
-    const signed = parseSignedOperatorToken(token);
-    if (signed) {
-      return {
-        userId: signed.userId,
-        name: signed.name,
-        email: signed.email,
-        role: signed.role,
-      };
-    }
-    const expectedLegacy = buildOperatorToken(getOperatorPin());
-    if (safeEqualString(token, expectedLegacy)) {
-      return {
-        userId: 0,
-        name: "Operador Master",
-        email: "admin@fornoemesa.com",
-        role: "ADMIN",
-      };
-    }
+  if (!token || (locked === "1" && !token)) {
+    return null;
   }
 
-  const allowedLocal = isErpAllowedContext({
-    host: hdrs.get("x-forwarded-host") ?? hdrs.get("host"),
-    userAgent: hdrs.get("user-agent"),
-    cookieToken: null,
-    lockedCookie: locked,
-  });
+  const signed = parseSignedOperatorToken(token);
+  if (signed) {
+    if (signed.userId > 0) {
+      const dbUser = await prisma.staffUser.findUnique({
+        where: { id: signed.userId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          isActive: true,
+        },
+      });
+      if (!dbUser || !dbUser.isActive || !isValidStaffRole(dbUser.role)) {
+        return null;
+      }
+      return {
+        userId: dbUser.id,
+        name: dbUser.name,
+        email: dbUser.email,
+        role: dbUser.role,
+      };
+    }
 
-  if (allowedLocal) {
+    if (!isValidStaffRole(signed.role)) {
+      return null;
+    }
+
+    return {
+      userId: signed.userId,
+      name: signed.name,
+      email: signed.email,
+      role: signed.role,
+    };
+  }
+
+  const expectedLegacy = buildOperatorToken(getOperatorPin());
+  if (safeEqualString(token, expectedLegacy)) {
     return {
       userId: 0,
-      name: "Administrador Local",
+      name: "Operador Master",
       email: "admin@fornoemesa.com",
       role: "ADMIN",
-      isLocalAuto: true,
     };
   }
 
@@ -83,13 +93,13 @@ export async function forbiddenIfNotErpOperator(
   const session = await getServerOperatorSession();
   if (!session) {
     return NextResponse.json(
-      { error: "Acesso restrito ao painel interno." },
-      { status: 403 },
+      { error: "Autenticação obrigatória. Faça login para acessar esta rota." },
+      { status: 401 },
     );
   }
   if (!hasAnyRole(session.role, allowedRoles)) {
     return NextResponse.json(
-      { error: "Seu perfil não possui permissão para esta ação." },
+      { error: "Acesso negado. Seu perfil não possui permissão para esta rota." },
       { status: 403 },
     );
   }

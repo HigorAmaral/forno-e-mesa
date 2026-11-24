@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { forbiddenIfNotErpOperator } from "@/lib/access-guard";
 import { prisma } from "@/lib/prisma";
+import { ALL_STAFF_ROLES } from "@/lib/rbac";
 import { CreateShiftNoteSchema } from "@/lib/schemas";
 
 export async function POST(request: Request) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(ALL_STAFF_ROLES);
   if (forbidden) return forbidden;
   try {
     const body = await request.json();
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(ALL_STAFF_ROLES);
   if (forbidden) return forbidden;
   try {
     const body = (await request.json()) as { id?: number; isDone?: boolean };
@@ -46,7 +47,7 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(ALL_STAFF_ROLES);
   if (forbidden) return forbidden;
   try {
     const url = new URL(request.url);

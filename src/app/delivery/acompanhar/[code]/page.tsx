@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { safeEqualString } from "@/lib/auth-crypto";
 import { prisma } from "@/lib/prisma";
 import { ensureSeeded } from "@/lib/seed";
 import { DeliveryTrackerClient } from "@/components/DeliveryTrackerClient";
@@ -23,7 +25,7 @@ export default async function TrackDeliveryPage({
     prisma.storeSettings.findUnique({ where: { id: 1 } }),
   ]);
 
-  if (!order || !t || !order.trackingToken || order.trackingToken !== t) {
+  if (!order || !t || !order.trackingToken || !safeEqualString(order.trackingToken, t)) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-[var(--bg-canvas)] p-6 text-center">
         <h1 className="font-display text-2xl font-bold text-[var(--text-primary)]">
@@ -32,6 +34,12 @@ export default async function TrackDeliveryPage({
         <p className="mt-2 max-w-sm text-sm text-[var(--text-secondary)]">
           Verifique o link de acompanhamento enviado no momento do seu pedido.
         </p>
+        <Link
+          href="/"
+          className="btn-primary mt-5 inline-flex items-center rounded-xl px-4 py-2 text-xs font-bold"
+        >
+          Voltar ao início
+        </Link>
       </main>
     );
   }

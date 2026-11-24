@@ -1,7 +1,10 @@
 import crypto from "node:crypto";
+import { safeEqualString } from "./auth-crypto";
 import { prisma } from "./prisma";
+import { hasAnyRole } from "./rbac";
 import { ensureSeeded } from "./seed";
 import type { CreateOrderInput } from "./schemas";
+import type { StaffRole } from "@/types/erp";
 import {
   calculateLoyaltyPointsEarned,
   calculateOrderTotals,
@@ -48,8 +51,10 @@ export async function generateCakeCode(): Promise<string> {
   return `ENC-${String(next).padStart(4, "0")}`;
 }
 
-export async function getWorkspaceSnapshot() {
+export async function getWorkspaceSnapshot(role: StaffRole = "ADMIN") {
   await ensureSeeded();
+  const canFinanceAdmin = hasAnyRole(role, ["ADMIN", "GERENTE"]);
+  const canCashierPos = hasAnyRole(role, ["ADMIN", "GERENTE", "CAIXA"]);
 
   const [
     categories,
@@ -245,22 +250,22 @@ export async function getWorkspaceSnapshot() {
     orders,
     batches,
     cakeOrders,
-    openCashSession,
-    cashSessions,
-    customers: safeCustomers,
+    openCashSession: canCashierPos ? openCashSession : null,
+    cashSessions: canCashierPos ? cashSessions : [],
+    customers: canCashierPos ? safeCustomers : [],
     shiftNotes,
-    financialEntries,
+    financialEntries: canFinanceAdmin ? financialEntries : [],
     deliveryZones,
     storeSettings,
-    staffUsers,
-    coupons,
+    staffUsers: canFinanceAdmin ? staffUsers : [],
+    coupons: canCashierPos ? coupons : [],
     reservations,
-    reviews,
-    auditLogs,
+    reviews: canFinanceAdmin ? reviews : [],
+    auditLogs: canFinanceAdmin ? auditLogs : [],
     metrics: {
-      revenueToday,
+      revenueToday: canCashierPos ? revenueToday : 0,
       paidCount: paidOrders.length,
-      avgTicket,
+      avgTicket: canCashierPos ? avgTicket : 0,
       activeOrdersCount: activeOrders.length,
       occupiedTables,
       totalTables: tables.length,
@@ -268,7 +273,7 @@ export async function getWorkspaceSnapshot() {
       activeCakeOrders,
       kdsPendingCount,
       activeDeliveries,
-      deliveryRevenue,
+      deliveryRevenue: canCashierPos ? deliveryRevenue : 0,
       waiterCallsCount,
       averageRating,
       reviewsCount,
@@ -332,6 +337,10 @@ export async function createOrAppendOrder(
     }
   }
 
+  if (input.channel === "QR_MESA" && !input.tableNumber) {
+    throw new Error("Número da mesa e token QR são obrigatórios.");
+  }
+
   let table = null;
   if (input.tableNumber && !isDeliveryChannel) {
     table = await prisma.diningTable.findUnique({ where: { number: input.tableNumber } });
@@ -340,7 +349,7 @@ export async function createOrAppendOrder(
     }
     if (
       input.channel === "QR_MESA" &&
-      (!input.qrToken || table.qrToken !== input.qrToken)
+      (!input.qrToken || !safeEqualString(table.qrToken, input.qrToken))
     ) {
       throw new Error("Token QR da mesa inválido.");
     }

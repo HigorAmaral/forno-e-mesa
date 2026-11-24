@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   Award,
@@ -108,6 +109,7 @@ export function ErpWorkspace({
   operatorSession,
   dbError,
 }: ErpWorkspaceProps) {
+  const router = useRouter();
   const [data, setData] = useState<WorkspaceSnapshotDto>(initialData);
   const [activeTab, setActiveTab] = useState<ErpTabId>(() =>
     defaultTabForRole(operatorSession.role),
@@ -198,13 +200,17 @@ export function ErpWorkspace({
     setRefreshing(true);
     try {
       const res = await fetch("/api/workspace", { cache: "no-store" });
+      if (res.status === 401) {
+        router.replace("/login?reason=expired");
+        return;
+      }
       if (!res.ok) return;
       const json = (await res.json()) as WorkspaceSnapshotDto;
       setData(json);
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (dbError) return;

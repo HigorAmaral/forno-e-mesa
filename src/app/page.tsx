@@ -60,7 +60,12 @@ const EMPTY_SNAPSHOT: WorkspaceSnapshotDto = {
   },
 };
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reason?: string }>;
+}) {
+  const { reason } = await searchParams;
   const operatorSession = await getServerOperatorSession();
   if (!operatorSession) {
     let storeName = "Forno & Mesa";
@@ -79,12 +84,19 @@ export default async function HomePage() {
     } catch {
       // Fallback to defaults if DB offline
     }
+    const authNotice =
+      reason === "forbidden"
+        ? "Acesso negado para essa rota com o perfil anterior."
+        : reason === "auth"
+          ? "Faça login para acessar a área interna do sistema."
+          : null;
     return (
       <OperatorLockScreen
         storeName={storeName}
         slogan={slogan}
         openingHours={openingHours}
         isDeliveryOpen={isDeliveryOpen}
+        authNotice={authNotice}
       />
     );
   }
@@ -93,7 +105,7 @@ export default async function HomePage() {
   let snapshot: WorkspaceSnapshotDto = EMPTY_SNAPSHOT;
 
   try {
-    const raw = await getWorkspaceSnapshot();
+    const raw = await getWorkspaceSnapshot(operatorSession.role);
     snapshot = JSON.parse(JSON.stringify(raw)) as WorkspaceSnapshotDto;
   } catch (err) {
     dbError =

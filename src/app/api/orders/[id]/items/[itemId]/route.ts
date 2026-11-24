@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { forbiddenIfNotErpOperator } from "@/lib/access-guard";
 import { prisma } from "@/lib/prisma";
+import { ALL_STAFF_ROLES } from "@/lib/rbac";
 import { UpdateOrderItemStatusSchema } from "@/lib/schemas";
 import { deriveOrderStatusFromItems, type ItemStatus } from "@/lib/domain";
 import { syncDeliveryFromKitchen } from "@/lib/workspace-service";
@@ -9,7 +10,7 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string; itemId: string }> },
 ) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(ALL_STAFF_ROLES);
   if (forbidden) return forbidden;
   try {
     const { id, itemId } = await context.params;

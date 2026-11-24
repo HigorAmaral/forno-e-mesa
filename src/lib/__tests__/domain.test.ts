@@ -31,7 +31,8 @@ import {
   verifySecret,
   verifySessionPayload,
 } from "../auth-crypto.ts";
-import { canAccessTab, defaultTabForRole, hasAnyRole } from "../rbac.ts";
+import { canAccessTab, defaultTabForRole, hasAnyRole, isValidStaffRole } from "../rbac.ts";
+import { resolveRoutePolicy, sanitizeNextPath } from "../route-auth.ts";
 import {
   getKdsUrgencyLevel,
   resolveDynamicCouponBenefit,
@@ -183,13 +184,13 @@ test("calculateCardFeeRate, CMV e computeFinancialDre calculam DRE e margens", (
   assert.equal(dre.netProfit, 186.8);
 });
 
-test("isErpAllowedContext bloqueia celular/LAN sem PIN e libera desktop local ou com token valido", () => {
+test("isErpAllowedContext bloqueia acesso sem cookie valido (inclusive localhost) e libera com token valido", () => {
   const validToken = buildOperatorToken("2026");
 
   assert.equal(extractHostname("192.168.1.11:3001"), "192.168.1.11");
   assert.equal(extractHostname("[::1]:3001"), "::1");
 
-  // Desktop local no caixa entra direto
+  // Desktop local sem cookie fica bloqueado (fail-closed)
   assert.equal(
     isErpAllowedContext({
       host: "localhost:3001",
@@ -197,10 +198,10 @@ test("isErpAllowedContext bloqueia celular/LAN sem PIN e libera desktop local ou
       cookieToken: null,
       expectedToken: validToken,
     }),
-    true,
+    false,
   );
 
-  // Celular na rede local (ou mesmo simulado em localhost) e bloqueado
+  // Celular na rede local (ou localhost) sem cookie e bloqueado
   assert.equal(
     isErpAllowedContext({
       host: "192.168.1.11:3001",
@@ -220,7 +221,7 @@ test("isErpAllowedContext bloqueia celular/LAN sem PIN e libera desktop local ou
     false,
   );
 
-  // Equipe autenticada via PIN consegue acessar
+  // Equipe autenticada via cookie consegue acessar
   assert.equal(
     isErpAllowedContext({
       host: "192.168.1.11:3001",
@@ -487,5 +488,83 @@ test("computeFinancialDre aceita taxas de cartao personalizadas", () => {
   assert.equal(dre.cardFeesEstimated, 6);
   assert.equal(dre.estimatedCmv, 40);
   assert.equal(dre.netProfit, 154);
+});
+
+test("RBAC fail-closed nega acesso sem role valido", () => {
+  assert.equal(canAccessTab(null, "overview"), false);
+  assert.equal(canAccessTab(undefined, "finance"), false);
+  assert.equal(canAccessTab("DESCONHECIDO", "pdv"), false);
+  assert.equal(hasAnyRole(null, ["ADMIN"]), false);
+  assert.equal(isValidStaffRole("ADMIN"), true);
+  assert.equal(isValidStaffRole("VISITANTE"), false);
+});
+
+test("resolveRoutePolicy protege rotas internas e APIs com RBAC e fail-closed", () => {
+  // Rotas publicas e portais de entrada
+  assert.deepEqual(resolveRoutePolicy("/", "GET"), { access: "public" });
+  assert.deepEqual(resolveRoutePolicy("/login", "GET"), { access: "public" });
+  assert.deepEqual(resolveRoutePolicy("/delivery", "GET"), { access: "public" });
+  assert.deepEqual(resolveRoutePolicy("/conta", "GET"), { access: "public" });
+  assert.deepEqual(resolveRoutePolicy("/mesa/4", "GET"), { access: "public" });
+  assert.deepEqual(resolveRoutePolicy("/delivery/acompanhar/PED-0001", "GET"), { access: "public" });
+  assert.deepEqual(resolveRoutePolicy("/api/delivery/zones", "GET"), { access: "public" });
+  assert.deepEqual(resolveRoutePolicy("/api/settings", "GET"), { access: "public" });
+  assert.deepEqual(resolveRoutePolicy("/api/orders", "POST"), { access: "public" });
+  assert.deepEqual(resolveRoutePolicy("/api/tables/4", "PATCH"), { access: "public" });
+
+  // Paginas internas protegidas
+  assert.deepEqual(resolveRoutePolicy("/erp", "GET"), { access: "operator", isApi: false });
+  assert.deepEqual(resolveRoutePolicy("/admin/relatorios", "GET"), { access: "operator", isApi: false });
+  assert.deepEqual(resolveRoutePolicy("/painel", "GET"), { access: "operator", isApi: false });
+
+  // APIs protegidas por RBAC
+  const financePolicy = resolveRoutePolicy("/api/finance", "GET");
+  assert.equal(financePolicy.access, "operator");
+  if (financePolicy.access === "operator") {
+    assert.deepEqual(financePolicy.allowedRoles, ["ADMIN", "GERENTE"]);
+    assert.equal(financePolicy.isApi, true);
+  }
+
+  const cashPolicy = resolveRoutePolicy("/api/cash", "POST");
+  assert.equal(cashPolicy.access, "operator");
+  if (cashPolicy.access === "operator") {
+    assert.deepEqual(cashPolicy.allowedRoles, ["ADMIN", "GERENTE", "CAIXA"]);
+  }
+
+  const batchPolicy = resolveRoutePolicy("/api/batches", "POST");
+  assert.equal(batchPolicy.access, "operator");
+  if (batchPolicy.access === "operator") {
+    assert.deepEqual(batchPolicy.allowedRoles, ["ADMIN", "GERENTE", "COZINHA"]);
+  }
+
+  const qrPolicy = resolveRoutePolicy("/api/tables/4/qr", "GET");
+  assert.equal(qrPolicy.access, "operator");
+  if (qrPolicy.access === "operator") {
+    assert.deepEqual(qrPolicy.allowedRoles, ["ADMIN", "GERENTE", "CAIXA", "GARCOM"]);
+  }
+
+  const staffPolicy = resolveRoutePolicy("/api/staff", "GET");
+  assert.equal(staffPolicy.access, "operator");
+  if (staffPolicy.access === "operator") {
+    assert.deepEqual(staffPolicy.allowedRoles, ["ADMIN", "GERENTE"]);
+  }
+
+  const workspacePolicy = resolveRoutePolicy("/api/workspace", "GET");
+  assert.equal(workspacePolicy.access, "operator");
+
+  // Qualquer outra rota de API desconhecia cai no fallback fail-closed
+  assert.deepEqual(resolveRoutePolicy("/api/desconhecida", "GET"), {
+    access: "operator",
+    isApi: true,
+  });
+});
+
+test("sanitizeNextPath bloqueia open redirects", () => {
+  assert.equal(sanitizeNextPath("//evil.com"), "/");
+  assert.equal(sanitizeNextPath("https://evil.com"), "/");
+  assert.equal(sanitizeNextPath("/login"), "/");
+  assert.equal(sanitizeNextPath("/login?next=/"), "/");
+  assert.equal(sanitizeNextPath("/delivery"), "/delivery");
+  assert.equal(sanitizeNextPath("/erp?tab=kds"), "/erp?tab=kds");
 });
 

@@ -1,6 +1,8 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
+import { safeEqualString } from "@/lib/auth-crypto";
 import { prisma } from "@/lib/prisma";
+import { hasAnyRole } from "@/lib/rbac";
 import { ensureSeeded } from "@/lib/seed";
 import { TableActionSchema } from "@/lib/schemas";
 import {
@@ -39,7 +41,7 @@ export async function GET(
     }
 
     const erpAuthorized = await isServerErpAuthorized();
-    const tokenValid = Boolean(token && token === table.qrToken);
+    const tokenValid = Boolean(token && safeEqualString(token, table.qrToken));
     if (!erpAuthorized && !tokenValid) {
       return NextResponse.json(
         { error: "Token QR inválido para esta mesa." },
@@ -91,7 +93,9 @@ export async function PATCH(
 
     const session = await getServerOperatorSession();
     const erpAuthorized = session !== null;
-    const validQr = Boolean(parsed.data.qrToken && parsed.data.qrToken === existing.qrToken);
+    const validQr = Boolean(
+      parsed.data.qrToken && safeEqualString(parsed.data.qrToken, existing.qrToken),
+    );
 
     if (parsed.data.action === "CALL_WAITER") {
       if (!erpAuthorized && !validQr) {
@@ -105,9 +109,15 @@ export async function PATCH(
     }
 
     if (parsed.data.action === "DISMISS_WAITER") {
-      if (!erpAuthorized) {
+      if (!session) {
         return NextResponse.json(
-          { error: "Operação restrita ao painel interno." },
+          { error: "Autenticação obrigatória para esta ação." },
+          { status: 401 },
+        );
+      }
+      if (!hasAnyRole(session.role, ["ADMIN", "GERENTE", "CAIXA", "GARCOM"])) {
+        return NextResponse.json(
+          { error: "Seu perfil não possui permissão para atender chamados de mesa." },
           { status: 403 },
         );
       }
@@ -119,9 +129,15 @@ export async function PATCH(
     }
 
     if (parsed.data.action === "ROTATE_QR") {
-      if (!erpAuthorized) {
+      if (!session) {
         return NextResponse.json(
-          { error: "Operação restrita ao painel interno." },
+          { error: "Autenticação obrigatória para esta ação." },
+          { status: 401 },
+        );
+      }
+      if (!hasAnyRole(session.role, ["ADMIN", "GERENTE"])) {
+        return NextResponse.json(
+          { error: "Apenas gerência ou administração pode rotacionar o QR Code." },
           { status: 403 },
         );
       }
@@ -132,8 +148,8 @@ export async function PATCH(
         data: { qrToken: newToken },
       });
       await recordAuditLog({
-        actorName: session?.name ?? "Operador",
-        actorRole: session?.role ?? "ADMIN",
+        actorName: session.name,
+        actorRole: session.role,
         action: "ROTACIONAR_QR_MESA",
         entity: "DiningTable",
         details: `${table.name} (novo token gerado)`,
@@ -145,13 +161,18 @@ export async function PATCH(
       return NextResponse.json({ error: "Informe o novo status da mesa." }, { status: 400 });
     }
 
-    if (!erpAuthorized) {
+    if (!session) {
       if (parsed.data.status !== "CONTA" || !validQr) {
         return NextResponse.json(
           { error: "Operação restrita ao painel interno." },
-          { status: 403 },
+          { status: 401 },
         );
       }
+    } else if (!hasAnyRole(session.role, ["ADMIN", "GERENTE", "CAIXA", "GARCOM"])) {
+      return NextResponse.json(
+        { error: "Seu perfil não possui permissão para alterar status da mesa." },
+        { status: 403 },
+      );
     }
 
     const table = await prisma.diningTable.update({

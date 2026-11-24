@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { CreateCustomerSchema } from "@/lib/schemas";
 
 export async function POST(request: Request) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE", "CAIXA"]);
   if (forbidden) return forbidden;
   try {
     const body = await request.json();
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const forbidden = await forbiddenIfNotErpOperator();
+  const forbidden = await forbiddenIfNotErpOperator(["ADMIN", "GERENTE", "CAIXA"]);
   if (forbidden) return forbidden;
   try {
     const body = (await request.json()) as { id?: number; pointsDelta?: number };

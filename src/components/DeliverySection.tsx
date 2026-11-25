@@ -475,7 +475,9 @@ export function DeliverySection({
                   <span className="inline-flex items-center gap-1.5">
                     <Icon className="h-4 w-4" /> {DELIVERY_STATUS_LABELS[col.id]}
                   </span>
-                  <span className="font-mono-num rounded-full bg-white/70 px-2">{list.length}</span>
+                  <span className="font-mono-num rounded-full bg-[var(--bg-surface)]/80 px-2 text-[var(--text-primary)]">
+                    {list.length}
+                  </span>
                 </div>
                 <div className="space-y-2.5">
                   {list.length === 0 ? (

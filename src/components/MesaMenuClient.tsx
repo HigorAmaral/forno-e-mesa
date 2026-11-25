@@ -20,6 +20,7 @@ import { formatBRL, splitBillAmount } from "@/lib/domain";
 import type { CategoryDto, OrderItemDto, ProductDto } from "@/types/erp";
 import { CafeFloatingToast, CoffeeSteamEmblem } from "./CafeAtmosphere";
 import { ProductPhoto } from "./ProductPhoto";
+import { ThemeToggleButton } from "./ThemeToggleButton";
 
 interface MesaMenuCategory extends CategoryDto {
   products: Array<Omit<ProductDto, "category">>;
@@ -303,7 +304,7 @@ export function MesaMenuClient({
   return (
     <div className="min-h-screen bg-[var(--bg-canvas)] text-[var(--text-primary)] pb-32">
       <header className="cafe-topbar sticky top-0 z-20 backdrop-blur-md">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 px-4 py-3">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 px-4 py-3">
           <div>
             <div className="flex items-center gap-2">
               <UtensilsCrossed className="h-5 w-5 text-[var(--accent-primary)]" />
@@ -314,18 +315,21 @@ export function MesaMenuClient({
             </p>
           </div>
 
-          <button
-            type="button"
-            disabled={callingWaiter}
-            onClick={callWaiter}
-            className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/35 bg-orange-500/10 px-3 py-1.5 text-xs font-bold text-orange-800 transition hover:bg-orange-500/20 disabled:opacity-50 dark:text-orange-200"
-          >
-            <BellRing className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400" />
-            {callingWaiter ? "Chamando..." : "Chamar Garçom"}
-          </button>
+          <div className="flex items-center gap-1.5">
+            <ThemeToggleButton variant="surface" />
+            <button
+              type="button"
+              disabled={callingWaiter}
+              onClick={callWaiter}
+              className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/35 bg-orange-500/10 px-3 py-1.5 text-xs font-bold text-orange-800 transition hover:bg-orange-500/20 disabled:opacity-50 dark:text-orange-200"
+            >
+              <BellRing className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400" />
+              {callingWaiter ? "Chamando..." : "Chamar Garçom"}
+            </button>
+          </div>
         </div>
 
-        <div className="mx-auto max-w-2xl space-y-2.5 px-4 pb-3">
+        <div className="mx-auto max-w-3xl space-y-2.5 px-4 pb-3">
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-secondary)]" />
             <input
@@ -367,7 +371,7 @@ export function MesaMenuClient({
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl space-y-6 px-4 pt-5">
+      <main className="mx-auto max-w-3xl space-y-6 px-4 pt-5">
         <section className="cafe-hero-surface animate-cafe-rise rounded-2xl p-4 text-[#F5F3EF] sm:p-5">
           <div className="relative z-10 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">

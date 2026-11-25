@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -10,17 +10,16 @@ import {
   KeyRound,
   Lock,
   Mail,
-  Moon,
   QrCode,
   RotateCcw,
   Search,
   ShieldCheck,
   Sparkles,
-  Sun,
   Truck,
   UtensilsCrossed,
 } from "lucide-react";
 import { CoffeeSteamEmblem } from "./CafeAtmosphere";
+import { ThemeToggleButton } from "./ThemeToggleButton";
 
 interface OperatorLockScreenProps {
   storeName?: string;
@@ -54,36 +53,12 @@ export function OperatorLockScreen({
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   const [trackCode, setTrackCode] = useState("");
   const [trackToken, setTrackToken] = useState("");
 
   const staffSectionRef = useRef<HTMLElement | null>(null);
   const pinInputRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    const rafId = requestAnimationFrame(() => {
-      try {
-        const domTheme = document.documentElement.dataset.theme;
-        if (domTheme === "dark") setTheme("dark");
-      } catch {
-        // Ignore
-      }
-    });
-    return () => cancelAnimationFrame(rafId);
-  }, []);
-
-  function toggleTheme() {
-    const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    document.documentElement.dataset.theme = next;
-    try {
-      localStorage.setItem("forno_theme", next);
-    } catch {
-      // Ignore
-    }
-  }
 
   function focusStaffAccess() {
     staffSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -198,19 +173,7 @@ export function OperatorLockScreen({
               <Lock className="h-3.5 w-3.5 text-[var(--accent-primary)]" />
               Equipe
             </button>
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="icon-btn rounded-xl"
-              aria-label={theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
-              title={theme === "dark" ? "Tema Claro" : "Tema Escuro"}
-            >
-              {theme === "dark" ? (
-                <Sun className="h-4 w-4 text-amber-400" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
-            </button>
+            <ThemeToggleButton variant="surface" className="rounded-xl" />
           </nav>
         </div>
       </header>

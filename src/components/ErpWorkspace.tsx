@@ -20,7 +20,6 @@ import {
   Landmark,
   LayoutDashboard,
   Menu,
-  Moon,
   Plus,
   QrCode,
   Receipt,
@@ -31,7 +30,6 @@ import {
   Square,
   Star,
   StickyNote,
-  Sun,
   Target,
   Trash2,
   Truck,
@@ -73,6 +71,7 @@ import { ReceiptModal } from "./ReceiptModal";
 import { QrModal } from "./QrModal";
 import { CommandPalette } from "./CommandPalette";
 import { SwitchOperatorModal } from "./SwitchOperatorModal";
+import { ThemeToggleButton, useAppTheme } from "./ThemeToggleButton";
 
 interface ErpWorkspaceProps {
   initialData: WorkspaceSnapshotDto;
@@ -110,6 +109,7 @@ export function ErpWorkspace({
   dbError,
 }: ErpWorkspaceProps) {
   const router = useRouter();
+  const { theme, toggleTheme } = useAppTheme();
   const [data, setData] = useState<WorkspaceSnapshotDto>(initialData);
   const [activeTab, setActiveTab] = useState<ErpTabId>(() =>
     defaultTabForRole(operatorSession.role),
@@ -132,7 +132,6 @@ export function ErpWorkspace({
   const [switchOperatorOpen, setSwitchOperatorOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [alertSound, setAlertSound] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [dailyGoal, setDailyGoal] = useState(
     initialData.storeSettings?.dailyGoal ?? 2500,
   );
@@ -151,8 +150,6 @@ export function ErpWorkspace({
   useEffect(() => {
     const rafId = requestAnimationFrame(() => {
       try {
-        const domTheme = document.documentElement.dataset.theme;
-        if (domTheme === "dark") setTheme("dark");
         const savedGoal = localStorage.getItem("forno_mesa_daily_goal");
         if (savedGoal && Number(savedGoal) >= 500) setDailyGoal(Number(savedGoal));
       } catch {
@@ -180,17 +177,6 @@ export function ErpWorkspace({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
-
-  function toggleTheme() {
-    const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    document.documentElement.dataset.theme = next;
-    try {
-      localStorage.setItem("forno_theme", next);
-    } catch {
-      // Ignore
-    }
-  }
 
   const showToast = useCallback((type: "ok" | "err", text: string) => {
     setToast({ type, text });
@@ -842,19 +828,7 @@ export function ErpWorkspace({
             </div>
 
             {/* Theme Toggle */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="icon-btn"
-              aria-label={theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
-              title={theme === "dark" ? "Tema Creme" : "Tema Espresso Noturno"}
-            >
-              {theme === "dark" ? (
-                <Sun className="h-4 w-4 text-amber-400" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
-            </button>
+            <ThemeToggleButton variant="surface" />
 
             <button
               type="button"
@@ -888,6 +862,7 @@ export function ErpWorkspace({
         </header>
 
         <main id="erp-main" className="w-full flex-1 px-4 py-6 sm:px-6 lg:px-8">
+          <div className="mx-auto w-full max-w-[1560px]">
           {dbError && (
             <div className="mb-5 flex items-center gap-3 rounded-2xl border border-red-500/35 bg-red-500/10 p-4 text-sm text-red-900 dark:text-red-200">
               <AlertTriangle className="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
@@ -1575,6 +1550,7 @@ export function ErpWorkspace({
               onSuccess={(msg) => showToast("ok", msg)}
             />
           )}
+          </div>
         </main>
       </div>
 

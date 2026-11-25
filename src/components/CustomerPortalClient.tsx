@@ -20,6 +20,7 @@ import {
 import { channelLabel, formatBRL, getLoyaltyTier } from "@/lib/domain";
 import type { DeliveryZoneDto } from "@/types/erp";
 import { CoffeeSteamEmblem } from "./CafeAtmosphere";
+import { ThemeToggleButton } from "./ThemeToggleButton";
 
 interface CustomerSessionData {
   id: number;
@@ -243,6 +244,7 @@ export function CustomerPortalClient({
           </Link>
 
           <div className="flex items-center gap-2">
+            <ThemeToggleButton variant="shell" />
             <Link
               href="/"
               className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-stone-100 hover:bg-white/20"

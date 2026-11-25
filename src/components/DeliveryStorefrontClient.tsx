@@ -17,14 +17,12 @@ import {
   Lock,
   MapPin,
   Minus,
-  Moon,
   Plus,
   Search,
   ShoppingBag,
   Sparkles,
   Star,
   Store,
-  Sun,
   Tag,
   Trash2,
   User,
@@ -32,6 +30,7 @@ import {
 } from "lucide-react";
 import { CafeFloatingToast, CoffeeSteamEmblem } from "./CafeAtmosphere";
 import { ProductPhoto } from "./ProductPhoto";
+import { ThemeToggleButton } from "./ThemeToggleButton";
 import {
   calculateOrderTotals,
   estimateDeliveryMinutes,
@@ -143,7 +142,6 @@ export function DeliveryStorefrontClient({
   const [cart, setCart] = useState<CartLine[]>([]);
   const [favorites, setFavorites] = useState<number[]>([]);
   const [recentOrders, setRecentOrders] = useState<RecentOrderEntry[]>([]);
-  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   const [bagOpen, setBagOpen] = useState(false);
   const [locationModalOpen, setLocationModalOpen] = useState(false);
@@ -197,8 +195,6 @@ export function DeliveryStorefrontClient({
   useEffect(() => {
     const rafId = requestAnimationFrame(() => {
       try {
-        const domTheme = document.documentElement.dataset.theme;
-        if (domTheme === "dark") setTheme("dark");
         const savedFavs = localStorage.getItem(FAVS_STORAGE_KEY);
         if (savedFavs) setFavorites(JSON.parse(savedFavs) as number[]);
         const savedOrders = localStorage.getItem(RECENT_ORDERS_KEY);
@@ -253,17 +249,6 @@ export function DeliveryStorefrontClient({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
-
-  function toggleTheme() {
-    const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    document.documentElement.dataset.theme = next;
-    try {
-      localStorage.setItem("forno_theme", next);
-    } catch {
-      // Ignore
-    }
-  }
 
   function toggleFavorite(productId: number) {
     const willFav = !favorites.includes(productId);
@@ -607,18 +592,7 @@ export function DeliveryStorefrontClient({
           </div>
 
           <div className="order-2 flex items-center gap-1.5 sm:order-3">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="icon-btn"
-              aria-label="Alternar tema"
-            >
-              {theme === "dark" ? (
-                <Sun className="h-4 w-4 text-amber-400" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
-            </button>
+            <ThemeToggleButton variant="surface" />
 
             <Link
               href="/conta"

@@ -24,6 +24,7 @@ import {
   type DeliveryStatus,
 } from "@/lib/domain";
 import { CoffeeSteamEmblem } from "./CafeAtmosphere";
+import { ThemeToggleButton } from "./ThemeToggleButton";
 
 export interface TrackedOrderDto {
   code: string;
@@ -162,6 +163,7 @@ export function DeliveryTrackerClient({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggleButton variant="shell" />
             {whatsappStoreUrl && (
               <a
                 href={whatsappStoreUrl}
